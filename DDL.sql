@@ -166,7 +166,7 @@ CREATE TABLE StoreLocation (
 CREATE TABLE Ad_Store (
 	adId int AUTO_INCREMENT PRIMARY KEY,
 	storeId int NOT NULL,
-	date 
+	dateOfRent date NOT NULL, 
 	timeStart time NOT NULL,
 	timeEnd time NOT NULL,
 	includesDeliveryServices boolean NOT NULL DEFAULT 0,
