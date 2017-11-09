@@ -102,13 +102,38 @@ CREATE TABLE Ad (
 
 CREATE TABLE Ad_AdImage (
 	adImageUrl varchar(255) PRIMARY KEY,
-	adId int NOT NULL,
+	adId int PRIMARY KEY,
 	FOREIGN KEY (url) REFERENCES AdImage(url),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 );
 
 CREATE TABLE AdImage (
 	url varchar(255) PRIMARY KEY
+);
+
+CREATE TABLE Rating(
+	userId int PRIMARY KEY,
+	adId int PRIMARY KEY,
+	rating int NOT NULL,
+	FOREIGN KEY (userId) REFERENCES Users(userId),
+	FOREIGN KEY (adId) REFERENCES Ad(adId)
+	#TODO CONTRAINT
+	#For a user to rate an ad, there must be at least one Transaction marked as purchasedInStore made by this BuyerSeller for this Ad.
+);
+
+CREATE TABLE Promotion(
+	duration int PRIMARY KEY,
+	price decimal(15,2) NOT NULL,
+);
+
+CREATE TABLE AdPromotion(
+	adId int PRIMARY KEY,
+	duration int PRIMARY KEY,
+	startDate date PRIMARY KEY,
+	billId int NOT NULL,
+	FOREIGN KEY (adId) REFERENCES Ad(adId),
+	FOREIGN KEY (duration) REFERENCES Promotion(duration),
+	FOREIGN KEY (billId) REFERENCES Bill(billId)
 );
 
 CREATE TABLE SubCategory (
@@ -126,6 +151,7 @@ CREATE TABLE Store (
 	addressId int NOT NULL,
 	name varchar(255) NOT NULL,
 	userId int NOT NULL,
+	UNIQUE(addressId),
 	FOREIGN KEY (name) REFERENCES StoreLocation(name),
 	FOREIGN KEY (userId) REFERENCES Users(userId)
 );
@@ -143,8 +169,9 @@ CREATE TABLE Ad_Store (
 	timeEnd time NOT NULL,
 	includesDeliveryServices boolean NOT NULL DEFAULT 0,
 	billId int NOT NULL,
-	FOREIGN KEY (adId) REFERENCES Ad(adId)
-	FOREIGN KEY (storeId) REFERENCES Store(storeId)
+	UNIQUE(billId),
+	FOREIGN KEY (adId) REFERENCES Ad(adId),
+	FOREIGN KEY (storeId) REFERENCES Store(storeId),
 	FOREIGN KEY (billId) REFERENCES Bill(billId)
 );
 
