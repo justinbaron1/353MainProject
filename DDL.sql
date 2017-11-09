@@ -19,7 +19,7 @@ CREATE TABLE Users (
 
 CREATE TABLE BuyerSeller (
 	userId int PRIMARY KEY,
-	membershipPlanName varchar(255) NOT NULL
+	membershipPlanName varchar(255) NOT NULL,
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
 	#TODO TRIGGER
@@ -151,11 +151,11 @@ CREATE TABLE category (
 CREATE TABLE Store (
 	storeId int AUTO_INCREMENT PRIMARY KEY,
 	addressId int NOT NULL,
-	name varchar(255) NOT NULL,
+	locationName varchar(255) NOT NULL,
 	userId int NOT NULL,
-	UNIQUE(addressId),
-	FOREIGN KEY (name) REFERENCES StoreLocation(name),
-	FOREIGN KEY (userId) REFERENCES Users(userId)
+	FOREIGN KEY (locationName) REFERENCES StoreLocation(name),
+	FOREIGN KEY (userId) REFERENCES StoreManager(userId),
+	UNIQUE(addressId)
 );
 
 CREATE TABLE StoreLocation (
