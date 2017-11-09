@@ -23,6 +23,8 @@ CREATE TABLE BuyerSeller (
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
 	#TODO TRIGGER
+	#Upon change, a bill must be generated marking the membership plan change.
+	#Every month, a bill is generated according to the current membership.
 );
 
 CREATE TABLE Admin (
