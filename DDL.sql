@@ -13,8 +13,8 @@ CREATE TABLE Users (
 	email varchar(255) NOT NULL,
 	password varchar(255) NOT NULL,
 	addressID int NOT NULL,
-	UNIQUE(email),
-	FOREIGN KEY (addressId) REFERENCES Address(addressId)
+	FOREIGN KEY (addressId) REFERENCES Address(addressId),
+	UNIQUE(email)
 );
 
 CREATE TABLE BuyerSeller (
@@ -171,10 +171,10 @@ CREATE TABLE Ad_Store (
 	timeEnd time NOT NULL,
 	includesDeliveryServices boolean NOT NULL DEFAULT 0,
 	billId int NOT NULL,
-	UNIQUE(billId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
 	FOREIGN KEY (storeId) REFERENCES Store(storeId),
-	FOREIGN KEY (billId) REFERENCES Bill(billId)
+	FOREIGN KEY (billId) REFERENCES Bill(billId),
+	UNIQUE(billId)
 );
 
 
