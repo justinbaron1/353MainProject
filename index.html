@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comp 353</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        $(function(){
+            $("#includedContent").load("navbars/loggedInNavbar.html");
+        });
+    </script>
+
+</head>
+
+
+
+
+<body>
+
+    <div id="includedContent"></div>
+
+    <!-- First Container -->
+    <div id="about" class="container-fluid text-center">
+        <div class="container1">
+            <h2 class="glegoo text-header">Welcome to the Ad Store!</h2>
+            <p>What are you looking for?</p>
+
+            <!-- To use in javascript, just do something like this, assuming you use findViewById to refer to the searchbox
+             adSearch = adSearch.value; -->
+            <input id="adSearch" type="search">
+            <button>Search</button>
+
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
