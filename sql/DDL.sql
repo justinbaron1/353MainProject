@@ -7,6 +7,8 @@
 
 # SET GLOBAL event_scheduler = ON;
 
+
+SET foreign_key_checks=0;
 DROP TABLE IF EXISTS Ad_Store;
 DROP TABLE IF EXISTS Store;
 DROP TABLE IF EXISTS StoreLocation;
@@ -15,21 +17,21 @@ DROP TABLE IF EXISTS Promotion;
 DROP TABLE IF EXISTS Rating;
 DROP TABLE IF EXISTS Ad_AdImage;
 DROP TABLE IF EXISTS AdImage;
+DROP TABLE IF EXISTS `Transaction`;
 DROP TABLE IF EXISTS Ad;
 DROP TABLE IF EXISTS SubCategory;
 DROP TABLE IF EXISTS category;
-DROP TABLE IF EXISTS Transaction;
 DROP TABLE IF EXISTS DebitCard;
 DROP TABLE IF EXISTS CreditCard;
-DROP TABLE IF EXISTS PaymentMethod;
 DROP TABLE IF EXISTS Bill;
+DROP TABLE IF EXISTS PaymentMethod;
 DROP TABLE IF EXISTS StoreManager;
 DROP TABLE IF EXISTS Admin;
 DROP TABLE IF EXISTS BuyerSeller;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS MembershipPlan;
 DROP TABLE IF EXISTS Address;
-
+SET foreign_key_checks=1;
 
 CREATE TABLE Address(
 	addressId int AUTO_INCREMENT,
@@ -41,7 +43,7 @@ CREATE TABLE Address(
 );
 
 CREATE TABLE MembershipPlan (
-	name varchar(255) AUTO_INCREMENT,
+	name varchar(255),
 	visibleDuration date NOT NULL,
 	monthlyPrice decimal(15,2) NOT NULL,
 	PRIMARY KEY (name)
@@ -91,34 +93,31 @@ CREATE TABLE StoreManager (
 );
 
 
-CREATE TABLE Bill (
-	billId int AUTO_INCREMENT,
-	dateOfPayment date NOT NULL,
-	amount decimal(15,2) NOT NULL,
-	type ENUM('debit','credit') NOT NULL,
-	billMethodId int NOT NULL,
-	PRIMARY KEY (billId)
-	# TODO CONTRAINT
-	# The paymentMethod must not be expired.
-);
-
 
 CREATE TABLE PaymentMethod (
 	paymentMethodId int AUTO_INCREMENT,
 	expiryMonth int NOT NULL,
 	expiryYear int NOT NULL,
 	userId int NOT NULL,
-	billId int NOT NULL,
 	PRIMARY KEY (paymentMethodId),
-	FOREIGN KEY (userId) REFERENCES Users(userId),
-	FOREIGN KEY (billId) REFERENCES Bill(billId)
+	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId)
 	# TODO CONSTRAINTS
 	# ExpiryMonth must be an integer value between 1 and 12 inclusively.
 	# ExpiryMonth and ExpiryYear must be in the future.
 );
 
-ALTER TABLE Bill
-ADD FOREIGN KEY (paymentMethodId) REFERENCES PaymentMethod(paymentMethodId);
+CREATE TABLE Bill (
+	billId int AUTO_INCREMENT,
+	dateOfPayment date NOT NULL,
+	amount decimal(15,2) NOT NULL,
+	type ENUM('debit','credit') NOT NULL,
+	paymentMethodId int NOT NULL,
+	PRIMARY KEY (billId),
+	FOREIGN KEY (paymentMethodId) REFERENCES PaymentMethod(paymentMethodId)
+	# TODO CONTRAINT
+	# The paymentMethod must not be expired.
+);
+
 
 CREATE TABLE CreditCard (
 	paymentMethodId int,
@@ -133,16 +132,6 @@ CREATE TABLE DebitCard (
 	cardNumber int NOT NULL,
 	PRIMARY KEY (paymentMethodId),
 	FOREIGN KEY (paymentMethodId) REFERENCES PaymentMethod(paymentMethodId)
-);
-
-
-CREATE TABLE Transaction (
-	billId int,
-	adId int NOT NULL,
-	PRIMARY KEY (billId),
-	FOREIGN KEY (billId) REFERENCES Bill(paymentId)
-	# TODO CONTRAINT
-	# For a transaction to be stored, the related ad must have at least 1 Ad_Store.
 );
 
 CREATE TABLE category (
@@ -171,6 +160,17 @@ CREATE TABLE Ad (
 	FOREIGN KEY (category,subCategory) REFERENCES SubCategory(category,subCategory)
 );
 
+CREATE TABLE Transaction (
+	billId int,
+	adId int NOT NULL,
+	PRIMARY KEY (billId),
+	FOREIGN KEY (billId) REFERENCES Bill(billId),
+	FOREIGN KEY (adId) REFERENCES Ad(adId)
+	# TODO CONTRAINT
+	# For a transaction to be stored, the related ad must have at least 1 Ad_Store.
+);
+
+
 CREATE TABLE AdImage (
 	url varchar(255),
 	PRIMARY KEY (url)
@@ -180,7 +180,7 @@ CREATE TABLE Ad_AdImage (
 	adImageUrl varchar(255),
 	adId int,
 	PRIMARY KEY (adImageUrl, adId),
-	FOREIGN KEY (url) REFERENCES AdImage(url),
+	FOREIGN KEY (adImageUrl) REFERENCES AdImage(url),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 );
 
@@ -206,7 +206,7 @@ CREATE TABLE AdPromotion(
 	duration int,
 	startDate date,
 	billId int NOT NULL,
-	PRIMARY KEY (adId, duration, startDate),
+	PRIMARY KEY (adId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
 	FOREIGN KEY (duration) REFERENCES Promotion(duration),
 	FOREIGN KEY (billId) REFERENCES Bill(billId)
