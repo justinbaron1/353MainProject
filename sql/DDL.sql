@@ -72,6 +72,8 @@ CREATE TABLE Users (
 CREATE TABLE BuyerSeller (
 	userId int,
 	membershipPlanName varchar(255) NOT NULL,
+	contactEmail varchar(255) NOT NULL,
+	contactPhone varchar(255) NOT NULL,
 	PRIMARY KEY (userId),
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
@@ -150,6 +152,7 @@ CREATE TABLE SubCategory (
 CREATE TABLE Ad (
 	adId int AUTO_INCREMENT,
 	title varchar(255) NOT NULL,
+	price decimal(15,2) NOT NULL,
 	description text(1000),
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date NOT NULL,
@@ -245,6 +248,26 @@ CREATE TABLE Ad_Store (
 	UNIQUE(billId)
 );
 
+# DELIMITER $$
+# DROP TRIGGER IF EXISTS ExpiryMonthChecker $$
+# CREATE TRIGGER ExpiryMonthChecker
+# BEFORE INSERT 
+# ON PaymentMethod
+# OR EACH ROW
+# BEGIN
+#    IF new.ExpiryMonth<1 OR new.ExpiryMonth>12 THEN
+#       SIGNAL SQLSTATE '45000'   
+#       SET MESSAGE_TEXT = 'ExpiryMonth has to be between 1 and 12';
+#    ELSEIF new.ExpiryYear=YEAR(GETDATE()) THEN
+#    	IF new.ExpiryMonth>MONTH(GETDATE()) THEN
+#    	   SIGNAL SQLSTATE '45000'   
+#     	   SET MESSAGE_TEXT = 'The month is not valid';
+#    ELSEIF new.ExpiryYear>YEAR(GETDATE()) THEN
+#    	SIGNAL SQLSTATE '45000'   
+#     	SET MESSAGE_TEXT = 'The year is not valid';
+#    END IF; 
+# END;$$
+# DELIMITER ;
 
 
 
