@@ -1,0 +1,10 @@
+version: '2'
+services:
+  comp353_httpd:
+    image: php:5.5-apache
+    container_name: "comp353_httpd"
+    ports:
+      - "8080:80"
+    volumes:
+      - "./server/:/var/www/html/"
+
