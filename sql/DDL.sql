@@ -9,15 +9,17 @@
 
 
 SET foreign_key_checks=0;
+DROP TABLE IF EXISTS StorePrices;
+DROP TABLE IF EXISTS PaymentExtra;
 DROP TABLE IF EXISTS Ad_Store;
 DROP TABLE IF EXISTS Store;
-DROP TABLE IF EXISTS StoreLocation;
+DROP TABLE IF EXISTS StrategicLocation;
 DROP TABLE IF EXISTS AdPromotion;
 DROP TABLE IF EXISTS Promotion;
 DROP TABLE IF EXISTS Rating;
 DROP TABLE IF EXISTS Ad_AdImage;
 DROP TABLE IF EXISTS AdImage;
-DROP TABLE IF EXISTS `Transaction`;
+DROP TABLE IF EXISTS Transaction;
 DROP TABLE IF EXISTS Ad;
 DROP TABLE IF EXISTS SubCategory;
 DROP TABLE IF EXISTS category;
@@ -31,7 +33,22 @@ DROP TABLE IF EXISTS BuyerSeller;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS MembershipPlan;
 DROP TABLE IF EXISTS Address;
+DROP TABLE IF EXISTS City;
+DROP TABLE IF EXISTS Province;
 SET foreign_key_checks=1;
+
+
+CREATE TABLE Province(
+	province varchar(255),
+	PRIMARY KEY (province)
+);
+
+CREATE TABLE City(
+	city varchar(255),
+	province varchar(255),
+	PRIMARY KEY (city),
+	FOREIGN KEY (province) REFERENCES Province(province)
+);
 
 CREATE TABLE Address(
 	addressId int AUTO_INCREMENT,
@@ -39,12 +56,13 @@ CREATE TABLE Address(
 	street varchar(255),
 	postalCode varchar(255),
 	city varchar(255),
-	PRIMARY KEY (addressId)
+	PRIMARY KEY (addressId),
+	FOREIGN KEY (city) REFERENCES City(city)
 );
 
 CREATE TABLE MembershipPlan (
 	name varchar(255),
-	visibleDuration date NOT NULL,
+	visibleDuration int NOT NULL,
 	monthlyPrice decimal(15,2) NOT NULL,
 	PRIMARY KEY (name)
 );
@@ -151,6 +169,7 @@ CREATE TABLE SubCategory (
 
 CREATE TABLE Ad (
 	adId int AUTO_INCREMENT,
+	sellerId int,
 	title varchar(255) NOT NULL,
 	price decimal(15,2) NOT NULL,
 	description text(1000),
@@ -160,6 +179,7 @@ CREATE TABLE Ad (
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
 	PRIMARY KEY (adId),
+	FOREIGN KEY (sellerId) REFERENCES BuyerSeller(userId),
 	FOREIGN KEY (category,subCategory) REFERENCES SubCategory(category,subCategory)
 );
 
@@ -171,6 +191,8 @@ CREATE TABLE Transaction (
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 	# TODO CONTRAINT
 	# For a transaction to be stored, the related ad must have at least 1 Ad_Store.
+	# TODO TRIGGER
+	# On Transaction creation, create a default Rating for this ad and User if the User does not already have one with rating Null.
 );
 
 
@@ -192,7 +214,7 @@ CREATE TABLE Rating(
 	adId int,
 	rating int NOT NULL,
 	PRIMARY KEY (userId, adId),
-	FOREIGN KEY (userId) REFERENCES Users(userId),
+	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 	# TODO CONTRAINT
 	# For a user to rate an ad, there must be at least one Transaction marked as purchasedInStore made by this BuyerSeller for this Ad.
@@ -212,12 +234,16 @@ CREATE TABLE AdPromotion(
 	PRIMARY KEY (adId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
 	FOREIGN KEY (duration) REFERENCES Promotion(duration),
-	FOREIGN KEY (billId) REFERENCES Bill(billId)
+	FOREIGN KEY (billId) REFERENCES Bill(billId),
+	UNIQUE(billId)
+	# TODO CONTRAINTS
+	# An ad promotion cannot be updated.
 );
 
-CREATE TABLE StoreLocation (
+CREATE TABLE StrategicLocation (
 	name varchar(255),
 	clientsPerHour int NOT NULL,
+	weekendExtraCostPercent int NOT NULL,
 	PRIMARY KEY (name)
 );
 
@@ -227,7 +253,8 @@ CREATE TABLE Store (
 	locationName varchar(255) NOT NULL,
 	userId int NOT NULL,
 	PRIMARY KEY (storeId),
-	FOREIGN KEY (locationName) REFERENCES StoreLocation(name),
+	FOREIGN KEY (addressId) REFERENCES Address(addressId),
+	FOREIGN KEY (locationName) REFERENCES StrategicLocation(name),
 	FOREIGN KEY (userId) REFERENCES StoreManager(userId),
 	UNIQUE(addressId)
 );
@@ -241,11 +268,27 @@ CREATE TABLE Ad_Store (
 	timeEnd time NOT NULL,
 	includesDeliveryServices boolean NOT NULL DEFAULT 0,
 	billId int NOT NULL,
-	PRIMARY KEY (adId),
+	PRIMARY KEY (adId, storeId, dateOfRent),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
 	FOREIGN KEY (storeId) REFERENCES Store(storeId),
 	FOREIGN KEY (billId) REFERENCES Bill(billId),
 	UNIQUE(billId)
+	# TODO TRIGGER
+	# ON DELETE: Delete the Bill related
+	# dateOfRent must be in the future
+);
+
+
+CREATE TABLE PaymentExtra (
+	cardType varchar(255),
+	extraPercent int NOT NULL,
+	PRIMARY KEY (cardType)
+);
+
+CREATE TABLE StorePrices(
+	momentOfWeek int,
+	hourlyPrice decimal(15,2) NOT NULL,
+	PRIMARY KEY (momentOfWeek)
 );
 
 # DELIMITER $$
