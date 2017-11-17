@@ -173,7 +173,7 @@ CREATE TABLE Ad (
 	title varchar(255) NOT NULL,
 	price decimal(15,2) NOT NULL,
 	description text(1000),
-	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	startDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date NOT NULL,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
@@ -291,26 +291,24 @@ CREATE TABLE StorePrices(
 	PRIMARY KEY (momentOfWeek)
 );
 
-# DELIMITER $$
-# DROP TRIGGER IF EXISTS ExpiryMonthChecker $$
-# CREATE TRIGGER ExpiryMonthChecker
-# BEFORE INSERT 
-# ON PaymentMethod
-# OR EACH ROW
-# BEGIN
-#    IF new.ExpiryMonth<1 OR new.ExpiryMonth>12 THEN
-#       SIGNAL SQLSTATE '45000'   
-#       SET MESSAGE_TEXT = 'ExpiryMonth has to be between 1 and 12';
-#    ELSEIF new.ExpiryYear=YEAR(GETDATE()) THEN
-#    	IF new.ExpiryMonth>MONTH(GETDATE()) THEN
-#    	   SIGNAL SQLSTATE '45000'   
-#     	   SET MESSAGE_TEXT = 'The month is not valid';
-#    ELSEIF new.ExpiryYear>YEAR(GETDATE()) THEN
-#    	SIGNAL SQLSTATE '45000'   
-#     	SET MESSAGE_TEXT = 'The year is not valid';
-#    END IF; 
-# END;$$
-# DELIMITER ;
+DELIMITER $$
+DROP TRIGGER IF EXISTS ExpiryMonthChecker$$
+CREATE TRIGGER ExpiryMonthChecker
+BEFORE INSERT 
+ON PaymentMethod
+FOR EACH ROW
+BEGIN
+   IF (NEW.ExpiryMonth<1 OR NEW.ExpiryMonth>12) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ExpiryMonth has to be between 1 and 12';
+   ELSEIF (NEW.ExpiryYear=YEAR(CURRENT_DATE())) THEN
+   		IF NEW.ExpiryMonth<MONTH(CURRENT_DATE()) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The month is not valid';
+		END IF;
+   ELSEIF NEW.ExpiryYear<YEAR(CURRENT_DATE()) THEN
+   		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The year is not valid';
+   END IF; 
+END;$$
+DELIMITER ;
 
 
 
