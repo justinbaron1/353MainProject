@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS AdImage;
 DROP TABLE IF EXISTS Transaction;
 DROP TABLE IF EXISTS Ad;
 DROP TABLE IF EXISTS SubCategory;
-DROP TABLE IF EXISTS category;
+DROP TABLE IF EXISTS Category;
 DROP TABLE IF EXISTS DebitCard;
 DROP TABLE IF EXISTS CreditCard;
 DROP TABLE IF EXISTS Bill;
@@ -45,19 +45,21 @@ CREATE TABLE Province(
 
 CREATE TABLE City(
 	city varchar(255),
-	province varchar(255),
+	province varchar(255) NOT NULL,
 	PRIMARY KEY (city),
 	FOREIGN KEY (province) REFERENCES Province(province)
+		ON UPDATE CASCADE
 );
 
 CREATE TABLE Address(
 	addressId int AUTO_INCREMENT,
-	civicNumber int,
-	street varchar(255),
-	postalCode varchar(255),
-	city varchar(255),
+	civicNumber int NOT NULL,
+	street varchar(255) NOT NULL,
+	postalCode varchar(255) NOT NULL,
+	city varchar(255) NOT NULL,
 	PRIMARY KEY (addressId),
 	FOREIGN KEY (city) REFERENCES City(city)
+		ON UPDATE CASCADE
 );
 
 CREATE TABLE MembershipPlan (
@@ -74,9 +76,10 @@ CREATE TABLE Users (
 	phoneNumber varchar(255) NOT NULL,
 	email varchar(255) NOT NULL,
 	password varchar(255) NOT NULL,
-	addressID int NOT NULL,
+	addressId int NOT NULL,
 	PRIMARY KEY(userId),
-	FOREIGN KEY (addressId) REFERENCES Address(addressId),
+	FOREIGN KEY (addressId) REFERENCES Address(addressId)
+		ON UPDATE CASCADE,
 	UNIQUE(email)
 );
 
@@ -95,6 +98,7 @@ CREATE TABLE BuyerSeller (
 	PRIMARY KEY (userId),
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
+		ON UPDATE CASCADE
 	# TODO TRIGGER
 	# Upon change, a bill must be generated marking the membership plan change.
 	# Every month, a bill is generated according to the current membership.
@@ -130,7 +134,7 @@ CREATE TABLE Bill (
 	billId int AUTO_INCREMENT,
 	dateOfPayment date NOT NULL,
 	amount decimal(15,2) NOT NULL,
-	type ENUM('debit','credit') NOT NULL,
+	type varchar(255) NOT NULL,
 	paymentMethodId int NOT NULL,
 	PRIMARY KEY (billId),
 	FOREIGN KEY (paymentMethodId) REFERENCES PaymentMethod(paymentMethodId)
@@ -154,7 +158,7 @@ CREATE TABLE DebitCard (
 	FOREIGN KEY (paymentMethodId) REFERENCES PaymentMethod(paymentMethodId)
 );
 
-CREATE TABLE category (
+CREATE TABLE Category (
 	category varchar(255),
 	PRIMARY KEY (category)
 );
@@ -164,7 +168,8 @@ CREATE TABLE SubCategory (
 	category varchar(255),
 	subCategory varchar(255),
 	PRIMARY KEY (category, subCategory),
-	FOREIGN KEY (category) REFERENCES category(category)
+	FOREIGN KEY (category) REFERENCES Category(category)
+		ON UPDATE CASCADE
 );
 
 CREATE TABLE Ad (
@@ -181,6 +186,7 @@ CREATE TABLE Ad (
 	PRIMARY KEY (adId),
 	FOREIGN KEY (sellerId) REFERENCES BuyerSeller(userId),
 	FOREIGN KEY (category,subCategory) REFERENCES SubCategory(category,subCategory)
+		ON UPDATE CASCADE
 );
 
 CREATE TABLE Transaction (
@@ -205,14 +211,15 @@ CREATE TABLE Ad_AdImage (
 	adImageUrl varchar(255),
 	adId int,
 	PRIMARY KEY (adImageUrl, adId),
-	FOREIGN KEY (adImageUrl) REFERENCES AdImage(url),
+	FOREIGN KEY (adImageUrl) REFERENCES AdImage(url)
+		ON UPDATE CASCADE,
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 );
 
 CREATE TABLE Rating(
 	userId int,
 	adId int,
-	rating int NOT NULL,
+	rating int,
 	PRIMARY KEY (userId, adId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
@@ -254,7 +261,8 @@ CREATE TABLE Store (
 	userId int NOT NULL,
 	PRIMARY KEY (storeId),
 	FOREIGN KEY (addressId) REFERENCES Address(addressId),
-	FOREIGN KEY (locationName) REFERENCES StrategicLocation(name),
+	FOREIGN KEY (locationName) REFERENCES StrategicLocation(name)
+		ON UPDATE CASCADE,
 	FOREIGN KEY (userId) REFERENCES StoreManager(userId),
 	UNIQUE(addressId)
 );
@@ -308,6 +316,18 @@ BEGIN
    		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The year is not valid';
    END IF; 
 END;$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS DefaultRatingOnTransaction$$
+CREATE TRIGGER DefaultRatingOnTransaction
+AFTER INSERT
+ON Transaction
+FOR EACH ROW
+	BEGIN
+		INSERT INTO Rating(userId,adId,rating)
+		VALUES((SELECT sellerId FROM Ad WHERE NEW.adId=Ad.adId),NEW.adId,NULL);
+	END; $$
 DELIMITER ;
 
 
