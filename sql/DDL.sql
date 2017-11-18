@@ -125,14 +125,11 @@ CREATE TABLE PaymentMethod (
 	userId int NOT NULL,
 	PRIMARY KEY (paymentMethodId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId)
-	# TODO CONSTRAINTS
-	# ExpiryMonth must be an integer value between 1 and 12 inclusively.
-	# ExpiryMonth and ExpiryYear must be in the future.
 );
 
 CREATE TABLE Bill (
 	billId int AUTO_INCREMENT,
-	dateOfPayment date NOT NULL,
+	dateOfPayment TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	amount decimal(15,2) NOT NULL,
 	type varchar(255) NOT NULL,
 	paymentMethodId int NOT NULL,
@@ -178,7 +175,7 @@ CREATE TABLE Ad (
 	title varchar(255) NOT NULL,
 	price decimal(15,2) NOT NULL,
 	description text(1000),
-	startDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date NOT NULL,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
@@ -197,8 +194,7 @@ CREATE TABLE Transaction (
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 	# TODO CONTRAINT
 	# For a transaction to be stored, the related ad must have at least 1 Ad_Store.
-	# TODO TRIGGER
-	# On Transaction creation, create a default Rating for this ad and User if the User does not already have one with rating Null.
+
 );
 
 
@@ -329,6 +325,30 @@ FOR EACH ROW
 		VALUES((SELECT sellerId FROM Ad WHERE NEW.adId=Ad.adId),NEW.adId,NULL);
 	END; $$
 DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS generateBill$$
+CREATE TRIGGER generateBill
+AFTER UPDATE
+ON BuyerSeller
+FOR EACH ROW
+	BEGIN
+		IF NEW.membershipPlanName <> OLD.membershipPlanName THEN
+			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
+			(CURRENT_TIMESTAMP(),
+			(SELECT monthlyPrice
+			 FROM MembershipPlan JOIN BuyerSeller
+			 ON BuyerSeller.membershipPlanName=MembershipPlan.name),
+			 "debit",
+			(SELECT paymentMethodId
+			 FROM PaymentMethod JOIN BuyerSeller
+			 ON PaymentMethod.userId=BuyerSeller.userId));
+		END IF;
+	END$$
+DELIMITER ;
+
+
+
 
 
 
