@@ -7,13 +7,15 @@ INSERT INTO City(city,province) VALUES
 
 INSERT INTO Address(civicNumber,street,postalCode,city) VALUES
 (1234,"jeanne-mance","j4m2f5","laval"),
-(5432,"saint-catherine","j5u1i8","montreal");
+(5432,"saint-catherine","j5u1i8","montreal"),
+(7361,"du parc","j4g7f8","montreal");
 
 INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 ("premium",25,20.99),
 ("gold",14,15.99);
 
 INSERT INTO Users(firstName,lastName,phoneNumber,email,password,addressId) VALUES
+("john","beck","7362512121","john@hotmail.com","123567",3),
 ("justin","baron","5147264522","justinbaron12345@hotmail.com","123456",1),
 ("mikael","moscato","7265357777","mikmoscato@hotmail.com","654263",2);
 
@@ -44,10 +46,20 @@ INSERT INTO SubCategory(category,subCategory) VALUES
 ("vehicles","cars");
 
 INSERT INTO Ad(sellerId,title,price,description,endDate,type,category,subCategory) VALUES
-(1,"selling ps3",150.00,"ps3 good condition with 3 games",11-30-2017,"sell","electronics","consoles"),
-(2,"selling audi a4",7999.99,"5 year old",11-29-2017,"sell","vehicles","cars");
+(1,"selling ps3",150.00,"ps3 good condition with 3 games",'2017-12-13',"sell","electronics","consoles"),
+(2,"selling audi a4",7999.99,"5 year old",'2017-12-13',"sell","vehicles","cars");
 
+INSERT INTO StrategicLocation(name,clientsPerHour,weekendExtraCostPercent) VALUES
+("downtown",50,10);
 
+INSERT INTO StoreManager(userId) VALUES
+(1);
+
+INSERT INTO Store(addressId,locationName,userId) VALUES
+(3,"downtown",1);
+
+INSERT INTO Ad_Store(adId,storeId,dateOfRent,timeStart,timeEnd,includesDeliveryServices,billId) VALUES
+(1,1,'2017-11-17','09:00:00','20:00:00',0,1);
 
 
 

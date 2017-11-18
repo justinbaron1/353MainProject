@@ -212,8 +212,6 @@ CREATE TABLE Rating(
 	PRIMARY KEY (userId, adId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
-	# TODO CONTRAINT
-	# For a user to rate an ad, there must be at least one Transaction marked as purchasedInStore made by this BuyerSeller for this Ad.
 );
 
 CREATE TABLE Promotion(
@@ -258,7 +256,7 @@ CREATE TABLE Store (
 
 
 CREATE TABLE Ad_Store (
-	adId int AUTO_INCREMENT,
+	adId int,
 	storeId int NOT NULL,
 	dateOfRent date NOT NULL, 
 	timeStart time NOT NULL,
@@ -361,8 +359,19 @@ FOR EACH ROW
 	END$$
 DELIMITER ;
 
-
-
+DELIMITER $$
+DROP TRIGGER IF EXISTS adInStoreCheck$$
+CREATE TRIGGER adInStoreCheck
+BEFORE INSERT
+ON Transaction
+FOR EACH ROW
+BEGIN
+	IF NEW.adId NOT IN (SELECT adId FROM Ad_Store) THEN
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "The ad is not in store";
+	END IF;
+END$$
+DELIMITER ;
 
 
 
