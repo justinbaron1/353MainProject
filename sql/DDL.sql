@@ -98,8 +98,6 @@ CREATE TABLE BuyerSeller (
 	PRIMARY KEY (userId),
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
-	# TODO TRIGGER
-	# Upon change, a bill must be generated marking the membership plan change.
 	# Every month, a bill is generated according to the current membership.
 );
 
@@ -114,7 +112,6 @@ CREATE TABLE StoreManager (
 	PRIMARY KEY (userId),
 	FOREIGN KEY (userId) REFERENCES Users(userId)
 );
-
 
 
 CREATE TABLE PaymentMethod (
@@ -134,8 +131,6 @@ CREATE TABLE Bill (
 	paymentMethodId int NOT NULL,
 	PRIMARY KEY (billId),
 	FOREIGN KEY (paymentMethodId) REFERENCES PaymentMethod(paymentMethodId)
-	# TODO CONTRAINT
-	# The paymentMethod must not be expired.
 );
 
 
@@ -193,7 +188,6 @@ CREATE TABLE Transaction (
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
 	# TODO CONTRAINT
 	# For a transaction to be stored, the related ad must have at least 1 Ad_Store.
-
 );
 
 
@@ -308,6 +302,27 @@ BEGIN
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The month is not valid';
 		END IF;
    ELSEIF NEW.ExpiryYear<YEAR(CURRENT_DATE()) THEN
+   		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The year is not valid';
+   END IF; 
+END;$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS paymentMethodExpiredChecker$$
+CREATE TRIGGER paymentMethodExpiredChecker
+BEFORE INSERT 
+ON Bill
+FOR EACH ROW
+BEGIN
+	SET @month=(SELECT expiryMonth FROM PaymentMethod WHERE NEW.paymentMethodId=PaymentMethod.paymentMethodId);
+	SET @year=(SELECT expiryYear FROM PaymentMethod WHERE NEW.paymentMethodId=PaymentMethod.paymentMethodId);
+   IF (@month<1 OR @month.ExpiryMonth>12) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ExpiryMonth has to be between 1 and 12';
+   ELSEIF (@year=YEAR(CURRENT_DATE())) THEN
+   		IF @month<MONTH(CURRENT_DATE()) THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The month is not valid';
+		END IF;
+   ELSEIF @year<YEAR(CURRENT_DATE()) THEN
    		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The year is not valid';
    END IF; 
 END;$$
