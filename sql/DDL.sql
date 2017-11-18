@@ -98,7 +98,6 @@ CREATE TABLE BuyerSeller (
 	PRIMARY KEY (userId),
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
-		ON UPDATE CASCADE
 	# TODO TRIGGER
 	# Upon change, a bill must be generated marking the membership plan change.
 	# Every month, a bill is generated according to the current membership.
@@ -337,12 +336,12 @@ FOR EACH ROW
 			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
 			(CURRENT_TIMESTAMP(),
 			(SELECT monthlyPrice
-			 FROM MembershipPlan JOIN BuyerSeller
-			 ON BuyerSeller.membershipPlanName=MembershipPlan.name),
+			 FROM MembershipPlan
+			 WHERE NEW.membershipPlanName=MembershipPlan.name),
 			 "debit",
 			(SELECT paymentMethodId
-			 FROM PaymentMethod JOIN BuyerSeller
-			 ON PaymentMethod.userId=BuyerSeller.userId));
+			 FROM PaymentMethod
+			 WHERE PaymentMethod.userId=NEW.userId));
 		END IF;
 	END$$
 DELIMITER ;
