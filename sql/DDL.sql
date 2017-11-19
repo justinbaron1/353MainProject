@@ -5,7 +5,7 @@
 # Daniel-Anthony Romero - 27776861
 # Justin Baron - 40018436
 
-# SET GLOBAL event_scheduler = ON;
+SET GLOBAL event_scheduler = ON;
 
 
 SET foreign_key_checks=0;
@@ -351,7 +351,7 @@ FOR EACH ROW
 			(SELECT monthlyPrice
 			 FROM MembershipPlan
 			 WHERE NEW.membershipPlanName=MembershipPlan.name),
-			 "debit",
+			 "debit", -- TODO get correct type
 			(SELECT paymentMethodId
 			 FROM PaymentMethod
 			 WHERE PaymentMethod.userId=NEW.userId));
@@ -381,24 +381,19 @@ DELIMITER ;
 # FOR EACH ROW
 # BEGIN
 # 	IF NEW.membershipPlanName <> 'default' THEN
-# 		CREATE EVENT membershipBill
-# 		ON SCHEDULE EVERY 1 MINUTE
-# 		DO
-# 			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
-# 			(CURRENT_TIMESTAMP(),
-# 			(SELECT monthlyPrice
-# 			 FROM MembershipPlan
-# 			 WHERE NEW.membershipPlanName=MembershipPlan.name),
-# 			 "debit",
-# 			(SELECT paymentMethodId
-# 			 FROM PaymentMethod
-# 			 WHERE PaymentMethod.userId=NEW.userId));
+# 			
 # 	END IF;
 # END$$
 # DELIMITER ;
 			
-		
-	
+#DELIMITER $$
+#DROP EVENT IF EXISTS membershipBill$$
+#CREATE EVENT membershipBill
+#		ON SCHEDULE EVERY 1 MINUTE
+#		DO
+#			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
+#			(CURRENT_TIMESTAMP,5.99,'debit',4); $$
+#DELIMITER ;
 
 
 
