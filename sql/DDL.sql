@@ -92,7 +92,7 @@ CREATE TABLE Users (
 
 CREATE TABLE BuyerSeller (
 	userId int,
-	membershipPlanName varchar(255) NOT NULL,
+	membershipPlanName varchar(255) NOT NULL DEFAULT 'default',
 	contactEmail varchar(255) NOT NULL,
 	contactPhone varchar(255) NOT NULL,
 	PRIMARY KEY (userId),
@@ -373,6 +373,32 @@ BEGIN
 END$$
 DELIMITER ;
 
+# DELIMITER $$
+# DROP TRIGGER IF EXISTS generateMonthlyBill$$
+# CREATE TRIGGER generateMonthlyBill
+# AFTER INSERT
+# ON BuyerSeller
+# FOR EACH ROW
+# BEGIN
+# 	IF NEW.membershipPlanName <> 'default' THEN
+# 		CREATE EVENT membershipBill
+# 		ON SCHEDULE EVERY 1 MINUTE
+# 		DO
+# 			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
+# 			(CURRENT_TIMESTAMP(),
+# 			(SELECT monthlyPrice
+# 			 FROM MembershipPlan
+# 			 WHERE NEW.membershipPlanName=MembershipPlan.name),
+# 			 "debit",
+# 			(SELECT paymentMethodId
+# 			 FROM PaymentMethod
+# 			 WHERE PaymentMethod.userId=NEW.userId));
+# 	END IF;
+# END$$
+# DELIMITER ;
+			
+		
+	
 
 
 
