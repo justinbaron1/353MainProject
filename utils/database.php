@@ -1,6 +1,8 @@
 <?php
 
-function get_user($mysqli, $email, $password) {
+$mysqli = get_database();
+
+function get_user_by_credentials($mysqli, $email, $password) {
   $query = <<<SQL
 SELECT *
 FROM  Users
@@ -16,24 +18,27 @@ SQL;
   return $result;
 }
 
-// TODO(tomleb): Check for errors
 // TODO(tomleb): Encrypt password
-function create_account($mysqli, $first_name, $last_name, $phone, $email, $password , $address_id) {
+// TODO(tomleb): Better error handling
+function create_user($mysqli, $first_name, $last_name, $phone, $email, $password, $address_id) {
   $query = <<<SQL
-INSERT INTO Users VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO Users(firstName, lastName, phoneNumber, email, password, addressId) VALUES (?, ?, ?, ?, ?, ?)
 SQL;
-  // $stmt->bind_param($bind_type, $bind_param);
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("sssssi", $fist_name, $last_name, $phone, $email, $password, $address_id);
   $stmt->execute();
-  return $mysqli->errno;
+  return $mysqli->insert_id;
 }
 
+// TODO(tomleb): Better error handling
 function create_address($mysqli, $civic_number, $street, $postal_code, $city) {
   $query = <<<SQL
-INSERT INTO Address VALUES (?, ?, ?, ?);
+INSERT INTO Address (civicNumber, street, postalCode, city) VALUES (?, ?, ?, ?)
 SQL;
-  // $stmt->bind_param($bind_type, $bind_param);
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("ssss", $civic_number, $street, $postal_code, $city);
   $stmt->execute();
-  return $mysqli->errno;
+  return $mysqli->insert_id;
 }
 
 function search_ad_by_seller_name($mysqli, $name) {
