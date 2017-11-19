@@ -11,5 +11,6 @@
         <li><a href="#" class="slide-section">Buy</a></li>
         <li><a href="#" class="slide-section">Sell</a></li>
         <li><a href="#" class="slide-section">Profile</a></li>
+        <li><a href="logout.php" class="slide-section">Log out</a></li>
     </ul>
 </div>
