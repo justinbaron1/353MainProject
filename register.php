@@ -36,8 +36,9 @@ if ($_POST) {
     $address_id = create_address($mysqli, $civic_number, $street, $postal_code, $city);
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     $user_id = create_user($mysqli, $first_name, $last_name, $phone, $email, $hashed_password, $address_id);
-    if ($user_id) {
-      $_SESSION["user"] = $user_id;
+    $user = get_user_by_id($mysqli, $user_id);
+    if ($user) {
+      $_SESSION["user"] = $user;
     }
     header("Location: index.php");
     return;

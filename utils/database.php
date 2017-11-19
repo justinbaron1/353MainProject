@@ -10,6 +10,17 @@ $result = search_ad_by_province($mysqli, 'quebec');
 error_log(print_r($result, true));
  */
 
+
+function get_user_by_id($mysqli, $id) {
+  $query = <<<SQL
+SELECT *
+FROM  Users
+WHERE userId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $id);
+  return @$result[0];
+}
+
 function get_user_by_email($mysqli, $email) {
   $query = <<<SQL
 SELECT *
