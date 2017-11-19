@@ -1,15 +1,11 @@
 <?php
 
 /*
-$mysqli = get_database();
-// $result = search_ad_by_seller_name($mysqli, 'beck');
-// $result = search_ad_by_type($mysqli, 'sell');
-// $result = search_ad_by_category($mysqli, 'electroni');
-// $result = search_ad_by_city($mysqli, 'montreal');
-$result = search_ad_by_province($mysqli, 'quebec');
-error_log(print_r($result, true));
+ *
+ * For now we assume that every input passed in to any function in this file
+ * have been correctly validated and sanitized.
+ *
  */
-
 
 function get_user_by_id($mysqli, $id) {
   $query = <<<SQL
@@ -29,6 +25,61 @@ WHERE email = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "s", $email);
   return @$result[0];
+}
+
+function get_ad_by_id($mysqli, $ad_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+WHERE adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $ad_id);
+  return @$result[0];
+}
+
+function create_ad($mysqli, $user_id, $title, $price, $description, $end_date,
+                   $type, $category, $sub_category) {
+  $query = <<<SQL
+INSERT INTO Ad(sellerId,title,price,description,endDate,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("ssisssss", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category);
+  $stmt->execute();
+  return $mysqli->insert_id;
+}
+
+// TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
+// feature for the project..
+// TODO(tomleb): Make sure the user is either admin, or owner of the ad.
+function update_ad($mysqli, $ad_id, $user_id, $title, $price, $description, $startDate,
+                   $type, $category, $sub_category) {
+  $query = <<<SQL
+UPDATE Ad 
+SET sellerId = ?, 
+    title = ?, 
+    price = ?, 
+    description = ?,
+    endDate = ?,
+    type = ?,
+    category = ?,
+    subCategory = ?
+WHERE adId = ?
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("ssisssssi", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category, $ad_id);
+  $stmt->execute();
+  return $mysqli->affected_rows;
+}
+
+function delete_ad($mysqli, $ad_id) {
+  $query = <<<SQL
+DELETE FROM Ad
+WHERE adId = ?
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("i", $ad_id);
+  $stmt->execute();
+  return $mysqli->affected_rows;
 }
 
 // TODO(tomleb): Better error handling
