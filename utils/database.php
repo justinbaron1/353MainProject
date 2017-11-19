@@ -1,6 +1,14 @@
 <?php
 
+/*
 $mysqli = get_database();
+// $result = search_ad_by_seller_name($mysqli, 'beck');
+// $result = search_ad_by_type($mysqli, 'sell');
+// $result = search_ad_by_category($mysqli, 'electroni');
+// $result = search_ad_by_city($mysqli, 'montreal');
+$result = search_ad_by_province($mysqli, 'quebec');
+error_log(print_r($result, true));
+ */
 
 function get_user_by_credentials($mysqli, $email, $password) {
   $query = <<<SQL
@@ -46,18 +54,19 @@ function search_ad_by_seller_name($mysqli, $name) {
 SELECT *
 FROM Ad
 INNER JOIN Users ON Ad.sellerId = Users.userId
-WHERE name ILIKE '%?%'
+WHERE CONCAT(firstName, ' ', lastName) LIKE ?
 SQL;
-  return fetch_assoc_prepared($mysqli, $query, "s", $name);
+  $like_name = "%$name%";
+  return fetch_assoc_all_prepared($mysqli, $query, "s", $like_name);
 }
 
 function search_ad_by_type($mysqli, $type) {
   $query = <<<SQL
-SELECT adId, title, category, subCategory, type,
+SELECT adId, title, category, subCategory, type
 FROM Ad
 WHERE type = ?
 SQL;
-  return fetch_assoc_prepared($mysqli, $query, "s", $type);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", $type);
 }
 
 function search_ad_by_category($mysqli, $category) {
@@ -66,39 +75,43 @@ SELECT *
 FROM Ad
 WHERE category = ?
 SQL;
-  return fetch_assoc_prepared($mysqli, $query, "s", $category);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", $category);
 }
 
 function search_ad_by_city($mysqli, $city) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-INNER JOIN Users ON Ad.sellersId = Users.userId
-INNER JOIN Address ON Users.addressID = Address.addressID
+INNER JOIN Users ON Ad.sellerId = Users.userId
+INNER JOIN Address ON Users.addressId = Address.addressId
 WHERE city = ?
 SQL;
-  return fetch_assoc_prepared($mysqli, $query, "s", $city);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", $city);
 }
 
 function search_ad_by_province($mysqli, $province) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-INNER JOIN Users ON Ad.sellersId = Users.userId
-INNER JOIN Address ON Users.addressID = Address.addressID
-INNER JOIN City ON City.city = Users.city
+INNER JOIN Users ON Ad.sellerId = Users.userId
+INNER JOIN Address ON Users.addressId = Address.addressId
+INNER JOIN City ON City.city = Address.city
 WHERE province = ?
 SQL;
-  return fetch_assoc_prepared($myqli, $query, "s", $province);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", $province);
 }
 
 // Fetch assoc ALL THE THINGS
-function fetch_assoc_prepared($mysqli, $query, $bind_type, $bind_param) {
+function fetch_assoc_all_prepared($mysqli, $query, $bind_type, $bind_param) {
   $stmt = $mysqli->prepare($query);
+  if (!$stmt) {
+    error_log($mysqli->error);
+    return false;
+  }
   $stmt->bind_param($bind_type, $bind_param);
   $stmt->execute();
   $result = $stmt->get_result();
-  $result = $result->fetch_assoc();
+  $result = $result->fetch_all(MYSQLI_ASSOC);
   $stmt->close();
   return $result;
 }
@@ -121,6 +134,5 @@ function connect_database($hostname, $user, $password, $database) {
   }
   return $mysqli;
 }
-
 
 ?>
