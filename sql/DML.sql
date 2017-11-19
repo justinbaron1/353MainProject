@@ -15,9 +15,9 @@ INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 ("gold",14,15.99);
 
 INSERT INTO Users(firstName,lastName,phoneNumber,email,password,addressId) VALUES
-("john","beck","7362512121","john@hotmail.com","123567",3),
-("justin","baron","5147264522","justinbaron12345@hotmail.com","123456",1),
-("mikael","moscato","7265357777","mikmoscato@hotmail.com","654263",2);
+("john","beck","7362512121","john@hotmail.com","$2y$10$8yIi52XZMwCSu1XTG14ZeuEH54bsUEh5ysCtGxNx8DmpjBVVO3qCa",3), -- Password: 123567
+("justin","baron","5147264522","justinbaron12345@hotmail.com","$2y$10$oDrD5dTS6nwkS76wnj5NmOZPwepF2LgiNd9Rcu61Qn8biTH/Kk2fq",1), -- Password: 123456
+("mikael","moscato","7265357777","mikmoscato@hotmail.com","$2y$10$EECiyX.ONJaPUw4ZYS4XjOCq/45/xKj/27EbIEWSkCWKqiK8KGcAG",2); -- Password: 654263
 
 INSERT INTO BuyerSeller(userId,MembershipPlanName,contactEmail,contactPhone) VALUES
 (1,"premium","justin@hotmail.com","6662538787"),

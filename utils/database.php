@@ -10,23 +10,16 @@ $result = search_ad_by_province($mysqli, 'quebec');
 error_log(print_r($result, true));
  */
 
-function get_user_by_credentials($mysqli, $email, $password) {
+function get_user_by_email($mysqli, $email) {
   $query = <<<SQL
 SELECT *
 FROM  Users
 WHERE email = ?
-AND   password = ?
 SQL;
-  $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ss", $email, $password);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $result = $result->fetch_assoc();
-  $stmt->close();
-  return $result;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "s", $email);
+  return @$result[0];
 }
 
-// TODO(tomleb): Encrypt password
 // TODO(tomleb): Better error handling
 function create_user($mysqli, $first_name, $last_name, $phone, $email, $password, $address_id) {
   $query = <<<SQL
@@ -130,7 +123,7 @@ function get_database() {
 function connect_database($hostname, $user, $password, $database) {
   $mysqli = new mysqli($hostname, $user, $password, $database);
   if ($mysqli->connect_errno) {
-    echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+    error_log("Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error);
   }
   return $mysqli;
 }

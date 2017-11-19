@@ -34,7 +34,8 @@ if ($_POST) {
     // TODO(tomleb): Make transaction..
     $mysqli = get_database();
     $address_id = create_address($mysqli, $civic_number, $street, $postal_code, $city);
-    $user_id = create_user($mysqli, $first_name, $last_name, $phone, $email, $password, $address_id);
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    $user_id = create_user($mysqli, $first_name, $last_name, $phone, $email, $hashed_password, $address_id);
     if ($user_id) {
       $_SESSION["user"] = $user_id;
     }
