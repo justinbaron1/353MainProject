@@ -7,6 +7,33 @@
  *
  */
 
+function get_all_city($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM  City
+SQL;
+  $stmt = $mysqli->prepare($query);
+  if (!$stmt) {
+    error_log($mysqli->error);
+    return false;
+  }
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $result = $result->fetch_all(MYSQLI_ASSOC);
+  $stmt->close();
+  return $result;
+}
+
+function get_city_by_name($mysqli, $city) {
+  $query = <<<SQL
+SELECT *
+FROM  City
+WHERE city LIKE ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "s", $city);
+  return @$result[0];
+}
+
 function get_user_by_id($mysqli, $id) {
   $query = <<<SQL
 SELECT *
