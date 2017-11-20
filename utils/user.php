@@ -2,6 +2,10 @@
 
 include_once("database.php");
 
+function redirect_index() {
+  header("Location: index.php");
+}
+
 function user_try_login($email, $password) {
   $mysqli = get_database();
   $user = get_user_by_email($mysqli, $email, $password);
