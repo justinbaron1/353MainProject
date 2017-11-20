@@ -62,8 +62,5 @@ INSERT INTO Ad_Store(adId,storeId,dateOfRent,timeStart,timeEnd,includesDeliveryS
 (1,1,'2017-11-17','09:00:00','20:00:00',0,1);
 
 
-
-
-
-
-
+INSERT INTO Transaction(billId,adId) VALUES
+(1,1);
