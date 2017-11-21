@@ -45,7 +45,7 @@ if ($_POST) {
     if ($user) {
       $_SESSION["user"] = $user;
     }
-    header("Location: index.php");
+    redirect_index();
     return;
   }
 

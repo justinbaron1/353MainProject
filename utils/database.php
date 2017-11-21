@@ -7,6 +7,38 @@
  *
  */
 
+function get_user_ads($mysqli, $user_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+WHERE sellerId = ?
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+}
+
+function get_user_transactions($mysqli, $user_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+INNER JOIN Transaction ON Transaction.adId = Ad.adId
+INNER JOIN Bill ON Bill.billId = Transaction.billId
+INNER JOIN PaymentMethod ON PaymentMethod.paymentMethodId = Bill.paymentMethodId
+WHERE userId = ?
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+}
+
+function get_transaction_by_ad_and_user($mysqli, $ad_id, $user_id) {
+  $query = <<<SQL
+SELECT *
+FROM Transaction
+INNER JOIN Bill ON Transaction.billId = Bill.billId
+INNER JOIN PaymentMethod ON Bill.paymentMethodId = PaymentMethod.paymentMethodId
+WHERE adId = ? AND userId = ?
+SQL;
+  return fetch_assoc_all_prepared_bi($mysqli, $query, "ii", $ad_id, $user_id);
+}
+
 function get_all_city($mysqli) {
   $query = <<<SQL
 SELECT *
@@ -81,10 +113,10 @@ SQL;
 function update_ad($mysqli, $ad_id, $user_id, $title, $price, $description, $startDate,
                    $type, $category, $sub_category) {
   $query = <<<SQL
-UPDATE Ad 
-SET sellerId = ?, 
-    title = ?, 
-    price = ?, 
+UPDATE Ad
+SET sellerId = ?,
+    title = ?,
+    price = ?,
     description = ?,
     endDate = ?,
     type = ?,
@@ -191,6 +223,21 @@ function fetch_assoc_all_prepared($mysqli, $query, $bind_type, $bind_param) {
     return false;
   }
   $stmt->bind_param($bind_type, $bind_param);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $result = $result->fetch_all(MYSQLI_ASSOC);
+  $stmt->close();
+  return $result;
+}
+
+// Too lazy to abstract this
+function fetch_assoc_all_prepared_bi($mysqli, $query, $bind_type, $bind_param1, $bind_param2) {
+  $stmt = $mysqli->prepare($query);
+  if (!$stmt) {
+    error_log($mysqli->error);
+    return false;
+  }
+  $stmt->bind_param($bind_type, $bind_param1, $bind_param2);
   $stmt->execute();
   $result = $stmt->get_result();
   $result = $result->fetch_all(MYSQLI_ASSOC);

@@ -67,8 +67,5 @@ INSERT INTO Promotion(duration,price) VALUES
 INSERT INTO AdPromotion(adId,duration,startDate) VALUES
 (1,7,CURRENT_TIMESTAMP)
 
-
-
-
-
-
+INSERT INTO Transaction(billId,adId) VALUES
+(1,1);
