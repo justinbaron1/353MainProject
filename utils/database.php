@@ -7,6 +7,23 @@
  *
  */
 
+// TODO(tomleb): Better error handling
+// INFO: We allow rating only if the current rating is NULL..
+// This check could be done in the database as well
+function rate_ad($mysqli, $user_id, $ad_id, $rating) {
+  $query = <<<SQL
+UPDATE Rating
+SET rating = ?
+WHERE userId = ?
+AND   adId = ?
+AND   rating IS NULL
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("iii", $rating, $user_id, $ad_id);
+  $stmt->execute();
+  return $mysqli->affected_rows;
+}
+
 function get_user_ads($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
@@ -23,9 +40,11 @@ FROM Ad
 INNER JOIN Transaction ON Transaction.adId = Ad.adId
 INNER JOIN Bill ON Bill.billId = Transaction.billId
 INNER JOIN PaymentMethod ON PaymentMethod.paymentMethodId = Bill.paymentMethodId
-WHERE userId = ?
+LEFT JOIN Rating ON Rating.adId = Ad.adId
+WHERE Rating.userId = ? AND
+      PaymentMethod.userId = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  return fetch_assoc_all_prepared_bi($mysqli, $query, "ii", $user_id, $user_id);
 }
 
 function get_transaction_by_ad_and_user($mysqli, $ad_id, $user_id) {
