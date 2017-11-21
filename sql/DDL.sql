@@ -98,7 +98,6 @@ CREATE TABLE BuyerSeller (
 	PRIMARY KEY (userId),
 	FOREIGN KEY (userId) REFERENCES Users(userId),
 	FOREIGN KEY (membershipPlanName) REFERENCES MembershipPlan(name)
-	# Every month, a bill is generated according to the current membership.
 );
 
 CREATE TABLE Admin (
@@ -228,8 +227,6 @@ CREATE TABLE AdPromotion(
 	FOREIGN KEY (duration) REFERENCES Promotion(duration),
 	FOREIGN KEY (billId) REFERENCES Bill(billId),
 	UNIQUE(billId)
-	# TODO CONTRAINTS
-	# An ad promotion cannot be updated.
 );
 
 CREATE TABLE StrategicLocation (
@@ -260,7 +257,7 @@ CREATE TABLE Ad_Store (
 	timeStart time NOT NULL,
 	timeEnd time NOT NULL,
 	includesDeliveryServices boolean NOT NULL DEFAULT 0,
-	billId int NOT NULL,
+	billId int,
 	PRIMARY KEY (adId, storeId, dateOfRent),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
 	FOREIGN KEY (storeId) REFERENCES Store(storeId),
@@ -279,7 +276,7 @@ CREATE TABLE PaymentExtra (
 );
 
 CREATE TABLE StorePrices(
-	momentOfWeek int,
+	momentOfWeek varchar(255),
 	hourlyPrice decimal(15,2) NOT NULL,
 	PRIMARY KEY (momentOfWeek)
 );
@@ -404,7 +401,35 @@ ON AdPromotion
 FOR EACH ROW
 BEGIN
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
-	VALUES(CURRENT_TIMESTAMP,NEW.duration,"AdPromotion",
+	VALUES(CURRENT_TIMESTAMP,
+		(SELECT price
+		FROM Promotion JOIN AdPromotion ON Promotion.duration=NEW.duration),
+		"AdPromotion",
+		(SELECT paymentMethodId
+		 FROM Ad 
+		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
+		 JOIN PaymentMethod ON BuyerSeller.userId=PaymentMethod.userId
+		 WHERE Ad.adId=NEW.adId));
+	SET NEW.billId = LAST_INSERT_ID();
+END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS generateBillForAdStore$$
+CREATE TRIGGER generateBillForAdStore
+BEFORE INSERT
+ON Ad_Store
+FOR EACH ROW
+BEGIN
+	SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+	IF WEEKDAY(NEW.dateOfRent) THEN
+		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+	END IF;
+
+	SET @finalPrice = (SELECT HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd)) * @hourlyPrice);
+	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
+	VALUES(CURRENT_TIMESTAMP,@finalPrice,
+		"AdPromotion",
 		(SELECT paymentMethodId
 		 FROM Ad 
 		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
@@ -415,20 +440,6 @@ END$$
 DELIMITER ;
 
 
-# DELIMITER $$
-# DROP TRIGGER IF EXISTS updateAdPromotionBillId$$
-# CREATE TRIGGER updateAdPromotionBillId
-# AFTER INSERT
-# ON Bill
-# FOR EACH ROW
-# BEGIN
-# 	IF NEW.type='AdPromotion' THEN
-# 		UPDATE AdPromotion
-# 		SET AdPromotion.billId=NEW.billId
-# 		WHERE AdPromotion.adId=NEW.adId;
-# 	END IF;
-# END; $$
-# DELIMITER ;
 
 
 
