@@ -186,8 +186,6 @@ CREATE TABLE Transaction (
 	PRIMARY KEY (billId),
 	FOREIGN KEY (billId) REFERENCES Bill(billId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
-	# TODO CONTRAINT
-	# For a transaction to be stored, the related ad must have at least 1 Ad_Store.
 );
 
 
@@ -223,8 +221,8 @@ CREATE TABLE Promotion(
 CREATE TABLE AdPromotion(
 	adId int,
 	duration int,
-	startDate date,
-	billId int NOT NULL,
+	startDate TIMESTAMP,
+	billId int,
 	PRIMARY KEY (adId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
 	FOREIGN KEY (duration) REFERENCES Promotion(duration),
@@ -351,7 +349,7 @@ FOR EACH ROW
 			(SELECT monthlyPrice
 			 FROM MembershipPlan
 			 WHERE NEW.membershipPlanName=MembershipPlan.name),
-			 "debit", -- TODO get correct type
+			 "membership",
 			(SELECT paymentMethodId
 			 FROM PaymentMethod
 			 WHERE PaymentMethod.userId=NEW.userId));
@@ -373,31 +371,64 @@ BEGIN
 END$$
 DELIMITER ;
 
+			
+DELIMITER $$
+DROP EVENT IF EXISTS membershipBill$$
+CREATE EVENT membershipBill
+ON SCHEDULE EVERY 1 MINUTE
+DO
+	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
+	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",PaymentMethod.paymentMethodId
+	FROM BuyerSeller
+	JOIN MembershipPlan ON (BuyerSeller.membershipPlanName=MembershipPlan.name AND MembershipPlan.name<>'default')
+	JOIN PaymentMethod ON PaymentMethod.userId=BuyerSeller.userId);$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS preventAdPromotionUpdate$$
+CREATE TRIGGER preventAdPromotionUpdate
+BEFORE UPDATE
+ON AdPromotion
+FOR EACH ROW
+BEGIN
+	SIGNAL SQLSTATE '45000'
+	SET MESSAGE_TEXT = "adPromotions cannot be updated";
+END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS generateBillForPromotion$$
+CREATE TRIGGER generateBillForPromotion
+BEFORE INSERT
+ON AdPromotion
+FOR EACH ROW
+BEGIN
+	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
+	VALUES(CURRENT_TIMESTAMP,NEW.duration,"AdPromotion",
+		(SELECT paymentMethodId
+		 FROM Ad 
+		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
+		 JOIN PaymentMethod ON BuyerSeller.userId=PaymentMethod.userId
+		 WHERE Ad.adId=NEW.adId));
+	SET NEW.billId = LAST_INSERT_ID();
+END$$
+DELIMITER ;
+
+
 # DELIMITER $$
-# DROP TRIGGER IF EXISTS generateMonthlyBill$$
-# CREATE TRIGGER generateMonthlyBill
+# DROP TRIGGER IF EXISTS updateAdPromotionBillId$$
+# CREATE TRIGGER updateAdPromotionBillId
 # AFTER INSERT
-# ON BuyerSeller
+# ON Bill
 # FOR EACH ROW
 # BEGIN
-# 	IF NEW.membershipPlanName <> 'default' THEN
-# 			
+# 	IF NEW.type='AdPromotion' THEN
+# 		UPDATE AdPromotion
+# 		SET AdPromotion.billId=NEW.billId
+# 		WHERE AdPromotion.adId=NEW.adId;
 # 	END IF;
-# END$$
+# END; $$
 # DELIMITER ;
-			
-#DELIMITER $$
-#DROP EVENT IF EXISTS membershipBill$$
-#CREATE EVENT membershipBill
-#		ON SCHEDULE EVERY 1 MINUTE
-#		DO
-#			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
-#			(CURRENT_TIMESTAMP,5.99,'debit',4); $$
-#DELIMITER ;
-
-
-
-
 
 
 

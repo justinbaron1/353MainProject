@@ -28,8 +28,8 @@ INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 (6,2020,2);
 
 INSERT INTO Bill(amount,type,paymentMethodId) VALUES
-(20.99,"debit",1),
-(15.99,"credit",2);
+(20.99,"membership",1),
+(15.99,"membership",2);
 
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
 (2,222333444,123);
@@ -59,8 +59,13 @@ INSERT INTO Store(addressId,locationName,userId) VALUES
 (3,"downtown",1);
 
 INSERT INTO Ad_Store(adId,storeId,dateOfRent,timeStart,timeEnd,includesDeliveryServices,billId) VALUES
-(1,1,'2017-11-17','09:00:00','20:00:00',0,1);
+(1,1,'2017-11-17','09:00:00','20:00:00',0,2);
 
+INSERT INTO Promotion(duration,price) VALUES
+(7,12.99),(14,16.99);
+
+INSERT INTO AdPromotion(adId,duration,startDate) VALUES
+(1,7,CURRENT_TIMESTAMP)
 
 
 
