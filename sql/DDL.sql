@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS PaymentMethod;
 DROP TABLE IF EXISTS StoreManager;
 DROP TABLE IF EXISTS Admin;
 DROP TABLE IF EXISTS BuyerSeller;
+DROP TABLE IF EXISTS paymentProcessingDepartment;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS MembershipPlan;
 DROP TABLE IF EXISTS Address;
@@ -83,12 +84,14 @@ CREATE TABLE Users (
 	UNIQUE(email)
 );
 
-# CREATE TABLE paymentProcessingDepartment(
-#	userId
-#	amount
-#	card Details
-#	date_of_payment
-# );
+CREATE TABLE paymentProcessingDepartment(
+	billId int NOT NULL,
+	dateOfPayment TIMESTAMP NOT NULL,
+	amount decimal(15,2) NOT NULL,
+	type varchar(255) NOT NULL,
+	paymentMethodId int NOT NULL,
+	PRIMARY KEY (billId)
+);
 
 CREATE TABLE BuyerSeller (
 	userId int,
@@ -375,9 +378,9 @@ CREATE EVENT membershipBill
 ON SCHEDULE EVERY 1 MINUTE
 DO
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
-	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",PaymentMethod.paymentMethodId
+	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
 	FROM BuyerSeller
-	JOIN MembershipPlan ON (BuyerSeller.membershipPlanName=MembershipPlan.name AND MembershipPlan.name<>'default')
+	JOIN MembershipPlan ON BuyerSeller.membershipPlanName=MembershipPlan.name AND MembershipPlan.name<>"normal"
 	JOIN PaymentMethod ON PaymentMethod.userId=BuyerSeller.userId);$$
 DELIMITER ;
 
@@ -402,8 +405,7 @@ FOR EACH ROW
 BEGIN
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,
-		(SELECT price
-		FROM Promotion JOIN AdPromotion ON Promotion.duration=NEW.duration),
+		(SELECT price FROM Promotion WHERE Promotion.duration=NEW.duration),
 		"AdPromotion",
 		(SELECT paymentMethodId
 		 FROM Ad 
@@ -422,14 +424,13 @@ ON Ad_Store
 FOR EACH ROW
 BEGIN
 	SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-	IF WEEKDAY(NEW.dateOfRent) THEN
+	IF (WEEKDAY(NEW.dateOfRent)<=5) THEN
 		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
 	END IF;
-
-	SET @finalPrice = (SELECT HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd)) * @hourlyPrice);
+	SET @finalPrice = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,@finalPrice,
-		"AdPromotion",
+		"AdStore",
 		(SELECT paymentMethodId
 		 FROM Ad 
 		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
@@ -439,6 +440,23 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS generateBackup$$
+CREATE PROCEDURE generateBackup()
+BEGIN
+	DROP TABLE paymentProcessingDepartment;
+	CREATE TABLE paymentProcessingDepartment AS (SELECT * FROM Bill);
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+DROP EVENT IF EXISTS monthlyBackup$$
+CREATE EVENT monthlyBackup
+ON SCHEDULE EVERY 1 MINUTE
+DO
+	CALL generateBackup(); $$
+DELIMITER ;
 
 
 

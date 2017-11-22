@@ -42,7 +42,8 @@ INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 
 INSERT INTO Bill(amount,type,paymentMethodId) VALUES
 (20.99,"membership",1),
-(15.99,"membership",2);
+(15.99,"membership",3);
+
 
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
 (2,222333444,123);
@@ -97,7 +98,7 @@ INSERT INTO Store(addressId,locationName,userId) VALUES
 (6,"sl2",1),
 (7,"sl1",1);
 
-INSERT INTO PaymentExtra(cartType,extraPercent) VALUES
+INSERT INTO PaymentExtra(cardType,extraPercent) VALUES
 ("debit",1),
 ("credit",3);
 
@@ -118,9 +119,16 @@ INSERT INTO AdPromotion(adId,duration,startDate) VALUES
 (1,7,CURRENT_TIMESTAMP);
 
 INSERT INTO Transaction(billId,adId) VALUES
-(1,1);
+(1,1),
+(5,4);
 
+UPDATE Rating
+SET rating=5
+WHERE userId=2 AND adId=1;
 
+UPDATE Rating
+SET rating=3
+WHERE userId=2 AND adId=4;
 
 
 
