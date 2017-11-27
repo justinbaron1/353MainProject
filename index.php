@@ -21,6 +21,9 @@ if ($_POST && isset($_POST["email"]) && isset($_POST["password"])) {
 <html>
     <head>
         <?php include_once("common/head.php") ?>
+        <style>
+            <?php include 'CSS/login.css'; ?>
+        </style>
     </head>
     <body>
         <?php include("common/navbar.php") ?>
