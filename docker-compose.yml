@@ -1,10 +1,17 @@
 version: '2'
 services:
   comp353_httpd:
-    image: php:5.5-apache
+    build:
+      context: .
     container_name: "comp353_httpd"
     ports:
       - "8080:80"
     volumes:
-      - "./server/:/var/www/html/"
+      - "./:/var/www/html/"
 
+  comp353_mysql:
+    image: mysql:5.6
+    container_name: "comp353_mysql"
+    volumes:
+      - "./sql:/docker-entrypoint-initdb.d/"
+    env_file: "./sikrits.env"
