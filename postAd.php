@@ -67,7 +67,6 @@ function test_input($data) {
               <select name="promotionPackage">
 
               <?php
-              $promotions = [7, 14, 30];
               foreach ($promotions as $duration) {
               ?>
               <option value="<?= $duration ?>"><?= $duration ?> Days Promotion</option>
