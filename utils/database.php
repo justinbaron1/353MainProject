@@ -7,6 +7,15 @@
  *
  */
 
+
+ function get_all_membership_plans($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM membershiplan
+SQL;
+    return fetch_assoc_all_prepared_bi($mysqli, $query);
+ }
+
 // TODO(tomleb): Better error handling
 // INFO: We allow rating only if the current rating is NULL..
 // This check could be done in the database as well
