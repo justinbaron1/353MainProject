@@ -1,10 +1,11 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+    <?php include_once("common/head.php") ?>
 </head>
 <body>
 
-<?php
+<?php include("common/navbar.php")
 // define variables and set to empty values
 $rating = $description = "";
 
@@ -21,15 +22,20 @@ function test_input($data) {
 }
 ?>
 
-<h2>PHP Form Validation Example</h2>
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-  Rating:   <input type="range" min="1" max="5" value="5">
-  <br><br>
-  Description: <textarea name="description" rows="5" cols="40"></textarea>
-  <br><br>
-  <input type="submit" name="submit" value="Submit">
-</form>
-
+<div class="container background">
+    <div class="row">
+        <div class="col-md-offset-4 col-md-4">
+            <h2>Rate Transaction</h2>
+            <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+              Rating:   <input type="range" min="1" max="5" value="5">
+              <br><br>
+              Description: <textarea name="description" rows="5" cols="40"></textarea>
+              <br><br>
+              <input type="submit" name="submit" value="Submit">
+            </form>
+        </div>
+    </div>
+</div>
 <?php
 echo $rating;
 echo $description;
