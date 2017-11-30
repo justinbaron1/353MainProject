@@ -1,3 +1,19 @@
+<?php
+
+session_start();
+include_once("utils/user.php");
+$error = false;
+
+if ($_POST && isset($_POST["email"]) && isset($_POST["password"])) {
+
+  $valid = user_try_login($_POST["email"], $_POST["password"]);
+  if (!$valid) {
+    $error = 'Unable to login. Please make sure ...';
+  }
+
+}
+?>
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -76,7 +92,7 @@ function test_input($data) {
               <br><br>
               Description: <textarea name="description" rows="5" cols="40"></textarea>
               <br><br>
-              <form action="upload.php" method="post" enctype="multipart/form-data">     <!-- Modify action -->
+              <form action="uploadImage.php" method="post" enctype="multipart/form-data">     <!-- Modify action -->
                   Select image to upload:
                   <input type="file" name="imageToUpload" id="imageToUpload">
                   <input type="submit" value="Upload Image" name="submit">
