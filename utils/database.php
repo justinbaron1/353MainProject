@@ -33,6 +33,14 @@ SQL;
   return $mysqli->affected_rows;
 }
 
+function get_promotions($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM Promotion
+SQL;
+  return fetch_assoc($mysqli, $query);
+}
+
 function get_user_ads($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
@@ -242,6 +250,35 @@ WHERE province = ?
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "s", $province);
 }
+
+function get_categories_and_subcategories($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM SubCategory
+SQL;
+  $cats = fetch_assoc($mysqli, $query);
+  $result = [];
+  foreach ($cats as $cat) {
+    $result[$cat['category']][] = $cat['subCategory'];
+  }
+  return $result;
+}
+
+// TODO(tomleb): Refactor this shit
+// Fetch assoc ALL THE THINGS
+function fetch_assoc($mysqli, $query) {
+  $stmt = $mysqli->prepare($query);
+  if (!$stmt) {
+    error_log($mysqli->error);
+    return false;
+  }
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $result = $result->fetch_all(MYSQLI_ASSOC);
+  $stmt->close();
+  return $result;
+}
+
 
 // Fetch assoc ALL THE THINGS
 function fetch_assoc_all_prepared($mysqli, $query, $bind_type, $bind_param) {

@@ -30,4 +30,8 @@ function is_valid_city($mysqli, $city) {
   return !empty($result);
 }
 
+function is_valid_rating($rating) {
+  return $rating >= 0 && $rating <= 5;
+}
+
 ?>
