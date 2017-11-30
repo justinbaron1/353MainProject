@@ -7,13 +7,46 @@
  *
  */
 
+function change_membership($mysqli, $user_id, $name){
+  $query = <<<SQL
+  UPDATE BuyerSeller
+  SET membershipPlanName = ?
+  WHERE userId = ?
+SQL;
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("si", $name, $user_id);
+    $stmt->execute();
+    return $mysqli->affected_rows;
+}
 
+ function is_admin($mysqli, $user_id){
+    $query = <<<SQL
+  SELECT *
+  FROM admin
+  WHERE userId = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  return  !empty($results);
+ }
+
+function get_buyerseller_info($mysqli, $user_id){
+  $query = <<<SQL
+SELECT *
+FROM buyerseller
+WHERE userId = ?
+SQL;
+
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  return @$result[0];
+}
+ 
+//
  function get_all_membership_plans($mysqli) {
   $query = <<<SQL
 SELECT *
-FROM membershiplan
+FROM membershipplan
 SQL;
-    return fetch_assoc_all_prepared_bi($mysqli, $query);
+    return fetch_assoc($mysqli, $query);
  }
 
 // TODO(tomleb): Better error handling
