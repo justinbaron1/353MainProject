@@ -343,7 +343,7 @@ AFTER UPDATE
 ON BuyerSeller
 FOR EACH ROW
 	BEGIN
-		IF NEW.membershipPlanName <> OLD.membershipPlanName THEN
+		IF (NEW.membershipPlanName <> OLD.membershipPlanName AND NEW.membershipPlanName<>"normal") THEN
 			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
 			(CURRENT_TIMESTAMP(),
 			(SELECT monthlyPrice
@@ -353,6 +353,21 @@ FOR EACH ROW
 			(SELECT paymentMethodId
 			 FROM PaymentMethod
 			 WHERE PaymentMethod.userId=NEW.userId));
+		END IF;
+	END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS userHasPaymentMethodCheck$$
+CREATE TRIGGER userHasPaymentMethodCheck
+BEFORE UPDATE
+ON BuyerSeller
+FOR EACH ROW
+	BEGIN
+		IF ((SELECT COUNT(*) FROM PaymentMethod WHERE PaymentMethod.userId=OLD.userId)=0
+			AND NEW.membershipPlanName<>"normal") THEN
+			SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "The user does not have a payment method. Can't update the membership plan";
 		END IF;
 	END$$
 DELIMITER ;
@@ -423,11 +438,21 @@ BEFORE INSERT
 ON Ad_Store
 FOR EACH ROW
 BEGIN
-	SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+	SET @weekendExtraCostPercent=1;
 	IF (WEEKDAY(NEW.dateOfRent)<=5) THEN
+		BEGIN
 		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+		END;
+	ELSE
+		BEGIN
+		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+		SET @weekendExtraCostPercent = (SELECT weekendExtraCostPercent FROM StrategicLocation
+									JOIN Store ON StrategicLocation.name=Store.locationName
+									WHERE NEW.storeId = Store.storeId);
+		END;
 	END IF;
-	SET @finalPrice = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
+	SET @price = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
+	SET @finalPrice = @price + (@price*@weekendExtraCostPercent/100);
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,@finalPrice,
 		"AdStore",
