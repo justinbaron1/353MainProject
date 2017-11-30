@@ -1,0 +1,17 @@
+body {
+    background: #16191b !important;
+}
+
+.wrapper {
+    text-align: center;
+}
+
+.success_message {
+    font-size: 2em;
+    color: white;
+}
+
+.backup_button {
+    height: 5%;
+    width: 15%;
+}
