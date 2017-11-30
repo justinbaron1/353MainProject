@@ -17,7 +17,7 @@
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><?= $user["firstName"]." ".$user["lastName"] ?><span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li><a href="/profile"><span class="glyphicon glyphicon-user"></span> Profile</a><li>
-                <li><a href="/TODO"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
+                <li><a href="/change-membership"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
                 <li><a href="/TODO"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
                 <li><a href="/TODO"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
 
