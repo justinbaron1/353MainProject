@@ -2,16 +2,7 @@
 
 session_start();
 include_once("utils/user.php");
-$error = false;
 
-if ($_POST && isset($_POST["email"]) && isset($_POST["password"])) {
-
-  $valid = user_try_login($_POST["email"], $_POST["password"]);
-  if (!$valid) {
-    $error = 'Unable to login. Please make sure ...';
-  }
-
-}
 ?>
 
 <!DOCTYPE HTML>
