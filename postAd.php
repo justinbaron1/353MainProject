@@ -8,6 +8,22 @@
 <?php  include("common/navbar.php")
 // define variables and set to empty values
 $title = $subCategory = $imageToUpload = $description = $promotionPackage = "";
+$promotions = [7, 14, 30];
+$categories = array(
+  'Buy and Sell' => array(
+    'clothing','books','electronics','musicalInstruments'
+  ),
+  'Services' => array(
+    'tutors','eventPlanners','photographers','personalTrainers'
+  ),
+  'Rent' => array(
+    'electronics','car','apartments','weddingDresses'
+  ),
+  'Category4' => array(
+    'subCategory1','subCategory2','subCategory3','subCategory4'
+  )
+);
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $title = test_input($_POST["title"]);
@@ -33,38 +49,30 @@ function test_input($data) {
               <br><br>
               Category:
               <select name="subCategory">
-                <optgroup label="Buy and Sell">
-                  <option value="clothing">Clothing</option>
-                  <option value="books">Books</option>
-                  <option value="electronics">Electronics</option>
-                  <option value="musicalInstruments">Musical Instruments</option>
-                </optgroup>
-                <optgroup label="Services">
-                  <option value="tutors">Tutors</option>
-                  <option value="eventPlanners">Event Planners</option>
-                  <option value="photographers">Photographers</option>
-                  <option value="personalTrainers">PersonalTrainers</option>
-                </optgroup>
-                <optgroup label="Rent">
-                  <option value="electronics">Electronics</option>
-                  <option value="car">Car</option>
-                  <option value="apartments">Apartments</option>
-                  <option value="weddingDresses">Wedding Dresses</option>
-                </optgroup>
-                <optgroup label="Category4">
-                  <option value="subCategory1">subCategory1</option>
-                  <option value="subCategory2">subCategory2</option>
-                  <option value="subCategory3">subCategory3</option>
-                  <option value="subCategory4">subCategory4</option>
-                </optgroup>
+                <?php
+                foreach ($categories as $category => $subcategories){ ?>
+                  <optgroup label="<?= $category ?>">
+                    <? foreach ($subcategories as subcategory){ ?>
+                      <option value="<?= $subcategories ?>"><?= $subcategory ?> </option>
+
+                    <?php }
+
+                } ?>
+
+                  </optgroup>
               </select>
 
               <br><br>
               PromotionPackage:
               <select name="promotionPackage">
-                <option value="7Days">7 Days Promotion!</option>
-                <option value="14Days">14 Days Promotion</option>
-                <option value="30Days">30 Days Promotion</option>
+
+              <?php
+              $promotions = [7, 14, 30];
+              foreach ($promotions as $duration) {
+              ?>
+              <option value="<?= $duration ?>"><?= $duration ?> Days Promotion</option>
+              <?php } ?>
+
               </select>
               <br><br>
               Description: <textarea name="description" rows="5" cols="40"></textarea>
