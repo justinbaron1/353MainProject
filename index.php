@@ -3,6 +3,7 @@
 session_start();
 
 include_once("utils/user.php");
+include_once("utils/database.php");
 
 $error = false;
 
@@ -21,9 +22,7 @@ if ($_POST && isset($_POST["email"]) && isset($_POST["password"])) {
 <html>
     <head>
         <?php include_once("common/head.php") ?>
-        <style>
-            <?php include 'CSS/login.css'; ?>
-        </style>
+        <link src="css/login.css" rel="stylesheet" type="text/css">
     </head>
     <body>
         <?php include("common/navbar.php") ?>
