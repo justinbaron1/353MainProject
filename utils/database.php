@@ -7,6 +7,48 @@
  *
  */
 
+function change_membership($mysqli, $user_id, $name){
+  $query = <<<SQL
+  UPDATE BuyerSeller
+  SET membershipPlanName = ?
+  WHERE userId = ?
+SQL;
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("si", $name, $user_id);
+    $stmt->execute();
+    return $mysqli->affected_rows;
+}
+
+ function is_admin($mysqli, $user_id){
+    $query = <<<SQL
+  SELECT *
+  FROM admin
+  WHERE userId = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  return  !empty($results);
+ }
+
+function get_buyerseller_info($mysqli, $user_id){
+  $query = <<<SQL
+SELECT *
+FROM buyerseller
+WHERE userId = ?
+SQL;
+
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  return @$result[0];
+}
+ 
+//
+ function get_all_membership_plans($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM membershipplan
+SQL;
+    return fetch_assoc($mysqli, $query);
+ }
+
 // TODO(tomleb): Better error handling
 // INFO: We allow rating only if the current rating is NULL..
 // This check could be done in the database as well
@@ -24,13 +66,21 @@ SQL;
   return $mysqli->affected_rows;
 }
 
+function get_promotions($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM Promotion
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query);
+}
+
 function get_user_ads($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
 WHERE sellerId = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
 }
 
 function get_user_transactions($mysqli, $user_id) {
@@ -44,7 +94,7 @@ LEFT JOIN Rating ON Rating.adId = Ad.adId
 WHERE Rating.userId = ? AND
       PaymentMethod.userId = ?
 SQL;
-  return fetch_assoc_all_prepared_bi($mysqli, $query, "ii", $user_id, $user_id);
+  return fetch_assoc_all_prepared($mysqli, $query, "ii", [$user_id, $user_id]);
 }
 
 function get_transaction_by_ad_and_user($mysqli, $ad_id, $user_id) {
@@ -55,7 +105,7 @@ INNER JOIN Bill ON Transaction.billId = Bill.billId
 INNER JOIN PaymentMethod ON Bill.paymentMethodId = PaymentMethod.paymentMethodId
 WHERE adId = ? AND userId = ?
 SQL;
-  return fetch_assoc_all_prepared_bi($mysqli, $query, "ii", $ad_id, $user_id);
+  return fetch_assoc_all_prepared($mysqli, $query, "ii", [$ad_id, $user_id]);
 }
 
 function get_all_city($mysqli) {
@@ -81,7 +131,7 @@ SELECT *
 FROM  City
 WHERE city LIKE ?
 SQL;
-  $result = fetch_assoc_all_prepared($mysqli, $query, "s", $city);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "s", [$city]);
   return @$result[0];
 }
 
@@ -91,7 +141,7 @@ SELECT *
 FROM  Users
 WHERE userId = ?
 SQL;
-  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $id);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$id]);
   return @$result[0];
 }
 
@@ -101,7 +151,7 @@ SELECT *
 FROM  Users
 WHERE email = ?
 SQL;
-  $result = fetch_assoc_all_prepared($mysqli, $query, "s", $email);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "s", [$email]);
   return @$result[0];
 }
 
@@ -111,7 +161,7 @@ SELECT *
 FROM Ad
 WHERE adId = ?
 SQL;
-  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $ad_id);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   return @$result[0];
 }
 
@@ -190,7 +240,7 @@ INNER JOIN Users ON Ad.sellerId = Users.userId
 WHERE CONCAT(firstName, ' ', lastName) LIKE ?
 SQL;
   $like_name = "%$name%";
-  return fetch_assoc_all_prepared($mysqli, $query, "s", $like_name);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", [$like_name]);
 }
 
 function search_ad_by_type($mysqli, $type) {
@@ -199,7 +249,10 @@ SELECT adId, title, category, subCategory, type
 FROM Ad
 WHERE type = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", $type);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", [$type]);
+}
+
+function search_ad() {
 }
 
 function search_ad_by_category($mysqli, $category) {
@@ -208,7 +261,7 @@ SELECT *
 FROM Ad
 WHERE category = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", $category);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", [$category]);
 }
 
 function search_ad_by_city($mysqli, $city) {
@@ -219,7 +272,7 @@ INNER JOIN Users ON Ad.sellerId = Users.userId
 INNER JOIN Address ON Users.addressId = Address.addressId
 WHERE city = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", $city);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", [$city]);
 }
 
 function search_ad_by_province($mysqli, $province) {
@@ -231,32 +284,43 @@ INNER JOIN Address ON Users.addressId = Address.addressId
 INNER JOIN City ON City.city = Address.city
 WHERE province = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", $province);
+  return fetch_assoc_all_prepared($mysqli, $query, "s", [$province]);
 }
 
-// Fetch assoc ALL THE THINGS
-function fetch_assoc_all_prepared($mysqli, $query, $bind_type, $bind_param) {
-  $stmt = $mysqli->prepare($query);
-  if (!$stmt) {
-    error_log($mysqli->error);
-    return false;
+function get_categories_and_subcategories($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM SubCategory
+SQL;
+  $cats = fetch_assoc($mysqli, $query);
+  $result = [];
+  foreach ($cats as $cat) {
+    $result[$cat['category']][] = $cat['subCategory'];
   }
-  $stmt->bind_param($bind_type, $bind_param);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $result = $result->fetch_all(MYSQLI_ASSOC);
-  $stmt->close();
   return $result;
 }
 
-// Too lazy to abstract this
-function fetch_assoc_all_prepared_bi($mysqli, $query, $bind_type, $bind_param1, $bind_param2) {
+function to_reference_values($array) {
+  $result = [];
+  foreach ($array as $key => $value) {
+    $result[$key] = &$array[$key];
+  }
+  return $result;
+}
+
+function fetch_assoc_all_prepared($mysqli, $query, $bind_type = '', $bind_params = []) {
   $stmt = $mysqli->prepare($query);
   if (!$stmt) {
     error_log($mysqli->error);
     return false;
   }
-  $stmt->bind_param($bind_type, $bind_param1, $bind_param2);
+  // Because splat operator is in php 5.6 and we're using 5.5 ..
+  if (!empty($bind_params)) {
+    $bind_param_func = $stmt->bind_param;
+    $args = array_merge([$bind_type], $bind_params);
+    call_user_func_array([$stmt, 'bind_param'], to_reference_values($args));
+  }
+
   $stmt->execute();
   $result = $stmt->get_result();
   $result = $result->fetch_all(MYSQLI_ASSOC);

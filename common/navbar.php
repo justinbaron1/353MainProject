@@ -1,4 +1,4 @@
-<nav class="navbar navbar-fixed-top">
+<nav class="navbar">
     <?php if(isset($_SESSION["user"])){
         include_once("navbars/login.php");
     } else {

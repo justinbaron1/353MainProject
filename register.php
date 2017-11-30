@@ -54,8 +54,8 @@ if ($_POST) {
 $cities = get_all_city($mysqli);
 
 function form_group($errors, $label) {
-  if ($errors[$label]) {
-    echo "<div class=\"form-group has-error\"><label class=\"control-label\" for=\"${labels}\"> ${errors[$label]}</label>";
+  if (isset($errors[$label])) {
+    echo "<div class=\"form-group has-error\"><label class=\"control-label\" for=\"${label}\"> ${errors[$label]}</label>";
   } else {
     echo '<div class="form-group">';
   }
@@ -102,11 +102,13 @@ function form_group($errors, $label) {
                         <?php form_group($errors, "postal_code");  ?>
                             <input id="postal_code" placeholder="Postal code" type="text" class="form-control"  name="postal_code">
                         </div>
-                        <select class="form-control">
-                        <?php foreach ($cities as $city) { ?>
-                          <option value="<?= $city["city"] ?>"><?= $city["city"] ?></option>
-                        <?php } ?>
-                        </select>
+                        <div class="form-group">
+                            <select class="form-control">
+                                <?php foreach ($cities as $city) { ?>
+                                <option value="<?= $city["city"] ?>"><?= $city["city"] ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
                         <button type="submit" class="btn btn-default">Register</button>
                     </form>
                 </div>
