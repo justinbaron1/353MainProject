@@ -22,7 +22,7 @@ SQL;
  function is_admin($mysqli, $user_id){
     $query = <<<SQL
   SELECT *
-  FROM admin
+  FROM Admin
   WHERE userId = ?
 SQL;
   $results = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
@@ -32,7 +32,7 @@ SQL;
 function get_buyerseller_info($mysqli, $user_id){
   $query = <<<SQL
 SELECT *
-FROM buyerseller
+FROM BuyerSeller
 WHERE userId = ?
 SQL;
 
@@ -44,7 +44,7 @@ SQL;
  function get_all_membership_plans($mysqli) {
   $query = <<<SQL
 SELECT *
-FROM membershipplan
+FROM MembershipPlan
 SQL;
 
     return fetch_assoc_all_prepared($mysqli, $query);
@@ -206,7 +206,7 @@ SQL;
 function get_ad_images_by_ad_id($mysqli, $ad_id) {
   $query = <<<SQL
   SELECT adImageUrl
-  FROM ad_adimage
+  FROM Ad_AdImage
   WHERE adId = ?
 SQL;
     return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
@@ -215,13 +215,13 @@ SQL;
 function get_stores_by_ad_id($mysqli, $ad_id){
   $query = <<<SQL
   SELECT *
-  FROM ad_store
+  FROM Ad_Store
   JOIN store
-  ON ad_store.storeId = store.storeId
-  JOIN address
-  ON store.addressId = address.addressId
-  JOIN storemanager
-  ON store.userId = storemanager.userId
+  ON Ad_Store.storeId = Store.storeId
+  JOIN Address
+  ON Store.addressId = Address.addressId
+  JOIN StoreManager
+  ON Store.userId = StoreManager.userId
   WHERE adId = ?
   ORDER BY dateOfRent
 SQL;
@@ -440,7 +440,7 @@ SQL;
 function get_different_ad_types($mysqli){
   $query = <<<SQL
   SELECT DISTINCT type
-  FROM ad
+  FROM Ad
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query);
 }
