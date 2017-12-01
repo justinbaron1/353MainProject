@@ -34,4 +34,14 @@ function is_valid_rating($rating) {
   return $rating >= 0 && $rating <= 5;
 }
 
+// Not sure what are the valid values
+function is_valid_ad_type($type) {
+  return $type === 'buy' || $type === 'sell';
+}
+
+// TODO(tomleb): Look into the db if this is valid
+function is_valid_category_and_subcategory($category, $sub_category) {
+  return true;
+}
+
 ?>

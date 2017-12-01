@@ -195,15 +195,50 @@ SQL;
     return @$result[0];
 }
 
-function create_ad($mysqli, $user_id, $title, $price, $description, $end_date,
-                   $type, $category, $sub_category) {
+// TODO(tomleb): Make a transaction
+// TODO(tomleb): Better error handling
+function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
+                              $type, $category, $sub_category, $image_filename) {
   $query = <<<SQL
-INSERT INTO Ad(sellerId,title,price,description,endDate,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ssisssss", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category);
+  $stmt->bind_param("isissss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
-  return $mysqli->insert_id;
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $ad_id = $mysqli->insert_id;
+
+  $query = <<<SQL
+INSERT INTO AdImage(url) VALUES (?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("s", $image_filename);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $query = <<<SQL
+INSERT INTO Ad_AdImage(adImageUrl, adId) VALUES (?, ?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("si", $image_filename, $ad_id);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $mysqli->close();
+  return true;
 }
 
 // TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
