@@ -275,6 +275,8 @@ function search_ad($mysqli, $province, $city, $category, $type, $seller_name) {
   $city_param     = maybe_add_search_ad_param($city,     $args, $bind_type);
   $category_param = maybe_add_search_ad_param($category, $args, $bind_type);
   $type_param     = maybe_add_search_ad_param($type,     $args, $bind_type);
+  $seller_name_param = "NULL";
+
   if ($seller_name) {
     $seller_name_param = "?";
     $args[] = "%$seller_name%";
