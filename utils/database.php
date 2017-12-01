@@ -178,6 +178,18 @@ SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
 }
 
+// TODO(tomleb): We support multiple images by ads but we will
+// just return this one for now..
+function get_ad_image_by_id($mysqli, $ad_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad_AdImage
+INNER JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
+WHERE adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  return @$result[0];
+}
 
 function get_full_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
@@ -234,6 +246,15 @@ SQL;
 
   $ad_id = $mysqli->insert_id;
 
+  $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
+  if (!$result) {
+    return false;
+  }
+
+  return true;
+}
+
+function create_and_link_ad_image($mysqli, $ad_id, $image_filename) {
   $query = <<<SQL
 INSERT INTO AdImage(url) VALUES (?)
 SQL;
@@ -258,7 +279,6 @@ SQL;
     return false;
   }
 
-  $mysqli->close();
   return true;
 }
 
@@ -280,24 +300,40 @@ function can_edit_ad($mysqli, $ad_id, $user_id) {
 // TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
 // feature for the project..
 // TODO(tomleb): Make sure the user is either admin, or owner of the ad.
-function update_ad($mysqli, $ad_id, $user_id, $title, $price, $description, $startDate,
-                   $type, $category, $sub_category) {
+// TODO(tomleb): Something something transaction
+function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
+                              $type, $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
 SET sellerId = ?,
     title = ?,
     price = ?,
     description = ?,
-    endDate = ?,
     type = ?,
     category = ?,
     subCategory = ?
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ssisssssi", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
-  return $mysqli->affected_rows;
+
+  $query = <<<SQL
+UPDATE AdImage
+SET url = ?
+WHERE url = ?
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("ss", $new_image, $old_image);
+  $stmt->execute();
+
+  // I don't like this but it'll do for now (and forever)
+  if ($mysqli->affected_rows === 0) {
+    create_and_link_ad_image($mysqli, $ad_id, $new_image);
+  } else {
+  }
+
+  return $mysqli->error;
 }
 
 function delete_ad($mysqli, $ad_id) {
