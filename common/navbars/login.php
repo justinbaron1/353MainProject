@@ -1,6 +1,7 @@
 <?php 
     $user = @$_SESSION["user"];
     $buyerseller_infos = get_buyerseller_info($mysqli, $user["userId"]);
+    $is_admin = is_admin($mysqli, $user["userId"]);
 ?>
 
 <div class="navbar-header">
@@ -22,6 +23,9 @@
                     <li><a href="/change-membership"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
                     <li><a href="/my-ads"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
                     <li><a href="/TODO"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
+                <?php } ?>
+                <?php if($is_admin){ ?>
+                    <li><a href="/trigger-backup"><span class="glyphicon glyphicon-save"></span> Backup Bills</a><li>
                 <?php } ?>
                 <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a><li>
             </ul>

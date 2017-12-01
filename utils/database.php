@@ -214,6 +214,17 @@ SQL;
     return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
 }
 
+function do_bills_backup($mysqli){
+  $query = "CALL generateBackup()";
+  $stmt = $mysqli->prepare($query);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    return false;
+  }
+  return true;
+}
+
 // TODO(tomleb): Make a transaction
 // TODO(tomleb): Better error handling
 function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
