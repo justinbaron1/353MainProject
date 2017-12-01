@@ -9,7 +9,7 @@ $city = strip_tags(trim(@$_GET["city"]));
 $type = strip_tags(trim(@$_GET["type"]));
 $seller = strip_tags(trim(@$_GET["seller"]));
 
-$ads = search_ad($mysqli, $category, $subcategory, $province, $city, $type, $seller);
+$ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $seller);
 ?>
 
 <html>
