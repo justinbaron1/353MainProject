@@ -20,7 +20,10 @@ INSERT INTO Address(civicNumber,street,postalCode,city) VALUES
 (9999,"watson street", "9k7h1w","Toronto"),
 (1266,"rue peel", "9h7k9j","Montreal"),
 (8765,"rue rachel","9h5f7j","Montreal"),
-(4545,"mont-royal","j8j9k9","Montreal");
+(4545,"mont-royal","j8j9k9","Montreal"),
+(7123,"rue saint-denis","g4h7f8","Montreal"),
+(7865,"rue bernard","f4h8f9","Montreal"),
+(3451,"rue vanhorn","y7y8u8","Montreal");
 
 INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 ("normal",7,0.0),
@@ -38,7 +41,9 @@ INSERT INTO Users(firstName,lastName,phoneNumber,email,password,addressId) VALUE
 ("bob","brook","7776786788", "bob@hotmail.com","$2y$10$EdRBI2WOeBfPY.GYvzxl0uLL63jjg8oM.x34lMh9DohmrehFedrR6",9), -- Password: 000000
 ("simon","dube", "8761234444","simon@hotmail.com","$2y$10$wzS3YqVnjZH5/pSQYojRvOksjsNDaGU.ImZJbAnNdW1H7iLpec2P6",10), -- Password: 767767
 ("jake","dubuk", "6123215656","jake@hotmail.com","$2y$10$Mb9grLJv.8AaFM54ZVmJF.TSuxBHXVkllaM6p.Yp2Zx/HbOYAxXFq",11), -- Password: 987789
-("albert","gracie","7126562379","albert@hotmail.com","$2y$10$UJrzezKi7cseHpgKiHU.PuJHuQM.iCv7eCndpuujDCD2Vybo0YrBS",12); -- Password: 456789
+("albert","gracie","7126562379","albert@hotmail.com","$2y$10$UJrzezKi7cseHpgKiHU.PuJHuQM.iCv7eCndpuujDCD2Vybo0YrBS",12), -- Password: 456789
+("zac","lebovitz","9182742222","zac@hotmail.com","$2y$10$dV2R5RgeecrJiT5ojmXLuudSsIqwf6OBdj07nUdo6NRUm1Foe4gya",15); -- Password: 555555
+
 
 
 INSERT INTO BuyerSeller(userId,MembershipPlanName,contactEmail,contactPhone) VALUES
@@ -61,17 +66,17 @@ INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 (01,2021,9),
 (07,2020,10);
 
-# INSERT INTO Bill(amount,type,paymentMethodId) VALUES
-# (20.99,"membership",1),
-# (15.99,"membership",3);
-
-
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
-(2,222333444,123);
+(2,222333444,123),
+(4,888444666,987),
+(5,451355111,434),
+(6,982578126,666);
 
 INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
 (1,777222444),
-(3,888123123);
+(3,888123123),
+(7,564728878),
+(8,987678987);
 
 INSERT INTO Category(category) VALUES
 ("buy and sell"),
@@ -111,14 +116,17 @@ INSERT INTO StrategicLocation(name,clientsPerHour,weekendExtraCostPercent) VALUE
 ("sl4",100,5);
 
 INSERT INTO StoreManager(userId) VALUES
-(1);
+(1),
+(11);
 
 INSERT INTO Admin(userId) VALUES
 (4);
 
 INSERT INTO Store(addressId,locationName,userId) VALUES
 (6,"sl2",1),
-(7,"sl1",1);
+(7,"sl1",1),
+(13,"sl3",1),
+(14,"sl4",1);
 
 INSERT INTO PaymentExtra(cardType,extraPercent) VALUES
 ("debit",1),
