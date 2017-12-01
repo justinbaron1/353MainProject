@@ -22,7 +22,7 @@ SQL;
  function is_admin($mysqli, $user_id){
     $query = <<<SQL
   SELECT *
-  FROM admin
+  FROM Admin
   WHERE userId = ?
 SQL;
   $results = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
@@ -32,7 +32,7 @@ SQL;
 function get_buyerseller_info($mysqli, $user_id){
   $query = <<<SQL
 SELECT *
-FROM buyerseller
+FROM BuyerSeller
 WHERE userId = ?
 SQL;
 
@@ -44,7 +44,7 @@ SQL;
  function get_all_membership_plans($mysqli) {
   $query = <<<SQL
 SELECT *
-FROM membershipplan
+FROM MembershipPlan
 SQL;
 
     return fetch_assoc_all_prepared($mysqli, $query);
@@ -160,7 +160,9 @@ function get_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-WHERE adId = ?
+LEFT JOIN Ad_AdImage ON Ad.adId = Ad_AdImage.adId
+LEFT JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
+WHERE Ad.adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   return @$result[0];
@@ -176,6 +178,18 @@ SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
 }
 
+// TODO(tomleb): We support multiple images by ads but we will
+// just return this one for now..
+function get_ad_image_by_id($mysqli, $ad_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad_AdImage
+INNER JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
+WHERE adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  return @$result[0];
+}
 
 function get_full_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
@@ -192,7 +206,7 @@ SQL;
 function get_ad_images_by_ad_id($mysqli, $ad_id) {
   $query = <<<SQL
   SELECT adImageUrl
-  FROM ad_adimage
+  FROM Ad_AdImage
   WHERE adId = ?
 SQL;
     return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
@@ -201,13 +215,13 @@ SQL;
 function get_stores_by_ad_id($mysqli, $ad_id){
   $query = <<<SQL
   SELECT *
-  FROM ad_store
+  FROM Ad_Store
   JOIN store
-  ON ad_store.storeId = store.storeId
-  JOIN address
-  ON store.addressId = address.addressId
-  JOIN storemanager
-  ON store.userId = storemanager.userId
+  ON Ad_Store.storeId = Store.storeId
+  JOIN Address
+  ON Store.addressId = Address.addressId
+  JOIN StoreManager
+  ON Store.userId = StoreManager.userId
   WHERE adId = ?
   ORDER BY dateOfRent
 SQL;
@@ -232,6 +246,18 @@ SQL;
 
   $ad_id = $mysqli->insert_id;
 
+  if ($image_filename !== '') {
+    error_log($image_filename);
+    $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
+    if (!$result) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function create_and_link_ad_image($mysqli, $ad_id, $image_filename) {
   $query = <<<SQL
 INSERT INTO AdImage(url) VALUES (?)
 SQL;
@@ -256,31 +282,63 @@ SQL;
     return false;
   }
 
-  $mysqli->close();
   return true;
+}
+
+function is_seller($mysqli, $ad_id, $user_id) {
+  $query = <<<SQL
+  SELECT *
+  FROM ad
+  WHERE  adId = ? 
+  AND sellerId = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "ii", [$ad_id, $user_id]);
+  return  !empty($results);
+}
+
+function can_edit_ad($mysqli, $ad_id, $user_id) {
+  return is_seller($mysqli, $ad_id, $user_id) || is_admin($mysqli, $user_id);
 }
 
 // TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
 // feature for the project..
 // TODO(tomleb): Make sure the user is either admin, or owner of the ad.
-function update_ad($mysqli, $ad_id, $user_id, $title, $price, $description, $startDate,
-                   $type, $category, $sub_category) {
+// TODO(tomleb): Something something transaction
+function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
+                              $type, $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
 SET sellerId = ?,
     title = ?,
     price = ?,
     description = ?,
-    endDate = ?,
     type = ?,
     category = ?,
     subCategory = ?
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ssisssssi", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
-  return $mysqli->affected_rows;
+
+  if ($new_image !== '' && $old_image !== '') {
+  $query = <<<SQL
+UPDATE AdImage
+SET url = ?
+WHERE url = ?
+SQL;
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("ss", $new_image, $old_image);
+    $stmt->execute();
+
+    // I don't like this but it'll do for now (and forever)
+    if ($mysqli->affected_rows === 0) {
+      create_and_link_ad_image($mysqli, $ad_id, $new_image);
+    } else {
+    }
+  }
+
+  return $mysqli->error;
 }
 
 function delete_ad($mysqli, $ad_id) {
@@ -387,7 +445,7 @@ SQL;
 function get_different_ad_types($mysqli){
   $query = <<<SQL
   SELECT DISTINCT type
-  FROM ad
+  FROM Ad
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query);
 }

@@ -3,8 +3,15 @@
 
     $ad_id = strip_tags(trim(@$_GET["ad_id"]));
     $ad = get_full_ad_by_id($mysqli, $ad_id);
+    
+    if(empty($ad)){
+        redirect_index();
+        return;
+    }
+
     $stores = get_stores_by_ad_id($mysqli, $ad_id);
     $images_urls = get_ad_images_by_ad_id($mysqli, $ad_id);
+    $can_edit = can_edit_ad($mysqli, $ad_id, $user["userId"]);
 ?>
 <html>
     <head>
@@ -21,6 +28,13 @@
     <body>
         <?php include("common/navbar.php") ?>
         <div class="container">
+            <div class="row text-right">
+                <div class="col-md-12">
+                    <?php if($can_edit) { ?>
+                        <a class="btn btn-primary" role="button" href="/postAd?ad_id=<?= $ad_id ?>"><span class="glyphicon glyphicon-edit"></span> Edit</a>
+                    <?php } ?>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-md-4">
                     <div class="row text-center">
