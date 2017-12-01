@@ -57,6 +57,7 @@
 
         let option = document.createElement("option");
         option.text = defaultValue;
+        option.value = "";
         dropdownToPopulate.add(option);
 
         subvalues.forEach((sub) => {
