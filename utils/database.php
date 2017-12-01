@@ -166,6 +166,31 @@ SQL;
   return @$result[0];
 }
 
+
+function get_full_ad_by_id($mysqli, $ad_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+JOIN buyerseller
+ON buyerseller.userId = ad.sellerId
+WHERE adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  return @$result[0];
+}
+
+function get_stores_by_ad_id($mysqli, $ad_id){
+  $query = <<<SQL
+  SELECT *
+  FROM ad_store
+  JOIN store
+  ON ad_store.storeId = store.storeId
+  WHERE adId = ?
+SQL;
+    $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+    return @$result[0];
+}
+
 function create_ad($mysqli, $user_id, $title, $price, $description, $end_date,
                    $type, $category, $sub_category) {
   $query = <<<SQL

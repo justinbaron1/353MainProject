@@ -30,11 +30,11 @@ $seller = strip_tags(trim(@$_GET["seller"]));
                         <th>Category</th>           
                         <th>Since</th>
                         <th>Ends</th>
-                        </tr>
+                    </tr>
                 </thead>
                 <tbody>
                     <?php foreach($ads as $ad) { ?>
-                        <tr onclick="document.location.href = '/ad?id=<?=$ad[adId] ?>';">
+                        <tr onclick="document.location.href = '/ad?ad_id=<?=$ad[adId] ?>';">
                             <td><?= $ad["title"] ?></td>
                             <td><?= $ad["seller"] ?></td>
                             <td><?= $ad["price"] ?></td>

@@ -21,7 +21,7 @@
     <body>
         <?php include("common/navbar.php") ?>
         <div class="container text-center">
-            <h1 class="text-center white-text">Change Membership</h1>
+            <h1 class="text-center">Change Membership</h1>
             <form class="form-inline" method="POST">
                 <div class="form-group">
                     <span>Change from <b><?=$buyerseller_infos["membershipPlanName"] ?></b> to </span>
