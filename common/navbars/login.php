@@ -18,7 +18,7 @@
             <ul class="dropdown-menu">
                 <li><a href="/profile"><span class="glyphicon glyphicon-user"></span> Profile</a><li>
                 <li><a href="/change-membership"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
-                <li><a href="/TODO"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
+                <li><a href="/my-ads"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
                 <li><a href="/TODO"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
 
                 <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a><li>

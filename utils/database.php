@@ -166,6 +166,15 @@ SQL;
   return @$result[0];
 }
 
+function get_ads_by_user_id($mysqli, $user_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+WHERE sellerId = ?
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+}
+
 
 function get_full_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
