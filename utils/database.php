@@ -260,6 +260,21 @@ SQL;
   return true;
 }
 
+function is_seller($mysqli, $ad_id, $user_id) {
+  $query = <<<SQL
+  SELECT *
+  FROM ad
+  WHERE  adId = ? 
+  AND sellerId = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "ii", [$ad_id, $user_id]);
+  return  !empty($results);
+}
+
+function can_edit_ad($mysqli, $ad_id, $user_id) {
+  return is_seller($mysqli, $ad_id, $user_id) || is_admin($mysqli, $user_id);
+}
+
 // TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
 // feature for the project..
 // TODO(tomleb): Make sure the user is either admin, or owner of the ad.
