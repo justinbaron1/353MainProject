@@ -258,59 +258,42 @@ SQL;
   return $mysqli->insert_id;
 }
 
-function search_ad_by_seller_name($mysqli, $name) {
-  $query = <<<SQL
-SELECT *
-FROM Ad
-INNER JOIN Users ON Ad.sellerId = Users.userId
-WHERE CONCAT(firstName, ' ', lastName) LIKE ?
-SQL;
-  $like_name = "%$name%";
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$like_name]);
+function maybe_add_search_ad_param($value, &$args, &$bind_type) {
+  $result = "NULL";
+  if ($value) {
+    $result = "?";
+    $args[] = $value;
+    $bind_type .= "s";
+  }
+  return $result;
 }
 
-function search_ad_by_type($mysqli, $type) {
-  $query = <<<SQL
-SELECT adId, title, category, subCategory, type
-FROM Ad
-WHERE type = ?
-SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$type]);
-}
+function search_ad($mysqli, $province, $city, $category, $type, $seller_name) {
+  $args = [];
+  $bind_type = "";
+  $province_param = maybe_add_search_ad_param($province, $args, $bind_type);
+  $city_param     = maybe_add_search_ad_param($city,     $args, $bind_type);
+  $category_param = maybe_add_search_ad_param($category, $args, $bind_type);
+  $type_param     = maybe_add_search_ad_param($type,     $args, $bind_type);
+  if ($seller_name) {
+    $seller_name_param = "?";
+    $args[] = "%$seller_name%";
+    $bind_type .= "s";
+  }
 
-function search_ad() {
-}
-
-function search_ad_by_category($mysqli, $category) {
-  $query = <<<SQL
-SELECT *
-FROM Ad
-WHERE category = ?
-SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$category]);
-}
-
-function search_ad_by_city($mysqli, $city) {
-  $query = <<<SQL
-SELECT *
-FROM Ad
-INNER JOIN Users ON Ad.sellerId = Users.userId
-INNER JOIN Address ON Users.addressId = Address.addressId
-WHERE city = ?
-SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$city]);
-}
-
-function search_ad_by_province($mysqli, $province) {
   $query = <<<SQL
 SELECT *
 FROM Ad
 INNER JOIN Users ON Ad.sellerId = Users.userId
 INNER JOIN Address ON Users.addressId = Address.addressId
 INNER JOIN City ON City.city = Address.city
-WHERE province = ?
+WHERE province =  COALESCE($province_param, province)
+AND   City.city = COALESCE($city_param, City.city)
+AND   category =  COALESCE($category_param, category)
+AND   type =      COALESCE($type_param, type)
+AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$province]);
+  return fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
 }
 
 function get_categories_and_subcategories($mysqli) {
@@ -353,9 +336,9 @@ function fetch_assoc_all_prepared($mysqli, $query, $bind_type = '', $bind_params
     error_log($mysqli->error);
     return false;
   }
+
   // Because splat operator is in php 5.6 and we're using 5.5 ..
   if (!empty($bind_params)) {
-    // $bind_param_func = $stmt->bind_param;
     $args = array_merge([$bind_type], $bind_params);
     call_user_func_array([$stmt, 'bind_param'], to_reference_values($args));
   }
