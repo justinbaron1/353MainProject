@@ -33,7 +33,9 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
                         <th>Seller</th>
                         <th>Price</th>
                         <th>Subcategory</th>
-                        <th>Category</th>           
+                        <th>Category</th>
+                        <th>City</th>
+                        <th>Province</th>        
                         <th>Since</th>
                         <th>Ends</th>
                     </tr>
@@ -46,6 +48,8 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
                             <td><?= $ad["price"] ?></td>
                             <td><?= $ad["subCategory"] ?></td>
                             <td><?= $ad["category"] ?></td>
+                            <td><?= $ad["city"] ?></td>
+                            <td><?= $ad["province"] ?></td>                            
                             <td><?= $ad["startDate"] ?></td>
                             <td><?= $ad["endDate"] ?></td>
                         </tr>
