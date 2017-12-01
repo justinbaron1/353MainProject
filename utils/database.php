@@ -300,7 +300,7 @@ function create_user($mysqli, $first_name, $last_name, $phone, $email, $password
 INSERT INTO Users(firstName, lastName, phoneNumber, email, password, addressId) VALUES (?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("sssssi", $fist_name, $last_name, $phone, $email, $password, $address_id);
+  $stmt->bind_param("sssssi", $first_name, $last_name, $phone, $email, $password, $address_id);
   $stmt->execute();
   return $mysqli->insert_id;
 }
