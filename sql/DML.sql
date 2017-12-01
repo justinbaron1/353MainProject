@@ -109,7 +109,7 @@ INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUE
 (2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books"),
 (6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry");
 
-INSERT INTO StrategicLocation(name,clientsPerHour,weekendExtraCostPercent) VALUES
+INSERT INTO StrategicLocation(name,clientsPerHour,costPercent) VALUES
 ("sl1",400,20),
 ("sl2",300,15),
 ("sl3",200,10),
@@ -132,7 +132,7 @@ INSERT INTO PaymentExtra(cardType,extraPercent) VALUES
 ("debit",1),
 ("credit",3);
 
-INSERT INTO StorePrices(momentOfWeek,hourlyPrice) VALUES
+INSERT INTO StorePrices(momentOfWeek,hourlyPrice,deliveryHourlyPrice) VALUES
 ("week",10.00,5.00),
 ("weekend",15.00,10.00);
 
