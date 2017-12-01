@@ -2,6 +2,7 @@
     // $province_and_cities = get_all_prov_and_cities($mysqli);
     $categories_and_subcategories = get_categories_and_subcategories($mysqli);
     $provinces_and_cities = get_provinces_and_cities($mysqli);
+    $types = get_different_ad_types($mysqli);
 ?>
 
 <style>
@@ -87,6 +88,16 @@
     </select>
     <select id="city" class="form-control" name="city">
             <option value="">City...</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="type">Type</label>
+    <select id="type" class="form-control" name="type">
+            <option value="">Type..</option>
+            <?php foreach($types as $type) { ?>
+                <option value="<?= $type ?>"><?= $type ?></option>
+            <?php } ?>
     </select>
   </div>
 

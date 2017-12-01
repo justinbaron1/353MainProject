@@ -6,9 +6,10 @@ $category = strip_tags(trim(@$_GET["category"]));
 $subcategory = strip_tags(trim(@$_GET["subcategory"]));
 $province = strip_tags(trim(@$_GET["province"]));
 $city = strip_tags(trim(@$_GET["city"]));
+$type = strip_tags(trim(@$_GET["type"]));
 $seller = strip_tags(trim(@$_GET["seller"]));
 
-// $ads = get_ads($mysqli, $category, $subcategory, $province, $city, $seller);
+$ads = search_ad($mysqli, $category, $subcategory, $province, $city, $type, $seller);
 ?>
 
 <html>

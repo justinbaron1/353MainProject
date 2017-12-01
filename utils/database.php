@@ -314,13 +314,21 @@ function get_provinces_and_cities($mysqli){
   SELECT *
   FROM City
 SQL;
-    $provs = fetch_assoc_all_prepared($mysqli, $query);
-    $result = [];
-    foreach ($provs as $prov) {
-      $result[$prov['province']][] = $prov['city'];
-    }
-    return $result;
+  $provs = fetch_assoc_all_prepared($mysqli, $query);
+  $result = [];
+  foreach ($provs as $prov) {
+    $result[$prov['province']][] = $prov['city'];
   }
+  return $result;
+}
+
+function get_different_ad_types($mysqli){
+  $query = <<<SQL
+  SELECT DISTINCT type
+  FROM ad
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query);
+}
 
 function to_reference_values($array) {
   $result = [];
