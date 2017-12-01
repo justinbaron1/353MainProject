@@ -19,7 +19,8 @@ INSERT INTO Address(civicNumber,street,postalCode,city) VALUES
 (8888,"rue sherbrooke", "3h38j8","Montreal"),
 (9999,"watson street", "9k7h1w","Toronto"),
 (1266,"rue peel", "9h7k9j","Montreal"),
-(8765,"rue rachel","9h5f7j","Montreal");
+(8765,"rue rachel","9h5f7j","Montreal"),
+(4545,"mont-royal","j8j9k9","Montreal");
 
 INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 ("normal",7,0.0),
@@ -34,23 +35,35 @@ INSERT INTO Users(firstName,lastName,phoneNumber,email,password,addressId) VALUE
 ("luke","brown","8171234355","luke@hotmail.com","$2y$10$WbX1c8OiOrApeAkXm/HEw.CW3vxj5gbdMXmwWVbJcFb73ah.u1Jhi",4), -- Password: 777777
 ("tom","lebreux","9991321888","tom@hotmail.com","$2y$10$/3x8upST6XCI.wruhDAuWOd93vXw.9JbdPcfAWwGmyGwmtz4NLMey",5), -- Password: 987678
 ("george", "bordean","9815674444", "george@hotmail.com","$2y$10$ayPKFz.DoVCj57aPhk6Z3.zYtdnSzxQOmpVxkYPcMYxyMVOPjNwFS",8), -- Password: 999999
-("bob","brook","7776786788", "bob@hotmail.com","$2y$10$EdRBI2WOeBfPY.GYvzxl0uLL63jjg8oM.x34lMh9DohmrehFedrR6",9); -- Password: 000000
+("bob","brook","7776786788", "bob@hotmail.com","$2y$10$EdRBI2WOeBfPY.GYvzxl0uLL63jjg8oM.x34lMh9DohmrehFedrR6",9), -- Password: 000000
+("simon","dube", "8761234444","simon@hotmail.com","$2y$10$wzS3YqVnjZH5/pSQYojRvOksjsNDaGU.ImZJbAnNdW1H7iLpec2P6",10), -- Password: 767767
+("jake","dubuk", "6123215656","jake@hotmail.com","$2y$10$Mb9grLJv.8AaFM54ZVmJF.TSuxBHXVkllaM6p.Yp2Zx/HbOYAxXFq",11), -- Password: 987789
+("albert","gracie","7126562379","albert@hotmail.com","$2y$10$UJrzezKi7cseHpgKiHU.PuJHuQM.iCv7eCndpuujDCD2Vybo0YrBS",12); -- Password: 456789
+
 
 INSERT INTO BuyerSeller(userId,MembershipPlanName,contactEmail,contactPhone) VALUES
 (2,"premium","justin@hotmail.com","6662538787"),
 (3,"silver","mik@hotmail.com","8787266666"),
 (5,"normal","tomleb@hotmail.com","8766789090"),
 (6,"silver","bordean@hotmail.com","1234321232"),
-(7,"premium","brook@hotmail.com","8786788766");
+(7,"premium","brook@hotmail.com","8786788766"),
+(8,"premium","dube@hotmail.com","9875628989"),
+(9,"normal","dubuk@hotmail.com","6753428789"),
+(10,"silver","gracie@hotmail.com","6354638778");
 
 INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 (11,2019,2),
 (06,2020,3),
-(03,2021,5);
+(03,2021,5),
+(10,2023,6),
+(12,2018,7),
+(02,2019,8),
+(01,2021,9),
+(07,2020,10);
 
-INSERT INTO Bill(amount,type,paymentMethodId) VALUES
-(20.99,"membership",1),
-(15.99,"membership",3);
+# INSERT INTO Bill(amount,type,paymentMethodId) VALUES
+# (20.99,"membership",1),
+# (15.99,"membership",3);
 
 
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
@@ -64,7 +77,7 @@ INSERT INTO Category(category) VALUES
 ("buy and sell"),
 ("services"),
 ("rent"),
-("category4");
+("used");
 
 INSERT INTO SubCategory(category,subCategory) VALUES
 ("buy and sell","clothing"),
@@ -79,16 +92,17 @@ INSERT INTO SubCategory(category,subCategory) VALUES
 ("rent","car"),
 ("rent","apartments"),
 ("rent","wedding - dresses"),
-("category4","subCategory1"),
-("category4","subCategory2"),
-("category4","subCategory3"),
-("category4","subCategory4");
+("used","electronics"),
+("used","sport equipment"),
+("used","clothing"),
+("used","jewelry");
 
-INSERT INTO Ad(sellerId,title,price,description,endDate,type,category,subCategory) VALUES
-(2,"selling ps3",150.00,"ps3 good condition with 3 games",'2017-12-13',"sell","buy and sell","electronics"),
-(3,"selling audi a4",7999.99,"5 year old",'2017-12-13',"sell","rent","car"),
-(5,"photo shoot",99.99,"family photo shoot","2017-12-10","sell","services","photographers"),
-(2,"c++ book",49.99,"programming book in c++. good condition","2017-12-03","buy","buy and sell","books");
+INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES
+(2,"selling ps3",150.00,"ps3 good condition with 3 games","sell","buy and sell","electronics"),
+(3,"selling audi a4",7999.99,"5 year old","sell","rent","car"),
+(5,"photo shoot",99.99,"family photo shoot","sell","services","photographers"),
+(2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books"),
+(6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry");
 
 INSERT INTO StrategicLocation(name,clientsPerHour,weekendExtraCostPercent) VALUES
 ("sl1",400,20),
@@ -128,7 +142,6 @@ INSERT INTO AdPromotion(adId,duration,startDate) VALUES
 
 CALL createTransaction(1,1);
 CALL createTransaction(4,1);
-
 
 UPDATE Rating
 SET rating=5
