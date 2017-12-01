@@ -1,9 +1,13 @@
 <?php
     include_once("common/user.php");
 
-    $do = @$_POST["do"];
+    if(!is_admin($mysqli, $user["userId"])) {
+        redirect_index();
+        return;
+    }
 
-    if(isset($do) && is_admin($mysqli, $user["userId"])){
+    $do = @$_POST["do"];
+    if(isset($do)){
         $success = do_bills_backup($mysqli);
         if($success){
             $successMessage = "Backup successful!";

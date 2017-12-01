@@ -25,6 +25,7 @@
                     <li><a href="/TODO"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
                 <?php } ?>
                 <?php if($is_admin){ ?>
+                    <li><a href="/bills"><span class="glyphicon glyphicon-list"></span> Bills</a><li>
                     <li><a href="/trigger-backup"><span class="glyphicon glyphicon-save"></span> Backup Bills</a><li>
                 <?php } ?>
                 <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a><li>

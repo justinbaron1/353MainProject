@@ -59,7 +59,7 @@
                                     <?php } else { ?>
                                         <span class="label label-danger"> Inactive </span>
                                     <?php } ?>
-                                </td
+                                </td>
                             </tr>
                         <?php } ?>
                     </tbody>

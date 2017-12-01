@@ -84,6 +84,36 @@ SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
 }
 
+function get_all_credit_bills($mysqli){
+  $query = <<<SQL
+  SELECT *
+  FROM bill
+  JOIN paymentmethod
+  ON bill.paymentMethodId =  paymentmethod.paymentMethodId
+  LEFT JOIN  creditcard
+  ON creditcard.paymentMethodId = bill.paymentMethodId
+  JOIN users
+  ON users.userId = paymentmethod.userId
+  ORDER BY bill.dateOfPayment
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query);
+}
+
+function get_all_debit_bills($mysqli){
+  $query = <<<SQL
+  SELECT *
+  FROM bill
+  JOIN paymentmethod
+  ON bill.paymentMethodId =  paymentmethod.paymentMethodId
+  LEFT JOIN debitcard
+  ON debitcard.paymentMethodId = bill.paymentMethodId
+  JOIN users
+  ON users.userId = paymentmethod.userId
+  ORDER BY bill.dateOfPayment
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query);
+}
+
 function get_user_transactions($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
