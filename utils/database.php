@@ -171,6 +171,7 @@ function get_ads_by_user_id($mysqli, $user_id) {
 SELECT *
 FROM Ad
 WHERE sellerId = ?
+ORDER BY startDate DESC
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
 }
