@@ -12,25 +12,19 @@ include_once("utils/database.php");
 </head>
 <body>
 
-<?php  include("common/navbar.php")
+<?php
+
+include("common/navbar.php");
 // define variables and set to empty values
 $title = $subCategory = $imageToUpload = $description = $promotionPackage = "";
-$promotions = [7, 14, 30];
-$categories = array(
-  'Buy and Sell' => array(
-    'clothing','books','electronics','musicalInstruments'
-  ),
-  'Services' => array(
-    'tutors','eventPlanners','photographers','personalTrainers'
-  ),
-  'Rent' => array(
-    'electronics','car','apartments','weddingDresses'
-  ),
-  'Category4' => array(
-    'subCategory1','subCategory2','subCategory3','subCategory4'
-  )
+
+$mysqli = get_database();
+$promotions = array_map(
+  function ($promotion) { return $promotion['duration']; },
+  get_promotions($mysqli)
 );
 
+$categories = get_categories_and_subcategories($mysqli);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $title = test_input($_POST["title"]);
@@ -47,10 +41,11 @@ function test_input($data) {
   return $data;
 }
 ?>
+
 <div class="container background">
     <div class="row">
         <div class="col-md-offset-4 col-md-4">
-            <h1 class="text-center white-text">Register</h1>
+            <h1 class="text-center white-text">Submit ad</h1>
             <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
               Title: <input type="text" name="title">
               <br><br>
@@ -59,9 +54,8 @@ function test_input($data) {
                 <?php
                 foreach ($categories as $category => $subcategories){ ?>
                   <optgroup label="<?= $category ?>">
-                    <? foreach ($subcategories as subcategory){ ?>
+                    <? foreach ($subcategories as $subcategory){ ?>
                       <option value="<?= $subcategories ?>"><?= $subcategory ?> </option>
-
                     <?php }
 
                 } ?>
