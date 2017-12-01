@@ -25,7 +25,7 @@ SQL;
   FROM admin
   WHERE userId = ?
 SQL;
-  $results = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  $results = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
   return  !empty($results);
  }
 
@@ -36,7 +36,7 @@ FROM buyerseller
 WHERE userId = ?
 SQL;
 
-  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
   return @$result[0];
 }
  
@@ -46,7 +46,8 @@ SQL;
 SELECT *
 FROM membershipplan
 SQL;
-    return fetch_assoc($mysqli, $query);
+
+    return fetch_assoc_all_prepared($mysqli, $query);
  }
 
 // TODO(tomleb): Better error handling
@@ -292,13 +293,26 @@ function get_categories_and_subcategories($mysqli) {
 SELECT *
 FROM SubCategory
 SQL;
-  $cats = fetch_assoc($mysqli, $query);
+  $cats = fetch_assoc_all_prepared($mysqli, $query);
   $result = [];
   foreach ($cats as $cat) {
     $result[$cat['category']][] = $cat['subCategory'];
   }
   return $result;
 }
+
+function get_provinces_and_cities($mysqli){
+  $query = <<<SQL
+  SELECT *
+  FROM City
+SQL;
+    $provs = fetch_assoc_all_prepared($mysqli, $query);
+    $result = [];
+    foreach ($provs as $prov) {
+      $result[$prov['province']][] = $prov['city'];
+    }
+    return $result;
+  }
 
 function to_reference_values($array) {
   $result = [];
@@ -316,7 +330,7 @@ function fetch_assoc_all_prepared($mysqli, $query, $bind_type = '', $bind_params
   }
   // Because splat operator is in php 5.6 and we're using 5.5 ..
   if (!empty($bind_params)) {
-    $bind_param_func = $stmt->bind_param;
+    // $bind_param_func = $stmt->bind_param;
     $args = array_merge([$bind_type], $bind_params);
     call_user_func_array([$stmt, 'bind_param'], to_reference_values($args));
   }
