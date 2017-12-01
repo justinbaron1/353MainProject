@@ -264,7 +264,7 @@ SQL;
 
 function maybe_add_search_ad_param($value, &$args, &$bind_type) {
   $result = "NULL";
-  if ($value) {
+  if (!empty($value)) {
     $result = "?";
     $args[] = $value;
     $bind_type .= "s";
@@ -281,7 +281,7 @@ function search_ad($mysqli, $province, $city, $category, $type, $seller_name) {
   $type_param     = maybe_add_search_ad_param($type,     $args, $bind_type);
   $seller_name_param = "NULL";
 
-  if ($seller_name) {
+  if (!empty($seller_name)) {
     $seller_name_param = "?";
     $args[] = "%$seller_name%";
     $bind_type .= "s";

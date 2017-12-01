@@ -172,7 +172,7 @@ CREATE TABLE Ad (
 	price decimal(15,2) NOT NULL,
 	description text(1000),
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	endDate date NOT NULL,
+	endDate date,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -391,6 +391,8 @@ DELIMITER $$
 DROP EVENT IF EXISTS membershipBill$$
 CREATE EVENT membershipBill
 ON SCHEDULE EVERY 1 MINUTE
+# release statement
+# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
 DO
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
@@ -491,12 +493,27 @@ BEGIN
 END$$
 DELIMITER ;
 
-
+DELIMITER $$
+DROP TRIGGER IF EXISTS getAdEndDate$$
+CREATE TRIGGER getAdEndDate
+BEFORE INSERT
+ON Ad
+FOR EACH ROW
+BEGIN
+	SET @days = (SELECT visibleDuration
+	 			 FROM MembershipPlan
+	 			 JOIN BuyerSeller ON BuyerSeller.membershipPlanName=MembershipPlan.name
+	 			 WHERE BuyerSeller.userId=NEW.sellerId);
+	SET NEW.endDate = DATE(DATE_ADD(CURRENT_TIMESTAMP,INTERVAL @days DAY));
+END$$
+DELIMITER ;
 
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$
 CREATE EVENT monthlyBackup
 ON SCHEDULE EVERY 1 MINUTE
+# release statement
+# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 23:00:00'
 DO
 	CALL generateBackup(); $$
 DELIMITER ;
