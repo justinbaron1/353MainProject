@@ -4,6 +4,7 @@
     $ad_id = strip_tags(trim(@$_GET["ad_id"]));
     $ad = get_full_ad_by_id($mysqli, $ad_id);
     $stores = get_stores_by_ad_id($mysqli, $ad_id);
+    $images_urls = get_ad_images_by_ad_id($mysqli, $ad_id);
 ?>
 <html>
     <head>
@@ -12,6 +13,9 @@
             .have-lb{
                 white-space: pre-wrap;
             }
+            img {
+                width:100%;
+            }
         </style>
     </head>
     <body>
@@ -19,10 +23,19 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <img src=""/>
-                        </div>
+                    <div class="row text-center">
+                        <?php 
+                            if(!empty($images_urls)){
+                                foreach($images_urls as $url){ ?>
+                                    <div class="col-md-12">
+                                        <img src="<?= $url ?>"/>
+                                    </div>
+                                <?php }
+                            } else { ?>
+                                <div class="col-md-12">
+                                    <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
+                                </div>                       
+                        <?php } ?>
                     </div>
                 </div>
                 
@@ -69,6 +82,12 @@
                     <div class="row">
                         <p class="have-lb"><?= $ad["description"] ?></p>
                     </div>
+
+                    <?php if(!empty($stores)) {
+                        include("parts/ad/stores.php");
+                    } else { ?>
+                        <h3>Not available in store</h3>
+                    <?php } ?>
 			</div>
         </div>
     </body>

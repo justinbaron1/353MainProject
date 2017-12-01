@@ -179,6 +179,15 @@ SQL;
   return @$result[0];
 }
 
+function get_ad_images_by_ad_id($mysqli, $ad_id) {
+  $query = <<<SQL
+  SELECT adImageUrl
+  FROM ad_adimage
+  WHERE adId = ?
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+}
+
 function get_stores_by_ad_id($mysqli, $ad_id){
   $query = <<<SQL
   SELECT *
@@ -190,9 +199,9 @@ function get_stores_by_ad_id($mysqli, $ad_id){
   JOIN storemanager
   ON store.userId = storemanager.userId
   WHERE adId = ?
+  ORDER BY dateOfRent
 SQL;
-    $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
-    return @$result[0];
+    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
 }
 
 // TODO(tomleb): Make a transaction
