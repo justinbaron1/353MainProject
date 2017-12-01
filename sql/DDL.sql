@@ -235,7 +235,7 @@ CREATE TABLE AdPromotion(
 CREATE TABLE StrategicLocation (
 	name varchar(255),
 	clientsPerHour int NOT NULL,
-	weekendExtraCostPercent int NOT NULL,
+	costPercent int NOT NULL,
 	PRIMARY KEY (name)
 );
 
@@ -281,8 +281,10 @@ CREATE TABLE PaymentExtra (
 CREATE TABLE StorePrices(
 	momentOfWeek varchar(255),
 	hourlyPrice decimal(15,2) NOT NULL,
+	deliveryHourlyPrice decimal(15,2) NOT NULL,
 	PRIMARY KEY (momentOfWeek)
 );
+
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS ExpiryMonthChecker$$
@@ -440,17 +442,20 @@ BEFORE INSERT
 ON Ad_Store
 FOR EACH ROW
 BEGIN
+	SET @
 	IF (WEEKDAY(NEW.dateOfRent)<=4) THEN
 		BEGIN
-		SET @weekendExtraCostPercent=0;
-		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			SET @deliveryHourlyPrice = (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			SET @weekendExtraCostPercent=0;
 		END;
 	ELSE
 		BEGIN
-		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-		SET @weekendExtraCostPercent = (SELECT weekendExtraCostPercent FROM StrategicLocation
-									JOIN Store ON StrategicLocation.name=Store.locationName
-									WHERE NEW.storeId = Store.storeId);
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			SET @deliveryHourlyPrice = (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			SET @weekendExtraCostPercent = (SELECT weekendExtraCostPercent FROM StrategicLocation
+										JOIN Store ON StrategicLocation.name=Store.locationName
+										WHERE NEW.storeId = Store.storeId);
 		END;
 	END IF;
 	SET @price = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;

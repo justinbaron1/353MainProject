@@ -125,16 +125,17 @@ INSERT INTO Admin(userId) VALUES
 INSERT INTO Store(addressId,locationName,userId) VALUES
 (6,"sl2",1),
 (7,"sl1",1),
-(13,"sl3",1),
-(14,"sl4",1);
+(13,"sl3",11),
+(14,"sl4",11);
 
 INSERT INTO PaymentExtra(cardType,extraPercent) VALUES
 ("debit",1),
 ("credit",3);
 
 INSERT INTO StorePrices(momentOfWeek,hourlyPrice) VALUES
-("week",10.00),
-("weekend",15.00);
+("week",10.00,5.00),
+("weekend",15.00,10.00);
+
 
 INSERT INTO Ad_Store(adId,storeId,dateOfRent,timeStart,timeEnd,includesDeliveryServices) VALUES
 (1,1,'2017-11-17','09:00:00','20:00:00',0),
