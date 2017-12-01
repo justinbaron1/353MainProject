@@ -31,6 +31,9 @@
         setOption(provinceDD, province);
         updateDropdown(provinceDD, provinces, 'city', 'City...');
         setOption(cityDD, city);
+
+        let typeDD = document.getElementById("type")
+        setOption(typeDD, "<?=$type?>");
     };
    
     function setOption(selectElement, value) {
@@ -96,7 +99,8 @@
     <select id="type" class="form-control" name="type">
             <option value="">Type..</option>
             <?php foreach($types as $type) { ?>
-                <option value="<?= $type ?>"><?= $type ?></option>
+                <?php var_dump($type) ?>
+                <option value="<?= $type["type"] ?>"><?= $type["type"] ?></option>
             <?php } ?>
     </select>
   </div>

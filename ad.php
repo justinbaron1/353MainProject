@@ -3,7 +3,7 @@
 
     $ad_id = strip_tags(trim(@$_GET["ad_id"]));
     $ad = get_full_ad_by_id($mysqli, $ad_id);
-    $stores = get_stores_by_ad_id($mysqli, $ad_id)
+    $stores = get_stores_by_ad_id($mysqli, $ad_id);
 ?>
 <html>
     <head>

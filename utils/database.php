@@ -185,6 +185,10 @@ function get_stores_by_ad_id($mysqli, $ad_id){
   FROM ad_store
   JOIN store
   ON ad_store.storeId = store.storeId
+  JOIN address
+  ON store.addressId = address.addressId
+  JOIN storemanager
+  ON store.userId = storemanager.userId
   WHERE adId = ?
 SQL;
     $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
