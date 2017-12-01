@@ -166,15 +166,98 @@ SQL;
   return @$result[0];
 }
 
-function create_ad($mysqli, $user_id, $title, $price, $description, $end_date,
-                   $type, $category, $sub_category) {
+function get_ads_by_user_id($mysqli, $user_id) {
   $query = <<<SQL
-INSERT INTO Ad(sellerId,title,price,description,endDate,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+SELECT *
+FROM Ad
+WHERE sellerId = ?
+ORDER BY startDate DESC
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+}
+
+
+function get_full_ad_by_id($mysqli, $ad_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+JOIN buyerseller
+ON buyerseller.userId = ad.sellerId
+WHERE adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  return @$result[0];
+}
+
+function get_ad_images_by_ad_id($mysqli, $ad_id) {
+  $query = <<<SQL
+  SELECT adImageUrl
+  FROM ad_adimage
+  WHERE adId = ?
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+}
+
+function get_stores_by_ad_id($mysqli, $ad_id){
+  $query = <<<SQL
+  SELECT *
+  FROM ad_store
+  JOIN store
+  ON ad_store.storeId = store.storeId
+  JOIN address
+  ON store.addressId = address.addressId
+  JOIN storemanager
+  ON store.userId = storemanager.userId
+  WHERE adId = ?
+  ORDER BY dateOfRent
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+}
+
+// TODO(tomleb): Make a transaction
+// TODO(tomleb): Better error handling
+function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
+                              $type, $category, $sub_category, $image_filename) {
+  $query = <<<SQL
+INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ssisssss", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category);
+  $stmt->bind_param("isissss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
-  return $mysqli->insert_id;
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $ad_id = $mysqli->insert_id;
+
+  $query = <<<SQL
+INSERT INTO AdImage(url) VALUES (?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("s", $image_filename);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $query = <<<SQL
+INSERT INTO Ad_AdImage(adImageUrl, adId) VALUES (?, ?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("si", $image_filename, $ad_id);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $mysqli->close();
+  return true;
 }
 
 // TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
@@ -217,7 +300,7 @@ function create_user($mysqli, $first_name, $last_name, $phone, $email, $password
 INSERT INTO Users(firstName, lastName, phoneNumber, email, password, addressId) VALUES (?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("sssssi", $fist_name, $last_name, $phone, $email, $password, $address_id);
+  $stmt->bind_param("sssssi", $first_name, $last_name, $phone, $email, $password, $address_id);
   $stmt->execute();
   return $mysqli->insert_id;
 }
@@ -243,15 +326,16 @@ function maybe_add_search_ad_param($value, &$args, &$bind_type) {
   return $result;
 }
 
-function search_ad($mysqli, $province, $city, $category, $type, $seller_name) {
+function search_ad($mysqli, $province, $city, $category, $sub_category, $type, $seller_name) {
   $args = [];
   $bind_type = "";
-  $province_param = maybe_add_search_ad_param($province, $args, $bind_type);
-  $city_param     = maybe_add_search_ad_param($city,     $args, $bind_type);
-  $category_param = maybe_add_search_ad_param($category, $args, $bind_type);
-  $type_param     = maybe_add_search_ad_param($type,     $args, $bind_type);
-  $seller_name_param = "NULL";
+  $province_param     = maybe_add_search_ad_param($province,     $args, $bind_type);
+  $city_param         = maybe_add_search_ad_param($city,         $args, $bind_type);
+  $category_param     = maybe_add_search_ad_param($category,     $args, $bind_type);
+  $sub_category_param = maybe_add_search_ad_param($sub_category, $args, $bind_type);
+  $type_param         = maybe_add_search_ad_param($type,         $args, $bind_type);
 
+  $seller_name_param = "NULL";
   if (!empty($seller_name)) {
     $seller_name_param = "?";
     $args[] = "%$seller_name%";
@@ -264,10 +348,11 @@ FROM Ad
 INNER JOIN Users ON Ad.sellerId = Users.userId
 INNER JOIN Address ON Users.addressId = Address.addressId
 INNER JOIN City ON City.city = Address.city
-WHERE province =  COALESCE($province_param, province)
-AND   City.city = COALESCE($city_param, City.city)
-AND   category =  COALESCE($category_param, category)
-AND   type =      COALESCE($type_param, type)
+WHERE province    = COALESCE($province_param, province)
+AND   City.city   = COALESCE($city_param, City.city)
+AND   category    = COALESCE($category_param, category)
+AND   subCategory = COALESCE($sub_category_param, subCategory)
+AND   type        = COALESCE($type_param, type)
 AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
@@ -291,13 +376,21 @@ function get_provinces_and_cities($mysqli){
   SELECT *
   FROM City
 SQL;
-    $provs = fetch_assoc_all_prepared($mysqli, $query);
-    $result = [];
-    foreach ($provs as $prov) {
-      $result[$prov['province']][] = $prov['city'];
-    }
-    return $result;
+  $provs = fetch_assoc_all_prepared($mysqli, $query);
+  $result = [];
+  foreach ($provs as $prov) {
+    $result[$prov['province']][] = $prov['city'];
   }
+  return $result;
+}
+
+function get_different_ad_types($mysqli){
+  $query = <<<SQL
+  SELECT DISTINCT type
+  FROM ad
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query);
+}
 
 function to_reference_values($array) {
   $result = [];

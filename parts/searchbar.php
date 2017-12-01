@@ -2,6 +2,7 @@
     // $province_and_cities = get_all_prov_and_cities($mysqli);
     $categories_and_subcategories = get_categories_and_subcategories($mysqli);
     $provinces_and_cities = get_provinces_and_cities($mysqli);
+    $types = get_different_ad_types($mysqli);
 ?>
 
 <style>
@@ -30,6 +31,9 @@
         setOption(provinceDD, province);
         updateDropdown(provinceDD, provinces, 'city', 'City...');
         setOption(cityDD, city);
+
+        let typeDD = document.getElementById("type")
+        setOption(typeDD, "<?=$type?>");
     };
    
     function setOption(selectElement, value) {
@@ -53,6 +57,7 @@
 
         let option = document.createElement("option");
         option.text = defaultValue;
+        option.value = "";
         dropdownToPopulate.add(option);
 
         subvalues.forEach((sub) => {
@@ -87,6 +92,17 @@
     </select>
     <select id="city" class="form-control" name="city">
             <option value="">City...</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="type">Type</label>
+    <select id="type" class="form-control" name="type">
+            <option value="">Type..</option>
+            <?php foreach($types as $type) { ?>
+                <?php var_dump($type) ?>
+                <option value="<?= $type["type"] ?>"><?= $type["type"] ?></option>
+            <?php } ?>
     </select>
   </div>
 

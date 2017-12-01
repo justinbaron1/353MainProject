@@ -33,7 +33,7 @@ INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 
 INSERT INTO Users(firstName,lastName,phoneNumber,email,password,addressId) VALUES
 ("john","beck","7362512121","john@hotmail.com","$2y$10$8yIi52XZMwCSu1XTG14ZeuEH54bsUEh5ysCtGxNx8DmpjBVVO3qCa",3), -- Password: 123567
-("justin","baron","5147264522","justinbaron12345@hotmail.com","$2y$10$oDrD5dTS6nwkS76wnj5NmOZPwepF2LgiNd9Rcu61Qn8biTH/Kk2fq",1), -- Password: 123456
+("justin","baron","5147264522","a@a.a","$2y$10$oDrD5dTS6nwkS76wnj5NmOZPwepF2LgiNd9Rcu61Qn8biTH/Kk2fq",1), -- Password: 123456
 ("mikael","moscato","7265357777","mikmoscato@hotmail.com","$2y$10$EECiyX.ONJaPUw4ZYS4XjOCq/45/xKj/27EbIEWSkCWKqiK8KGcAG",2), -- Password: 654263
 ("luke","brown","8171234355","luke@hotmail.com","$2y$10$WbX1c8OiOrApeAkXm/HEw.CW3vxj5gbdMXmwWVbJcFb73ah.u1Jhi",4), -- Password: 777777
 ("tom","lebreux","9991321888","tom@hotmail.com","$2y$10$/3x8upST6XCI.wruhDAuWOd93vXw.9JbdPcfAWwGmyGwmtz4NLMey",5), -- Password: 987678
