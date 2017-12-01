@@ -42,7 +42,7 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
                 </thead>
                 <tbody>
                     <?php foreach($ads as $ad) { ?>
-                        <tr class="ad" onclick="document.location.href = '/ad?ad_id=<?= $ad["adId"] ?>';">
+                        <tr class="ad" onclick="document.location.href = '/ad.php?ad_id=<?= $ad["adId"] ?>';">
                             <td><?= $ad["title"] ?></td>
                             <td><?= $ad["firstName"]." ".$ad["lastName"] ?></td>
                             <td><?= $ad["price"] ?></td>
