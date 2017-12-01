@@ -28,7 +28,7 @@ function is_valid_password($password) {
 }
 
 function is_valid_price($price) {
-  return $price >= 0;
+  return (float)$price >= 0;
 }
 
 function is_valid_number($number) {

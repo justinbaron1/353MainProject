@@ -246,9 +246,12 @@ SQL;
 
   $ad_id = $mysqli->insert_id;
 
-  $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
-  if (!$result) {
-    return false;
+  if ($image_filename !== '') {
+    error_log($image_filename);
+    $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
+    if (!$result) {
+      return false;
+    }
   }
 
   return true;
@@ -318,19 +321,21 @@ SQL;
   $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
 
+  if ($new_image !== '' && $old_image !== '') {
   $query = <<<SQL
 UPDATE AdImage
 SET url = ?
 WHERE url = ?
 SQL;
-  $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ss", $new_image, $old_image);
-  $stmt->execute();
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("ss", $new_image, $old_image);
+    $stmt->execute();
 
-  // I don't like this but it'll do for now (and forever)
-  if ($mysqli->affected_rows === 0) {
-    create_and_link_ad_image($mysqli, $ad_id, $new_image);
-  } else {
+    // I don't like this but it'll do for now (and forever)
+    if ($mysqli->affected_rows === 0) {
+      create_and_link_ad_image($mysqli, $ad_id, $new_image);
+    } else {
+    }
   }
 
   return $mysqli->error;

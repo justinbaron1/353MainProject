@@ -1,5 +1,9 @@
 <?php
 
+function upload_no_file($file) {
+  return $file["error"] === UPLOAD_ERR_NO_FILE;
+}
+
 function real_upload_path($upload_dir, $file) {
   return getcwd() . "/" . $upload_dir . "/" . $file;
 }

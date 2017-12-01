@@ -68,8 +68,9 @@ if ($_POST) {
       // belongs to the current user
       $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
                                  $category, $sub_category, $type, $file);
-      if (empty($errors)) {
+      if (!empty($errors)) {
         // TODO(tomleb): Handle errors
+        var_dump($errors);
       }
     }
   }

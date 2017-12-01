@@ -11,15 +11,17 @@ function handle_create_ad($user_id, $title, $price, $description,
 
   if (empty($errors)) {
     $mysqli = get_database();
-    $success = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, $file['name']);
+    $success = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, @$file['name']);
     if ($success) {
     } else {
       // Not sure what we should do here ?
       return;
     }
 
-    if (!handle_ad_image_upload($mysqli, $file)) {
-      $errors["imageToUpload"] = "Problem uploading image";
+    if (!upload_no_file($file)) {
+      if (!handle_ad_image_upload($mysqli, $file)) {
+        $errors["imageToUpload"] = "Problem uploading image";
+      }
     }
   }
   return $errors;
@@ -45,12 +47,12 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     $old_image = $old_images["url"];
   }
 
-  if ($image_file) {
+  if (!upload_no_file($image_file)) {
     handle_ad_image_upload($mysqli, $image_file, $old_image);
   }
 
   $error = update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description, 
-                                $type, $category, $sub_category, $image_file['name'], $old_image);
+                                $type, $category, $sub_category, @$image_file['name'], $old_image);
   if ($error) {
     // Heh..
     $errors["update_error"] = "Error updating ad";
