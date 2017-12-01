@@ -160,7 +160,9 @@ function get_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-WHERE adId = ?
+LEFT JOIN Ad_AdImage ON Ad.adId = Ad_AdImage.adId
+LEFT JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
+WHERE Ad.adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   return @$result[0];
