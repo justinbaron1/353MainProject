@@ -15,6 +15,11 @@ $ads = search_ad($mysqli, $category, $subcategory, $province, $city, $type, $sel
 <html>
     <head>
         <?php include_once("common/head.php") ?>
+        <style>
+            .ad:hover{
+                cursor:pointer;
+            }
+        </style>
     </head>
 
     <body>
@@ -35,9 +40,9 @@ $ads = search_ad($mysqli, $category, $subcategory, $province, $city, $type, $sel
                 </thead>
                 <tbody>
                     <?php foreach($ads as $ad) { ?>
-                        <tr onclick="document.location.href = '/ad?ad_id=<?=$ad[adId] ?>';">
+                        <tr class="ad" onclick="document.location.href = '/ad?ad_id=<?= $ad["adId"] ?>';">
                             <td><?= $ad["title"] ?></td>
-                            <td><?= $ad["seller"] ?></td>
+                            <td><?= $ad["firstName"]." ".$ad["lastName"] ?></td>
                             <td><?= $ad["price"] ?></td>
                             <td><?= $ad["subCategory"] ?></td>
                             <td><?= $ad["category"] ?></td>
