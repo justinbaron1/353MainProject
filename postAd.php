@@ -8,7 +8,6 @@ include_once("utils/upload.php");
 include_once("utils/user.php");
 include_once("utils/validation.php");
 
-
 $success = false;
 $ad_id = false;
 $action = "create";
@@ -51,7 +50,7 @@ if ($_POST) {
     // Pray that no categories contain ';'
     list($category, $sub_category) = explode(';', $cats);
     $file = $_FILES["imageToUpload"];
-    $ad_id = @$_POST["adId"];
+    $ad_id = @$_POST["ad_id"];
 
     if ($action === "create") {
       $errors = handle_create_ad($user_id, $title, $price, $description,
@@ -76,7 +75,7 @@ if ($_POST) {
   }
 
 } else if ($_GET) {
-  $ad_id = @$_GET["adId"];
+  $ad_id = @$_GET["ad_id"];
   $ad = get_ad_by_id($mysqli, $ad_id);
 
   if ($ad) {
@@ -126,7 +125,7 @@ function select_if_equal($a, $b) {
             <!-- TODO Add labels to input with error class (See register.php) -->
             <form method="post" enctype="multipart/form-data">
               <?php if ($ad_id) { ?>
-                <input type="hidden" name="adId" value="<?= $ad_id ?>">
+                <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
               <?php } ?>
               <input type="hidden" name="action" value="<?= $action ?>">
               Title: <input type="text" name="title" value="<?= $title ?>">
