@@ -307,15 +307,16 @@ function maybe_add_search_ad_param($value, &$args, &$bind_type) {
   return $result;
 }
 
-function search_ad($mysqli, $province, $city, $category, $type, $seller_name) {
+function search_ad($mysqli, $province, $city, $category, $sub_category, $type, $seller_name) {
   $args = [];
   $bind_type = "";
-  $province_param = maybe_add_search_ad_param($province, $args, $bind_type);
-  $city_param     = maybe_add_search_ad_param($city,     $args, $bind_type);
-  $category_param = maybe_add_search_ad_param($category, $args, $bind_type);
-  $type_param     = maybe_add_search_ad_param($type,     $args, $bind_type);
-  $seller_name_param = "NULL";
+  $province_param     = maybe_add_search_ad_param($province,     $args, $bind_type);
+  $city_param         = maybe_add_search_ad_param($city,         $args, $bind_type);
+  $category_param     = maybe_add_search_ad_param($category,     $args, $bind_type);
+  $sub_category_param = maybe_add_search_ad_param($sub_category, $args, $bind_type);
+  $type_param         = maybe_add_search_ad_param($type,         $args, $bind_type);
 
+  $seller_name_param = "NULL";
   if (!empty($seller_name)) {
     $seller_name_param = "?";
     $args[] = "%$seller_name%";
@@ -328,10 +329,11 @@ FROM Ad
 INNER JOIN Users ON Ad.sellerId = Users.userId
 INNER JOIN Address ON Users.addressId = Address.addressId
 INNER JOIN City ON City.city = Address.city
-WHERE province =  COALESCE($province_param, province)
-AND   City.city = COALESCE($city_param, City.city)
-AND   category =  COALESCE($category_param, category)
-AND   type =      COALESCE($type_param, type)
+WHERE province    = COALESCE($province_param, province)
+AND   City.city   = COALESCE($city_param, City.city)
+AND   category    = COALESCE($category_param, category)
+AND   subCategory = COALESCE($sub_category_param, subCategory)
+AND   type        = COALESCE($type_param, type)
 AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
