@@ -1,25 +1,25 @@
 INSERT INTO Province(province) VALUES
-("quebec"),
-("ontario");
+("Quebec"),
+("Ontario");
 
 INSERT INTO City(city,province) VALUES
-("montreal","quebec"),
-("laval","quebec"),
-("toronto","ontario"),
-("longueuil","quebec");
+("Montreal","Quebec"),
+("Laval","Quebec"),
+("Toronto","Ontario"),
+("Longueuil","Quebec");
 
 INSERT INTO Address(civicNumber,street,postalCode,city) VALUES
-(1234,"jeanne-mance","j4m2f5","laval"),
-(5432,"saint-catherine","j5u1i8","montreal"),
-(7361,"du parc","j4g7f8","montreal"),
-(8765,"amherst","k9h3j1","toronto"),
-(4444,"rue de tom","g8d8j2","longueuil"),
-(3333,"saint-catherine","g4g6h6","montreal"),
-(5555,"saint-catherine","9j98j7","montreal"),
-(8888,"rue sherbrooke", "3h38j8","montreal"),
-(9999,"watson street", "9k7h1w","toronto"),
-(1266,"rue peel", "9h7k9j","montreal"),
-(8765,"rue rachel","9h5f7j","montreal");
+(1234,"jeanne-mance","j4m2f5","Laval"),
+(5432,"saint-catherine","j5u1i8","Montreal"),
+(7361,"du parc","j4g7f8","Montreal"),
+(8765,"amherst","k9h3j1","Toronto"),
+(4444,"rue de tom","g8d8j2","Longueuil"),
+(3333,"saint-catherine","g4g6h6","Montreal"),
+(5555,"saint-catherine","9j98j7","Montreal"),
+(8888,"rue sherbrooke", "3h38j8","Montreal"),
+(9999,"watson street", "9k7h1w","Toronto"),
+(1266,"rue peel", "9h7k9j","Montreal"),
+(8765,"rue rachel","9h5f7j","Montreal");
 
 INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 ("normal",7,0.0),
@@ -126,10 +126,9 @@ INSERT INTO Promotion(duration,price) VALUES
 INSERT INTO AdPromotion(adId,duration,startDate) VALUES
 (1,7,CURRENT_TIMESTAMP);
 
+CALL createTransaction(1,1);
+CALL createTransaction(4,1);
 
-INSERT INTO Transaction(billId,adId) VALUES
-(1,1),
-(5,4);
 
 UPDATE Rating
 SET rating=5

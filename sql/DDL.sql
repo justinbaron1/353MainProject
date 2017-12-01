@@ -438,9 +438,9 @@ BEFORE INSERT
 ON Ad_Store
 FOR EACH ROW
 BEGIN
-	SET @weekendExtraCostPercent=1;
-	IF (WEEKDAY(NEW.dateOfRent)<=5) THEN
+	IF (WEEKDAY(NEW.dateOfRent)<=4) THEN
 		BEGIN
+		SET @weekendExtraCostPercent=0;
 		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
 		END;
 	ELSE
@@ -473,6 +473,24 @@ BEGIN
 	CREATE TABLE paymentProcessingDepartment AS (SELECT * FROM Bill);
 END$$
 DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createTransaction$$
+CREATE PROCEDURE createTransaction(IN adId int, IN paymentMethodId int)
+BEGIN
+	SET @amount = (SELECT price FROM Ad WHERE Ad.adId=adId);
+	IF (EXISTS(SELECT * FROM DebitCard WHERE DebitCard.paymentMethodId=paymentMethodId)) THEN
+		SET @amount:=@amount * 1.01;
+	ELSEIF(EXISTS(SELECT * FROM CreditCard WHERE CreditCard.paymentMethodId=paymentMethodId)=0) THEN
+		SET @amount:=@amount * 1.03;
+	END IF;
+	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
+	(CURRENT_TIMESTAMP, @amount, "transaction",paymentMethodId);
+	INSERT INTO Transaction(billId,adId) VALUES
+	(LAST_INSERT_ID(),adId);
+END$$
+DELIMITER ;
+
 
 
 DELIMITER $$
