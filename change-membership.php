@@ -21,6 +21,16 @@
     <body>
         <?php include("common/navbar.php") ?>
         <div class="container text-center">
+            <?php if(isset($successMessage)) { ?>
+                <div class="alert alert-success">
+                    <?= $successMessage ?>
+                </div>
+            <?php } ?>
+            <?php if(isset($errorMessage)) { ?>
+                <div class="alert alert-danger">
+                    <?= $errorMessage ?>
+                </div>
+            <?php } ?>
             <h1 class="text-center">Change Membership</h1>
             <form class="form-inline" method="POST">
                 <div class="form-group">

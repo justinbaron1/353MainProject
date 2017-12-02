@@ -22,7 +22,7 @@
                 <?php if(!empty($buyerseller_infos)) { ?>
                     <li><a href="/change-membership.php"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
                     <li><a href="/my-ads.php"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
-                    <li><a href="/TODO"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
+                    <li><a href="/rate-transaction.php"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
                 <?php } ?>
                 <?php if($is_admin){ ?>
                     <li><a href="/bills.php"><span class="glyphicon glyphicon-list"></span> Bills</a><li>

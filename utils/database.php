@@ -88,6 +88,32 @@ SQL;
   return $result;
 }
 
+function get_ratings_by_user_id($mysqli, $user_id){
+  $query = <<<SQL
+  SELECT *
+  FROM rating
+  JOIN ad
+  ON rating.adId = ad.adId
+  WHERE userId = ?
+SQL;
+    $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+    log_mysqli_error($mysqli);
+    return $result;
+}
+
+function update_rating($mysqli, $user_id, $ad_id, $rating) {
+  $query = <<<SQL
+UPDATE Rating
+SET rating = ?
+WHERE userId = ?
+AND   adId = ?
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("iii", $rating, $user_id, $ad_id);
+  $stmt->execute();
+  return $mysqli->affected_rows;
+}
+
 function get_all_credit_bills($mysqli){
   $query = <<<SQL
   SELECT *

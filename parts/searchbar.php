@@ -100,7 +100,6 @@
     <select id="type" class="form-control" name="type">
             <option value="">Type..</option>
             <?php foreach($types as $type) { ?>
-                <?php var_dump($type) ?>
                 <option value="<?= $type["type"] ?>"><?= $type["type"] ?></option>
             <?php } ?>
     </select>
