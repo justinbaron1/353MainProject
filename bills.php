@@ -19,54 +19,71 @@
         <?php include("common/navbar.php") ?>
         <div class="container">
             <h1>Bills</h1>
-            <h2>Credit Card paid Bills</h2>
-            <?php if(empty($credit_bills)) { ?>
-                <div class="row text-center">
-                    You haven't published any ad yet.
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#creditCard">Credit Cards</a></li>
+                <li><a data-toggle="tab" href="#debitCard">Debit Cards</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="creditCard" class="tab-pane fade in active">
+                    <?php if(empty($credit_bills)) { ?>
+                        <div class="row text-center">
+                            There are no credit card bills.
+                        </div>
+                    <?php } else {?>
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Amount</th>
+                                    <th>Credit Card Number</td>
+                                    <th>Date of payment</th>
+                                    <th>User Id</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                foreach($credit_bills as $bill) { ?>
+                                    <tr>
+                                        <td><?= $bill["amount"] ?>$</td>                                
+                                        <td><?= $bill["cardNumber"] ?></td>                                
+                                        <td><?= $bill["dateOfPayment"] ?></td>
+                                        <td><?= $bill["userId"] ?></td>                            
+                                    </tr>
+                                                        
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    <?php } ?>
                 </div>
-            <?php } else {?>
-                <table class="table table-hover table-striped">
-                    <thead>
-                        <tr>
-                            <th>Amount</th>
-                            <th>Credit Card Number</td>
-                            <th>Date of payment</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        foreach($credit_bills as $bill) { ?>
-                            <tr>
-                                <td><?= $bill["amount"] ?>$</td>                                
-                                <td><?= $bill["cardNumber"] ?></td>                                
-                                <td><?= $bill["dateOfPayment"] ?></td>
-                            </tr>
-                                                   
-                        <?php } ?>
-                    </tbody>
-                </table>
-            <h1>Bills</h1>
-            <h2>Debit Card paid Bills</h2>
-                <table class="table table-hover table-striped">
-                    <thead>
-                        <tr>
-                            <th>Amount</th>
-                            <th>Debit Card Number</td>
-                            <th>Date of payment</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        foreach($debit_bills as $bill) { ?>
-                            <tr>
-                                <td><?= $bill["amount"] ?>$</td>                                
-                                <td><?= $bill["cardNumber"] ?></td>                                
-                                <td><?= $bill["dateOfPayment"] ?></td>
-                            </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
-            <?php } ?>
+                <div id="debitCard" class="tab-pane fade in active">
+                    <?php if(empty($debit_bills)) { ?>
+                        <div class="row text-center">
+                            There are no deit card bills.
+                        </div>
+                    <?php } else { ?>
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Amount</th>
+                                    <th>Debit Card Number</td>
+                                    <th>Date of payment</th>
+                                    <th>User Id</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                foreach($debit_bills as $bill) { ?>
+                                    <tr>
+                                        <td><?= $bill["amount"] ?>$</td>                                
+                                        <td><?= $bill["cardNumber"] ?></td>                                
+                                        <td><?= $bill["dateOfPayment"] ?></td>
+                                        <td><?= $bill["userId"] ?></td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    <?php } ?>
+                </div>
+            </div>
         </div>
     </body>
 </html>
