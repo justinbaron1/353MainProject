@@ -31,7 +31,7 @@
             <div class="row text-right">
                 <div class="col-md-12">
                     <?php if($can_edit) { ?>
-                        <a class="btn btn-primary" role="button" href="/postAd?ad_id=<?= $ad_id ?>"><span class="glyphicon glyphicon-edit"></span> Edit</a>
+                        <a class="btn btn-primary" role="button" href="/postAd.php?ad_id=<?= $ad_id ?>"><span class="glyphicon glyphicon-edit"></span> Edit</a>
                     <?php } ?>
                 </div>
             </div>

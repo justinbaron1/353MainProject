@@ -96,7 +96,7 @@ function get_all_credit_bills($mysqli){
   ON bill.paymentMethodId =  paymentmethod.paymentMethodId
   JOIN  creditcard
   ON creditcard.paymentMethodId = bill.paymentMethodId
-  ORDER BY bill.dateOfPayment
+  ORDER BY bill.dateOfPayment DESC
 SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
 }
@@ -109,7 +109,7 @@ function get_all_debit_bills($mysqli){
   ON bill.paymentMethodId =  paymentmethod.paymentMethodId
   JOIN debitcard
   ON debitcard.paymentMethodId = bill.paymentMethodId
-  ORDER BY bill.dateOfPayment
+  ORDER BY bill.dateOfPayment DESC
 SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
 }

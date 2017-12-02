@@ -46,7 +46,7 @@
                         $current_date = new DateTime();
                         foreach($ads as $ad) { 
                             $opening_date = new DateTime($ad["endDate"]);?>
-                            <tr class="ad" onclick="document.location.href = '/postAd?ad_id=<?= $ad["adId"] ?>';">
+                            <tr class="ad" onclick="document.location.href = '/postAd.php?ad_id=<?= $ad["adId"] ?>';">
                                 <td><?= $ad["title"] ?></td>
                                 <td><?= $ad["price"] ?></td>
                                 <td><?= $ad["subCategory"] ?></td>
