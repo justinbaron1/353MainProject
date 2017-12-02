@@ -6,6 +6,15 @@ include_once("utils/validation.php");
 
 function handle_create_ad($user_id, $title, $price, $description, 
                           $category, $sub_category, $type, $file) {
+  $mysqli = get_database();
+  if (empty(get_buyerseller_info($mysqli, $user_id))) {
+    log_info("User '$user_id' is not a BuyerSeller. Cannot create ad.");
+    // This is very useless right now.
+    return array(
+      'create_ad' => "Cannot create ad",
+    );
+  }
+
   $errors = validate_ad($title, $price, $description, 
                         $category, $sub_category, $type, $file);
 
@@ -13,7 +22,6 @@ function handle_create_ad($user_id, $title, $price, $description,
     return $errors;
   }
 
-  $mysqli = get_database();
   $ad_id = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, @$file['name']);
   if ($ad_id) {
     log_info("Created new ad '$ad_id' by user '$user_id'");
