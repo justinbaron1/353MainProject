@@ -1,8 +1,7 @@
 <?php
 
 session_start();
-include_once("utils/user.php");
-include_once("utils/database.php");
+include_once("common/user.php");
 ?>
 
 <!DOCTYPE HTML>
@@ -15,7 +14,7 @@ include_once("utils/database.php");
 <?php  include("common/navbar.php")
 // define variables and set to empty values
 $title = $subCategory = $imageToUpload = $description = $promotionPackage = "";
-$promotions = [7, 14, 30];
+$promotions = get_promotions($mysqli);
 $categories = array(
   'Buy and Sell' => array(
     'clothing','books','electronics','musicalInstruments'
@@ -83,12 +82,9 @@ function test_input($data) {
               <br><br>
               Description: <textarea name="description" rows="5" cols="40"></textarea>
               <br><br>
-              <form action="uploadImage.php" method="post" enctype="multipart/form-data">     <!-- Modify action -->
-                  Select image to upload:
-                  <input type="file" name="imageToUpload" id="imageToUpload">
-                  <input type="submit" value="Upload Image" name="submit">
-              </form>
 
+              Select image to upload:
+              <input type="file" name="imageToUpload" id="imageToUpload">
               <br><br>
               <input type="submit" name="submit" value="Submit">
             </form>

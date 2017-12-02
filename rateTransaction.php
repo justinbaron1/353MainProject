@@ -1,7 +1,7 @@
 <?php
 
 session_start();
-include_once("utils/user.php");
+include_once("common/user.php");
 
 ?>
 
