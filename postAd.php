@@ -1,11 +1,7 @@
 <?php
 
 session_start();
-<<<<<<< HEAD
-include_once("common/user.php");
-?>
-=======
->>>>>>> master
+
 
 include_once("common/user.php");
 include_once("utils/database.php");
@@ -17,7 +13,6 @@ $success = false;
 $ad_id = false;
 $action = "create";
 $title = $subCategory = $imageToUpload = $description = $promotionPackage = "";
-<<<<<<< HEAD
 $promotions = get_promotions($mysqli);
 $categories = array(
   'Buy and Sell' => array(
@@ -32,13 +27,11 @@ $categories = array(
   'Category4' => array(
     'subCategory1','subCategory2','subCategory3','subCategory4'
   )
-=======
 
 $mysqli = get_database();
 $promotions = array_map(
   function ($promotion) { return $promotion['duration']; },
   get_promotions($mysqli)
->>>>>>> master
 );
 
 $categories = get_categories_and_subcategories($mysqli);
@@ -186,16 +179,8 @@ function select_if_equal($a, $b) {
 
               Description: <textarea name="description" rows="5" cols="40"><?= $description ?></textarea>
               <br><br>
-<<<<<<< HEAD
-=======
-                  Select image to upload:
+       Select image to upload:
               <input type="file" name="imageToUpload" id="imageToUpload">
->>>>>>> master
-
-              Select image to upload:
-              <input type="file" name="imageToUpload" id="imageToUpload">
-              <br><br>
-              <input type="submit" name="submit" value="Submit">
             </form>
         </div>
     </div>
