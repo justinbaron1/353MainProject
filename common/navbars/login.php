@@ -18,17 +18,17 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><?= $user["firstName"]." ".$user["lastName"] ?><span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li><a href="/profile"><span class="glyphicon glyphicon-user"></span> Profile</a><li>
+                <li><a href="/profile.php"><span class="glyphicon glyphicon-user"></span> Profile</a><li>
                 <?php if(!empty($buyerseller_infos)) { ?>
-                    <li><a href="/change-membership"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
-                    <li><a href="/my-ads"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
+                    <li><a href="/change-membership.php"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
+                    <li><a href="/my-ads.php"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
                     <li><a href="/TODO"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>
                 <?php } ?>
                 <?php if($is_admin){ ?>
-                    <li><a href="/bills"><span class="glyphicon glyphicon-list"></span> Bills</a><li>
-                    <li><a href="/trigger-backup"><span class="glyphicon glyphicon-save"></span> Backup Bills</a><li>
+                    <li><a href="/bills.php"><span class="glyphicon glyphicon-list"></span> Bills</a><li>
+                    <li><a href="/trigger-backup.php"><span class="glyphicon glyphicon-save"></span> Backup Bills</a><li>
                 <?php } ?>
-                <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Log out</a><li>
+                <li><a href="/logout.php"><span class="glyphicon glyphicon-log-out"></span> Log out</a><li>
             </ul>
         </li>
     </ul>

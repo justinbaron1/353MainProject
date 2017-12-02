@@ -9,6 +9,6 @@
 <div class="collapse navbar-collapse" id="myNavbar">
     <ul class="nav navbar-nav navbar-right">
         <li><a href="/" class="slide-section">Login</a></li>
-        <li><a href="/register" class="slide-section">Register</a></li>
+        <li><a href="/register.php" class="slide-section">Register</a></li>
     </ul>
 </div>
