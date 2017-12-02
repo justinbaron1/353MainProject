@@ -42,7 +42,7 @@
                             if(!empty($images_urls)){
                                 foreach($images_urls as $url){ ?>
                                     <div class="col-md-12">
-                                        <img src="<?= $url ?>"/>
+                                        <img src="<?= $url["adImageUrl"] ?>"/>
                                     </div>
                                 <?php }
                             } else { ?>
