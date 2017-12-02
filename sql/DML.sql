@@ -163,9 +163,9 @@ INSERT INTO Promotion(duration,price) VALUES
 (14,50.00),
 (30,90.00);
 
-INSERT INTO AdPromotion(adId,duration,startDate) VALUES
-(1,7,CURRENT_TIMESTAMP),
-(3,30,CURRENT_TIMESTAMP);
+INSERT INTO AdPromotion(adId,duration) VALUES
+(1,7,),
+(3,30,);
 
 CALL createTransaction(1,1);
 CALL createTransaction(4,1);

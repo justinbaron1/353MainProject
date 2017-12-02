@@ -224,7 +224,7 @@ CREATE TABLE Promotion(
 CREATE TABLE AdPromotion(
 	adId int,
 	duration int,
-	startDate TIMESTAMP,
+	startDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	billId int,
 	PRIMARY KEY (adId),
 	FOREIGN KEY (adId) REFERENCES Ad(adId),
