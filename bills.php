@@ -38,6 +38,29 @@
                         foreach($credit_bills as $bill) { ?>
                             <tr>
                                 <td><?= $bill["amount"] ?>$</td>                                
+                                <td><?= $bill["cardNumber"] ?></td>                                
+                                <td><?= $bill["dateOfPayment"] ?></td>
+                            </tr>
+                                                   
+                        <?php } ?>
+                    </tbody>
+                </table>
+            <h1>Bills</h1>
+            <h2>Debit Card paid Bills</h2>
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Debit Card Number</td>
+                            <th>Date of payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        foreach($debit_bills as $bill) { ?>
+                            <tr>
+                                <td><?= $bill["amount"] ?>$</td>                                
+                                <td><?= $bill["cardNumber"] ?></td>                                
                                 <td><?= $bill["dateOfPayment"] ?></td>
                             </tr>
                         <?php } ?>
