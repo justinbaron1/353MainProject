@@ -64,19 +64,25 @@ INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 (12,2018,7),
 (02,2019,8),
 (01,2021,9),
-(07,2020,10);
+(07,2020,10),
+(04,2020,NULL),
+(03,2019,NULL),
+(06,2021,NULL);
 
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
 (2,222333444,123),
 (4,888444666,987),
 (5,451355111,434),
-(6,982578126,666);
+(6,982578126,666),
+(9,736193728,456),
+(10,38719582,767);
 
 INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
 (1,777222444),
 (3,888123123),
 (7,564728878),
-(8,987678987);
+(8,987678987),
+(11,219843127);
 
 INSERT INTO Category(category) VALUES
 ("buy and sell"),
@@ -111,7 +117,9 @@ INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUE
 (7,"SUPERBE Condo 6 1/2 - 3 Chambres - ELECTROS - À VOIR!!", 2500.00, "Spacieux condo haut de gamme dans une nouvelle construction disponible à partir du 1er Janvier 2018. Le triplex est situé au pied du Mont-Royal près de la rue Des Pins, à proximité de l’Université McGill.","sell","rent","apartments"),
 (8,"I need help for mathematics", 20.00, "I would like to have tutoring for math twice a week 20$/hour","buy","services","tutors"),
 (9,"canada goose medium for men",600.00,"1 year old plz buy it","sell","used","clothing"),
-(10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments");
+(10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments"),
+(10,"wireless Controller for PS4",89.99,"Precision controller enhanced to offer players absolute control for all games on PlayStation 4. ","sell","buy and sell","electronics");
+
 
 INSERT INTO StrategicLocation(name,clientsPerHour,costPercent) VALUES
 ("sl1",400,20),
@@ -142,8 +150,10 @@ INSERT INTO StorePrices(momentOfWeek,hourlyPrice,deliveryHourlyPrice) VALUES
 
 
 INSERT INTO Ad_Store(adId,storeId,dateOfRent,timeStart,timeEnd,includesDeliveryServices) VALUES
-(1,1,'2017-11-17','09:00:00','20:00:00',0),
-(4,2,'2017-12-02','10:00:00','19:00:00',1);
+(1,1,'2017-12-17','09:00:00','20:00:00',0),
+(4,2,'2017-12-22','10:00:00','19:00:00',1),
+(9,3,'2018-01-02','09:00:00','19:00:00',0),
+(10,4,'2017-12-29','08:00:00','19:00:00',1);
 
 INSERT INTO Promotion(duration,price) VALUES
 (7,12.99),
@@ -155,6 +165,8 @@ INSERT INTO AdPromotion(adId,duration,startDate) VALUES
 
 CALL createTransaction(1,1);
 CALL createTransaction(4,1);
+CALL createTransaction(9,9);
+CALL createTransaction(10,10);
 
 INSERT INTO AdImage(url) VALUES
 ("https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sony-PlayStation-PS3-Slim-Console-FL.jpg/220px-Sony-PlayStation-PS3-Slim-Console-FL.jpg"),
@@ -165,7 +177,8 @@ INSERT INTO AdImage(url) VALUES
 ("http://www.entremontrealais.com/wp-content/uploads/2016/12/875291-500x375.jpg"),
 ("http://santafetutor.com/wp-content/uploads/2012/10/math-tutoring.jpg"),
 ("https://cdn.saintbernard.com/media/extendware/ewimageopt/media/inline/74/c/canada-goose-mens-expedition-parka-b38.jpg"),
-("https://i.ebayimg.com/00/s/NTMzWDgwMA==/z/Y5wAAOSwAaJaIbdu/$_59.JPG");
+("https://i.ebayimg.com/00/s/NTMzWDgwMA==/z/Y5wAAOSwAaJaIbdu/$_59.JPG"),
+("https://8fddbd524b5976832632-bb1139a233dd1615ca84f744f3688ee9.ssl.cf5.rackcdn.com/ps4/shell_designs/solid/f-standard-solid.png");
 
 INSERT INTO Ad_AdImage(adImageUrl,adId) VALUES
 ("https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sony-PlayStation-PS3-Slim-Console-FL.jpg/220px-Sony-PlayStation-PS3-Slim-Console-FL.jpg",1),
@@ -176,16 +189,11 @@ INSERT INTO Ad_AdImage(adImageUrl,adId) VALUES
 ("http://www.entremontrealais.com/wp-content/uploads/2016/12/875291-500x375.jpg",6),
 ("http://santafetutor.com/wp-content/uploads/2012/10/math-tutoring.jpg",7),
 ("https://cdn.saintbernard.com/media/extendware/ewimageopt/media/inline/74/c/canada-goose-mens-expedition-parka-b38.jpg",8),
-("https://i.ebayimg.com/00/s/NTMzWDgwMA==/z/Y5wAAOSwAaJaIbdu/$_59.JPG",9);
+("https://i.ebayimg.com/00/s/NTMzWDgwMA==/z/Y5wAAOSwAaJaIbdu/$_59.JPG",9),
+("https://8fddbd524b5976832632-bb1139a233dd1615ca84f744f3688ee9.ssl.cf5.rackcdn.com/ps4/shell_designs/solid/f-standard-solid.png",10);
 
-UPDATE Rating
-SET rating=5
-WHERE userId=2 AND adId=1;
-
-UPDATE Rating
-SET rating=3
-WHERE userId=2 AND adId=4;
-
+UPDATE Rating SET rating=5 WHERE userId=2 AND adId=1;
+UPDATE Rating SET rating=3 WHERE userId=2 AND adId=4;
 
 
 

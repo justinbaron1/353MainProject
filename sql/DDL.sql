@@ -120,7 +120,7 @@ CREATE TABLE PaymentMethod (
 	paymentMethodId int AUTO_INCREMENT,
 	expiryMonth int NOT NULL,
 	expiryYear int NOT NULL,
-	userId int NOT NULL,
+	userId int,
 	PRIMARY KEY (paymentMethodId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId)
 );
