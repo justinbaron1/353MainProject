@@ -173,6 +173,7 @@ CREATE TABLE Ad (
 	description text(1000),
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date,
+	priority int NOT NULL DEFAULT 2,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -192,12 +193,12 @@ CREATE TABLE Transaction (
 
 
 CREATE TABLE AdImage (
-	url varchar(2083),
+	url varchar(255),
 	PRIMARY KEY (url)
 );
 
 CREATE TABLE Ad_AdImage (
-	adImageUrl varchar(2083),
+	adImageUrl varchar(255),
 	adId int,
 	PRIMARY KEY (adImageUrl, adId),
 	FOREIGN KEY (adImageUrl) REFERENCES AdImage(url)
@@ -402,6 +403,20 @@ DO
 DELIMITER ;
 
 DELIMITER $$
+DROP TRIGGER IF EXISTS packagePriority$$
+CREATE TRIGGER packagePriority
+AFTER INSERT
+ON AdPromotion
+FOR EACH ROW
+BEGIN
+	UPDATE Ad
+	SET priority=1
+	WHERE Ad.adId=NEW.adId;
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
 DROP TRIGGER IF EXISTS preventAdPromotionUpdate$$
 CREATE TRIGGER preventAdPromotionUpdate
 BEFORE UPDATE
@@ -521,6 +536,21 @@ CREATE EVENT monthlyBackup
 ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 23:00:00'
 DO
 	CALL generateBackup(); $$
+DELIMITER ;
+
+DELIMITER $$
+DROP EVENT IF EXISTS checkPromotionExpired$$
+CREATE EVENT checkPromotionExpired
+ON SCHEDULE EVERY 1 MINUTE
+# ON SCHEDULE EVERY 1 DAY STARTS '2018-01-01 00:00:00'
+DO
+	BEGIN
+		UPDATE Ad
+		SET priority=2
+		WHERE (DATEDIFF(CURRENT_TIMESTAMP,Ad.startDate)>(SELECT Promotion.duration FROM Promotion
+														 JOIN AdPromotion ON Promotion.duration=AdPromotion.duration
+														 WHERE Ad.adId=AdPromotion.adId));
+	END$$
 DELIMITER ;
 
 DELIMITER $$
