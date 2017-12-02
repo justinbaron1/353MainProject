@@ -330,13 +330,13 @@ SQL;
 function is_seller($mysqli, $ad_id, $user_id) {
   $query = <<<SQL
   SELECT *
-  FROM ad
+  FROM Ad
   WHERE  adId = ? 
   AND sellerId = ?
 SQL;
   $results = fetch_assoc_all_prepared($mysqli, $query, "ii", [$ad_id, $user_id]);
   log_mysqli_error($mysqli);
-  return  !empty($results);
+  return !empty($results);
 }
 
 function can_edit_ad($mysqli, $ad_id, $user_id) {
@@ -539,6 +539,7 @@ function get_database() {
     $ini = parse_ini_file("sikrits.env");
     log_info('Initializing database connection..');
     $mysqli = connect_database($ini["MYSQL_HOST"], $ini["MYSQL_USER"], $ini["MYSQL_PASSWORD"], $ini["MYSQL_DATABASE"]);
+    log_mysqli_error($mysqli);
   }
   return $mysqli;
 }
