@@ -7,6 +7,8 @@
  *
  */
 
+include_once("utils/log.php");
+
 function change_membership($mysqli, $user_id, $name){
   $query = <<<SQL
   UPDATE BuyerSeller
@@ -81,7 +83,9 @@ SELECT *
 FROM Ad
 WHERE sellerId = ?
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+  log_mysqli_error($mysqli);
+  return $result;
 }
 
 function get_all_credit_bills($mysqli){
@@ -179,6 +183,7 @@ FROM  Users
 WHERE email = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "s", [$email]);
+  log_mysqli_error($mysqli);
   return @$result[0];
 }
 
@@ -235,7 +240,9 @@ function get_ad_images_by_ad_id($mysqli, $ad_id) {
   FROM Ad_AdImage
   WHERE adId = ?
 SQL;
-    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  log_mysqli_error($mysqli);
+  return $result;
 }
 
 function get_stores_by_ad_id($mysqli, $ad_id){
@@ -251,7 +258,9 @@ function get_stores_by_ad_id($mysqli, $ad_id){
   WHERE adId = ?
   ORDER BY dateOfRent
 SQL;
-    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  log_mysqli_error($mysqli);
+  return $result;
 }
 
 function do_bills_backup($mysqli){
@@ -259,7 +268,7 @@ function do_bills_backup($mysqli){
   $stmt = $mysqli->prepare($query);
   $stmt->execute();
 
-  if ($mysqli->error) {
+  if (log_mysqli_error($mysqli->error)) {
     return false;
   }
   return true;
@@ -276,22 +285,20 @@ SQL;
   $stmt->bind_param("isissss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
 
-  if ($mysqli->error) {
-    error_log($mysqli->error);
+  if (log_mysqli_error($mysqli)) {
     return false;
   }
 
   $ad_id = $mysqli->insert_id;
 
   if ($image_filename !== '') {
-    error_log($image_filename);
     $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
     if (!$result) {
       return false;
     }
   }
 
-  return true;
+  return $ad_id;
 }
 
 function create_and_link_ad_image($mysqli, $ad_id, $image_filename) {
@@ -302,8 +309,7 @@ SQL;
   $stmt->bind_param("s", $image_filename);
   $stmt->execute();
 
-  if ($mysqli->error) {
-    error_log($mysqli->error);
+  if (log_mysqli_error($mysqli)) {
     return false;
   }
 
@@ -314,8 +320,7 @@ SQL;
   $stmt->bind_param("si", $image_filename, $ad_id);
   $stmt->execute();
 
-  if ($mysqli->error) {
-    error_log($mysqli->error);
+  if (log_mysqli_error($mysqli)) {
     return false;
   }
 
@@ -325,12 +330,13 @@ SQL;
 function is_seller($mysqli, $ad_id, $user_id) {
   $query = <<<SQL
   SELECT *
-  FROM ad
+  FROM Ad
   WHERE  adId = ? 
   AND sellerId = ?
 SQL;
   $results = fetch_assoc_all_prepared($mysqli, $query, "ii", [$ad_id, $user_id]);
-  return  !empty($results);
+  log_mysqli_error($mysqli);
+  return !empty($results);
 }
 
 function can_edit_ad($mysqli, $ad_id, $user_id) {
@@ -358,8 +364,13 @@ SQL;
   $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
 
-  if ($new_image !== '' && $old_image !== '') {
-  $query = <<<SQL
+  if ($new_image === '') {
+    log_info("No image uploaded, skipping.");
+    return [];
+  }
+
+  if ($old_image) {
+    $query = <<<SQL
 UPDATE AdImage
 SET url = ?
 WHERE url = ?
@@ -367,12 +378,9 @@ SQL;
     $stmt = $mysqli->prepare($query);
     $stmt->bind_param("ss", $new_image, $old_image);
     $stmt->execute();
-
-    // I don't like this but it'll do for now (and forever)
-    if ($mysqli->affected_rows === 0) {
-      create_and_link_ad_image($mysqli, $ad_id, $new_image);
-    } else {
-    }
+    log_mysqli_error($mysqli);
+  } else {
+    create_and_link_ad_image($mysqli, $ad_id, $new_image);
   }
 
   return $mysqli->error;
@@ -386,6 +394,7 @@ SQL;
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("i", $ad_id);
   $stmt->execute();
+  log_mysqli_error($mysqli);
   return $mysqli->affected_rows;
 }
 
@@ -397,6 +406,7 @@ SQL;
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("sssssi", $first_name, $last_name, $phone, $email, $password, $address_id);
   $stmt->execute();
+  log_mysqli_error($mysqli);
   return $mysqli->insert_id;
 }
 
@@ -408,6 +418,7 @@ SQL;
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("ssss", $civic_number, $street, $postal_code, $city);
   $stmt->execute();
+  log_mysqli_error($mysqli);
   return $mysqli->insert_id;
 }
 
@@ -450,7 +461,9 @@ AND   subCategory = COALESCE($sub_category_param, subCategory)
 AND   type        = COALESCE($type_param, type)
 AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
+  $result = fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
+  log_mysqli_error($mysqli);
+  return $result;
 }
 
 function get_categories_and_subcategories($mysqli) {
@@ -459,6 +472,7 @@ SELECT *
 FROM SubCategory
 SQL;
   $cats = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
   $result = [];
   foreach ($cats as $cat) {
     $result[$cat['category']][] = $cat['subCategory'];
@@ -472,6 +486,7 @@ function get_provinces_and_cities($mysqli){
   FROM City
 SQL;
   $provs = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
   $result = [];
   foreach ($provs as $prov) {
     $result[$prov['province']][] = $prov['city'];
@@ -484,7 +499,9 @@ function get_different_ad_types($mysqli){
   SELECT DISTINCT type
   FROM Ad
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query);
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
 }
 
 function to_reference_values($array) {
@@ -520,8 +537,9 @@ function get_database() {
   if (!$mysqli) {
     // INFO Heh, it's a .env file but a simple one so we can parse it as .ini file.. for now..
     $ini = parse_ini_file("sikrits.env");
-    error_log('Initializing database connection..');
+    log_info('Initializing database connection..');
     $mysqli = connect_database($ini["MYSQL_HOST"], $ini["MYSQL_USER"], $ini["MYSQL_PASSWORD"], $ini["MYSQL_DATABASE"]);
+    log_mysqli_error($mysqli);
   }
   return $mysqli;
 }
@@ -529,7 +547,7 @@ function get_database() {
 function connect_database($hostname, $user, $password, $database) {
   $mysqli = new mysqli($hostname, $user, $password, $database);
   if ($mysqli->connect_errno) {
-    error_log("Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error);
+    log_info("Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error);
   }
   return $mysqli;
 }
