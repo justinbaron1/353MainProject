@@ -9,27 +9,38 @@ function handle_create_ad($user_id, $title, $price, $description,
   $errors = validate_ad($title, $price, $description, 
                         $category, $sub_category, $type, $file);
 
-  if (empty($errors)) {
-    $mysqli = get_database();
-    $success = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, @$file['name']);
-    if ($success) {
-    } else {
-      // Not sure what we should do here ?
-      return;
-    }
+  if (!empty($errors)) {
+    return $errors;
+  }
 
-    if (!upload_no_file($file)) {
-      if (!handle_ad_image_upload($mysqli, $file)) {
-        $errors["imageToUpload"] = "Problem uploading image";
-      }
+  $mysqli = get_database();
+  $ad_id = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, @$file['name']);
+  if ($ad_id) {
+    log_info("Created new ad '$ad_id' by user '$user_id'");
+  } else {
+    log_info("Failed creating new ad by user '$user_id'");
+    return;
+  }
+
+  if (is_file_to_upload($file)) {
+    if (!handle_ad_image_upload($mysqli, $file)) {
+      $errors["imageToUpload"] = "Problem uploading image";
     }
+  } else {
+    log_info("No image uploaded. Nothing to do.");
   }
   return $errors;
 }
 
 function handle_update_ad($ad_id, $user_id, $title, $price, $description, 
                           $category, $sub_category, $type, $image_file) {
-  // TODO(tomleb): Actually update the ad
+  $mysqli = get_database();
+
+  if (!can_edit_ad($mysqli, $ad_id, $user_id)) {
+    log_info("User '$user_id' is not allowed to modify ad '$ad_id'");
+    return $errors;
+  }
+
   $errors = validate_ad($title, $price, $description, 
                         $category, $sub_category, $type, $image_file);
 
@@ -37,25 +48,25 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     return $errors;
   }
 
-  $mysqli = get_database();
-
   $old_images = get_ad_image_by_id($mysqli, $ad_id);
-
-  if (empty($old_images)) {
-    $old_image = "";
-  } else {
+  $old_image = false;
+  if (!empty($old_images)) {
     $old_image = $old_images["url"];
   }
 
-  if (!upload_no_file($image_file)) {
-    handle_ad_image_upload($mysqli, $image_file, $old_image);
+  if (is_file_to_upload($image_file)) {
+    if (!handle_ad_image_upload($mysqli, $image_file, $old_image)) {
+        $errors["imageToUpload"] = "Problem uploading image";
+    }
   }
 
   $error = update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description, 
                                 $type, $category, $sub_category, @$image_file['name'], $old_image);
   if ($error) {
-    // Heh..
+    log_info("Problem updating ad '$ad_id' by user '$user_id'");
     $errors["update_error"] = "Error updating ad";
+  } else {
+    log_info("Updated ad '$ad_id' by user '$user_id'");
   }
 
   return $errors;
