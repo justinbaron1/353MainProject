@@ -119,6 +119,15 @@ function select_if_equal($a, $b) {
   }
 }
 
+function form_group($errors, $label) {
+  if (isset($errors[$label])) {
+    echo "<div class=\"form-group has-error\"><label class=\"control-label\" for=\"${label}\"> ${errors[$label]}</label>";
+  } else {
+    echo '<div class="form-group">';
+  }
+}
+
+
 ?>
 
 <!DOCTYPE HTML>
@@ -144,43 +153,55 @@ function select_if_equal($a, $b) {
                 <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
               <?php } ?>
               <input type="hidden" name="action" value="<?= $action ?>">
-              Title: <input type="text" name="title" value="<?= $title ?>">
+              <?php form_group($errors, "title");  ?>
+                  Title: <input type="text" name="title" value="<?= $title ?>">
+              </div>
               <br><br>
-              Price: <input type="number" name="price" value="<?= $price ?>">
+              <?php form_group($errors, "price");  ?>
+                  Price: <input type="number" name="price" value="<?= $price ?>">
+              </div>
               <br><br>
-              Type:
+              <?php form_group($errors, "type");  ?>
+                  Type:
+                  <br><br>
+                  <select name="type">
+                  <option value="buy"  <?= select_if_equal($type, 'buy') ?>>Buy</option>
+                  <option value="sell" <?= select_if_equal($type, 'sell') ?>>Sell</option>
+                  </select>
+              </div>
+              <?php form_group($errors, "first_name");  ?>
+                  Category:
+                  <select name="subCategory">
+                    <?php foreach ($categories as $category => $subcategories) { ?>
+                      <optgroup label="<?= $category ?>">
+                      <? foreach ($subcategories as $subcategory) { ?>
+                      <option value="<?= $category ?>;<?= $subcategory ?>" <?= select_if_equal($sub_category, $subcategory) ?>>
+                          <?= $subcategory ?>
+                        </option>
+                      <?php } ?>
+                      </optgroup>
+                    <?php } ?>
+                  </select>
+              </div>
               <br><br>
-              <select name="type">
-              <option value="buy"  <?= select_if_equal($type, 'buy') ?>>Buy</option>
-              <option value="sell" <?= select_if_equal($type, 'sell') ?>>Sell</option>
-              </select>
-              Category:
-              <select name="subCategory">
-                <?php foreach ($categories as $category => $subcategories) { ?>
-                  <optgroup label="<?= $category ?>">
-                  <? foreach ($subcategories as $subcategory) { ?>
-                  <option value="<?= $category ?>;<?= $subcategory ?>" <?= select_if_equal($sub_category, $subcategory) ?>>
-                      <?= $subcategory ?>
-                    </option>
-                  <?php } ?>
-                  </optgroup>
-                <?php } ?>
-              </select>
-
+              <?php form_group($errors, "promotionPackage");  ?>
+                    PromotionPackage:
+                    <select name="promotionPackage">
+                    <!-- TODO Only allow updating of promotion when not already chosen -->
+                    <?php foreach ($promotions as $duration) { ?>
+                      <option value="<?= $duration ?>"><?= $duration ?> Days Promotion</option>
+                    <?php } ?>
+                    </select>
+              </div>
               <br><br>
-              PromotionPackage:
-              <select name="promotionPackage">
-              <!-- TODO Only allow updating of promotion when not already chosen -->
-              <?php foreach ($promotions as $duration) { ?>
-                <option value="<?= $duration ?>"><?= $duration ?> Days Promotion</option>
-              <?php } ?>
-              </select>
+              <?php form_group($errors, "description");  ?>
+                  Description: <textarea name="description" rows="5" cols="40"><?= $description ?></textarea>
+              </div>
               <br><br>
-
-              Description: <textarea name="description" rows="5" cols="40"><?= $description ?></textarea>
-              <br><br>
-       Select image to upload:
+              <?php form_group($errors, "imageToUpload");  ?>
+              Select image to upload:
               <input type="file" name="imageToUpload" id="imageToUpload">
+            </div>
             </form>
         </div>
     </div>
