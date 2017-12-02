@@ -14,7 +14,9 @@
 </div>
 <div class="collapse navbar-collapse" id="myNavbar">
     <ul class="nav navbar-nav navbar-right">
-        <li><a href="postAd.php" class="slide-section"><span class="glyphicon glyphicon-plus"></span> Create an Ad</a></li>
+        <?php if(!empty($buyerseller_infos)) { ?>
+            <li><a href="postAd.php" class="slide-section"><span class="glyphicon glyphicon-plus"></span> Create an Ad</a></li>
+        <?php } ?>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><?= $user["firstName"]." ".$user["lastName"] ?><span class="caret"></span></a>
             <ul class="dropdown-menu">

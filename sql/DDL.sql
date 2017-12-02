@@ -192,12 +192,12 @@ CREATE TABLE Transaction (
 
 
 CREATE TABLE AdImage (
-	url varchar(255),
+	url varchar(2083),
 	PRIMARY KEY (url)
 );
 
 CREATE TABLE Ad_AdImage (
-	adImageUrl varchar(255),
+	adImageUrl varchar(2083),
 	adId int,
 	PRIMARY KEY (adImageUrl, adId),
 	FOREIGN KEY (adImageUrl) REFERENCES AdImage(url)
