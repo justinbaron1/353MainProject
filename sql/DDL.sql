@@ -392,9 +392,7 @@ DELIMITER ;
 DELIMITER $$
 DROP EVENT IF EXISTS membershipBill$$
 CREATE EVENT membershipBill
-ON SCHEDULE EVERY 1 MINUTE
-# release statement
-# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
+ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
 DO
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
@@ -492,7 +490,7 @@ BEGIN
 	SET @amount = (SELECT price FROM Ad WHERE Ad.adId=adId);
 	IF (EXISTS(SELECT * FROM DebitCard WHERE DebitCard.paymentMethodId=paymentMethodId)) THEN
 		SET @amount:=@amount * (1 + (SELECT extraPercent FROM PaymentExtra WHERE cardType="debit")/100);
-	ELSEIF(EXISTS(SELECT * FROM CreditCard WHERE CreditCard.paymentMethodId=paymentMethodId)=0) THEN
+	ELSEIF(EXISTS(SELECT * FROM CreditCard WHERE CreditCard.paymentMethodId=paymentMethodId)) THEN
 		SET @amount:=@amount * (1 + (SELECT extraPercent FROM PaymentExtra WHERE cardType="credit")/100);
 	END IF;
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
@@ -520,9 +518,7 @@ DELIMITER ;
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$
 CREATE EVENT monthlyBackup
-ON SCHEDULE EVERY 1 MINUTE
-# release statement
-# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 23:00:00'
+ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 23:00:00'
 DO
 	CALL generateBackup(); $$
 DELIMITER ;
