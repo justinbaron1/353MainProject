@@ -29,6 +29,9 @@ $category     = "";
 $sub_category = "";
 $type = "";
 
+$user = $_SESSION["user"];
+$user_id = $user["userId"];
+
 if ($_POST) {
   $cats = test_input(@$_POST["subCategory"]);
 
@@ -41,8 +44,6 @@ if ($_POST) {
   if ($action === "create" ||
       $action === "update") {
 
-    $user = $_SESSION["user"];
-    $user_id = $user["userId"];
     $title = test_input(@$_POST["title"]);
     $price = @$_POST["price"];
     $description = test_input(@$_POST["description"]);
@@ -59,9 +60,10 @@ if ($_POST) {
         $success = true;
       } else {
         // TODO(tomleb): Redirect to detail view of the ad ?
-        error_log(print_r($errors, true));
+        /*
         header("Location: index.php");
         return;
+         */
       }
     } else {
       // TODO(tomleb): Allow only updating of ad if the user is admin OR the ad
@@ -69,7 +71,6 @@ if ($_POST) {
       $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
                                  $category, $sub_category, $type, $file);
       if (!empty($errors)) {
-        // TODO(tomleb): Handle errors
         var_dump($errors);
       }
     }
@@ -77,18 +78,19 @@ if ($_POST) {
 
 } else if ($_GET) {
   $ad_id = @$_GET["ad_id"];
-  $ad = get_ad_by_id($mysqli, $ad_id);
+  if (can_edit_ad($mysqli, $ad_id, $user_id)) {
+    $ad = get_ad_by_id($mysqli, $ad_id);
 
-  if ($ad) {
-    $action = "update";
-    $title = $ad["title"];
-    $price = $ad["price"];
-    $description  = $ad["description"];
-    $category     = $ad["category"];
-    $sub_category = $ad["subCategory"];
-    $type = $ad["type"];
+    if ($ad) {
+      $action = "update";
+      $title = $ad["title"];
+      $price = $ad["price"];
+      $description  = $ad["description"];
+      $category     = $ad["category"];
+      $sub_category = $ad["subCategory"];
+      $type = $ad["type"];
+    }
   }
-
 }
 
 function test_input($data) {
