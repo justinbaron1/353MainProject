@@ -13,7 +13,11 @@ if ($_POST && isset($_POST["email"]) && isset($_POST["password"])) {
   if (!$valid) {
     $error = 'Unable to login. Please make sure ...';
   }
+}
 
+if(isset($_SESSION["user"])){
+    header("Location: ads.php");
+    return;
 }
 
 ?>

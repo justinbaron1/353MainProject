@@ -22,21 +22,21 @@ SQL;
  function is_admin($mysqli, $user_id){
     $query = <<<SQL
   SELECT *
-  FROM admin
+  FROM Admin
   WHERE userId = ?
 SQL;
-  $results = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  $results = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
   return  !empty($results);
  }
 
 function get_buyerseller_info($mysqli, $user_id){
   $query = <<<SQL
 SELECT *
-FROM buyerseller
+FROM BuyerSeller
 WHERE userId = ?
 SQL;
 
-  $result = fetch_assoc_all_prepared($mysqli, $query, "i", $user_id);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
   return @$result[0];
 }
  
@@ -44,9 +44,10 @@ SQL;
  function get_all_membership_plans($mysqli) {
   $query = <<<SQL
 SELECT *
-FROM membershipplan
+FROM MembershipPlan
 SQL;
-    return fetch_assoc($mysqli, $query);
+
+    return fetch_assoc_all_prepared($mysqli, $query);
  }
 
 // TODO(tomleb): Better error handling
@@ -81,6 +82,36 @@ FROM Ad
 WHERE sellerId = ?
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+}
+
+function get_all_credit_bills($mysqli){
+  $query = <<<SQL
+  SELECT *
+  FROM bill
+  JOIN paymentmethod
+  ON bill.paymentMethodId =  paymentmethod.paymentMethodId
+  LEFT JOIN  creditcard
+  ON creditcard.paymentMethodId = bill.paymentMethodId
+  JOIN users
+  ON users.userId = paymentmethod.userId
+  ORDER BY bill.dateOfPayment
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query);
+}
+
+function get_all_debit_bills($mysqli){
+  $query = <<<SQL
+  SELECT *
+  FROM bill
+  JOIN paymentmethod
+  ON bill.paymentMethodId =  paymentmethod.paymentMethodId
+  LEFT JOIN debitcard
+  ON debitcard.paymentMethodId = bill.paymentMethodId
+  JOIN users
+  ON users.userId = paymentmethod.userId
+  ORDER BY bill.dateOfPayment
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query);
 }
 
 function get_user_transactions($mysqli, $user_id) {
@@ -159,44 +190,196 @@ function get_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
+LEFT JOIN Ad_AdImage ON Ad.adId = Ad_AdImage.adId
+LEFT JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
+WHERE Ad.adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  return @$result[0];
+}
+
+function get_ads_by_user_id($mysqli, $user_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+WHERE sellerId = ?
+ORDER BY startDate DESC
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+}
+
+// TODO(tomleb): We support multiple images by ads but we will
+// just return this one for now..
+function get_ad_image_by_id($mysqli, $ad_id) {
+  $query = <<<SQL
+SELECT *
+FROM Ad_AdImage
+INNER JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
 WHERE adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   return @$result[0];
 }
 
-function create_ad($mysqli, $user_id, $title, $price, $description, $end_date,
-                   $type, $category, $sub_category) {
+function get_full_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
-INSERT INTO Ad(sellerId,title,price,description,endDate,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+SELECT *
+FROM Ad
+JOIN buyerseller
+ON buyerseller.userId = ad.sellerId
+WHERE adId = ?
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  return @$result[0];
+}
+
+function get_ad_images_by_ad_id($mysqli, $ad_id) {
+  $query = <<<SQL
+  SELECT adImageUrl
+  FROM Ad_AdImage
+  WHERE adId = ?
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+}
+
+function get_stores_by_ad_id($mysqli, $ad_id){
+  $query = <<<SQL
+  SELECT *
+  FROM Ad_Store
+  JOIN store
+  ON Ad_Store.storeId = Store.storeId
+  JOIN Address
+  ON Store.addressId = Address.addressId
+  JOIN StoreManager
+  ON Store.userId = StoreManager.userId
+  WHERE adId = ?
+  ORDER BY dateOfRent
+SQL;
+    return fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+}
+
+function do_bills_backup($mysqli){
+  $query = "CALL generateBackup()";
+  $stmt = $mysqli->prepare($query);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    return false;
+  }
+  return true;
+}
+
+// TODO(tomleb): Make a transaction
+// TODO(tomleb): Better error handling
+function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
+                              $type, $category, $sub_category, $image_filename) {
+  $query = <<<SQL
+INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ssisssss", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category);
+  $stmt->bind_param("isissss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
-  return $mysqli->insert_id;
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $ad_id = $mysqli->insert_id;
+
+  if ($image_filename !== '') {
+    error_log($image_filename);
+    $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
+    if (!$result) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function create_and_link_ad_image($mysqli, $ad_id, $image_filename) {
+  $query = <<<SQL
+INSERT INTO AdImage(url) VALUES (?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("s", $image_filename);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  $query = <<<SQL
+INSERT INTO Ad_AdImage(adImageUrl, adId) VALUES (?, ?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("si", $image_filename, $ad_id);
+  $stmt->execute();
+
+  if ($mysqli->error) {
+    error_log($mysqli->error);
+    return false;
+  }
+
+  return true;
+}
+
+function is_seller($mysqli, $ad_id, $user_id) {
+  $query = <<<SQL
+  SELECT *
+  FROM ad
+  WHERE  adId = ? 
+  AND sellerId = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "ii", [$ad_id, $user_id]);
+  return  !empty($results);
+}
+
+function can_edit_ad($mysqli, $ad_id, $user_id) {
+  return is_seller($mysqli, $ad_id, $user_id) || is_admin($mysqli, $user_id);
 }
 
 // TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
 // feature for the project..
 // TODO(tomleb): Make sure the user is either admin, or owner of the ad.
-function update_ad($mysqli, $ad_id, $user_id, $title, $price, $description, $startDate,
-                   $type, $category, $sub_category) {
+// TODO(tomleb): Something something transaction
+function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
+                              $type, $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
 SET sellerId = ?,
     title = ?,
     price = ?,
     description = ?,
-    endDate = ?,
     type = ?,
     category = ?,
     subCategory = ?
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("ssisssssi", $user_id, $title, $price, $description, $end_date, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
-  return $mysqli->affected_rows;
+
+  if ($new_image !== '' && $old_image !== '') {
+  $query = <<<SQL
+UPDATE AdImage
+SET url = ?
+WHERE url = ?
+SQL;
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("ss", $new_image, $old_image);
+    $stmt->execute();
+
+    // I don't like this but it'll do for now (and forever)
+    if ($mysqli->affected_rows === 0) {
+      create_and_link_ad_image($mysqli, $ad_id, $new_image);
+    } else {
+    }
+  }
+
+  return $mysqli->error;
 }
 
 function delete_ad($mysqli, $ad_id) {
@@ -216,7 +399,7 @@ function create_user($mysqli, $first_name, $last_name, $phone, $email, $password
 INSERT INTO Users(firstName, lastName, phoneNumber, email, password, addressId) VALUES (?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("sssssi", $fist_name, $last_name, $phone, $email, $password, $address_id);
+  $stmt->bind_param("sssssi", $first_name, $last_name, $phone, $email, $password, $address_id);
   $stmt->execute();
   return $mysqli->insert_id;
 }
@@ -232,59 +415,46 @@ SQL;
   return $mysqli->insert_id;
 }
 
-function search_ad_by_seller_name($mysqli, $name) {
-  $query = <<<SQL
-SELECT *
-FROM Ad
-INNER JOIN Users ON Ad.sellerId = Users.userId
-WHERE CONCAT(firstName, ' ', lastName) LIKE ?
-SQL;
-  $like_name = "%$name%";
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$like_name]);
+function maybe_add_search_ad_param($value, &$args, &$bind_type) {
+  $result = "NULL";
+  if (!empty($value)) {
+    $result = "?";
+    $args[] = $value;
+    $bind_type .= "s";
+  }
+  return $result;
 }
 
-function search_ad_by_type($mysqli, $type) {
-  $query = <<<SQL
-SELECT adId, title, category, subCategory, type
-FROM Ad
-WHERE type = ?
-SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$type]);
-}
+function search_ad($mysqli, $province, $city, $category, $sub_category, $type, $seller_name) {
+  $args = [];
+  $bind_type = "";
+  $province_param     = maybe_add_search_ad_param($province,     $args, $bind_type);
+  $city_param         = maybe_add_search_ad_param($city,         $args, $bind_type);
+  $category_param     = maybe_add_search_ad_param($category,     $args, $bind_type);
+  $sub_category_param = maybe_add_search_ad_param($sub_category, $args, $bind_type);
+  $type_param         = maybe_add_search_ad_param($type,         $args, $bind_type);
 
-function search_ad() {
-}
+  $seller_name_param = "NULL";
+  if (!empty($seller_name)) {
+    $seller_name_param = "?";
+    $args[] = "%$seller_name%";
+    $bind_type .= "s";
+  }
 
-function search_ad_by_category($mysqli, $category) {
-  $query = <<<SQL
-SELECT *
-FROM Ad
-WHERE category = ?
-SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$category]);
-}
-
-function search_ad_by_city($mysqli, $city) {
-  $query = <<<SQL
-SELECT *
-FROM Ad
-INNER JOIN Users ON Ad.sellerId = Users.userId
-INNER JOIN Address ON Users.addressId = Address.addressId
-WHERE city = ?
-SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$city]);
-}
-
-function search_ad_by_province($mysqli, $province) {
   $query = <<<SQL
 SELECT *
 FROM Ad
 INNER JOIN Users ON Ad.sellerId = Users.userId
 INNER JOIN Address ON Users.addressId = Address.addressId
 INNER JOIN City ON City.city = Address.city
-WHERE province = ?
+WHERE province    = COALESCE($province_param, province)
+AND   City.city   = COALESCE($city_param, City.city)
+AND   category    = COALESCE($category_param, category)
+AND   subCategory = COALESCE($sub_category_param, subCategory)
+AND   type        = COALESCE($type_param, type)
+AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
 SQL;
-  return fetch_assoc_all_prepared($mysqli, $query, "s", [$province]);
+  return fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
 }
 
 function get_categories_and_subcategories($mysqli) {
@@ -292,12 +462,33 @@ function get_categories_and_subcategories($mysqli) {
 SELECT *
 FROM SubCategory
 SQL;
-  $cats = fetch_assoc($mysqli, $query);
+  $cats = fetch_assoc_all_prepared($mysqli, $query);
   $result = [];
   foreach ($cats as $cat) {
     $result[$cat['category']][] = $cat['subCategory'];
   }
   return $result;
+}
+
+function get_provinces_and_cities($mysqli){
+  $query = <<<SQL
+  SELECT *
+  FROM City
+SQL;
+  $provs = fetch_assoc_all_prepared($mysqli, $query);
+  $result = [];
+  foreach ($provs as $prov) {
+    $result[$prov['province']][] = $prov['city'];
+  }
+  return $result;
+}
+
+function get_different_ad_types($mysqli){
+  $query = <<<SQL
+  SELECT DISTINCT type
+  FROM Ad
+SQL;
+  return fetch_assoc_all_prepared($mysqli, $query);
 }
 
 function to_reference_values($array) {
@@ -314,9 +505,9 @@ function fetch_assoc_all_prepared($mysqli, $query, $bind_type = '', $bind_params
     error_log($mysqli->error);
     return false;
   }
+
   // Because splat operator is in php 5.6 and we're using 5.5 ..
   if (!empty($bind_params)) {
-    $bind_param_func = $stmt->bind_param;
     $args = array_merge([$bind_type], $bind_params);
     call_user_func_array([$stmt, 'bind_param'], to_reference_values($args));
   }

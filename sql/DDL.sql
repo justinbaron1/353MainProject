@@ -172,7 +172,7 @@ CREATE TABLE Ad (
 	price decimal(15,2) NOT NULL,
 	description text(1000),
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	endDate date NOT NULL,
+	endDate date,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -235,7 +235,7 @@ CREATE TABLE AdPromotion(
 CREATE TABLE StrategicLocation (
 	name varchar(255),
 	clientsPerHour int NOT NULL,
-	weekendExtraCostPercent int NOT NULL,
+	costPercent int NOT NULL,
 	PRIMARY KEY (name)
 );
 
@@ -281,8 +281,10 @@ CREATE TABLE PaymentExtra (
 CREATE TABLE StorePrices(
 	momentOfWeek varchar(255),
 	hourlyPrice decimal(15,2) NOT NULL,
+	deliveryHourlyPrice decimal(15,2) NOT NULL,
 	PRIMARY KEY (momentOfWeek)
 );
+
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS ExpiryMonthChecker$$
@@ -343,7 +345,7 @@ AFTER UPDATE
 ON BuyerSeller
 FOR EACH ROW
 	BEGIN
-		IF NEW.membershipPlanName <> OLD.membershipPlanName THEN
+		IF (NEW.membershipPlanName <> OLD.membershipPlanName AND NEW.membershipPlanName<>"normal") THEN
 			INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
 			(CURRENT_TIMESTAMP(),
 			(SELECT monthlyPrice
@@ -353,6 +355,21 @@ FOR EACH ROW
 			(SELECT paymentMethodId
 			 FROM PaymentMethod
 			 WHERE PaymentMethod.userId=NEW.userId));
+		END IF;
+	END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS userHasPaymentMethodCheck$$
+CREATE TRIGGER userHasPaymentMethodCheck
+BEFORE UPDATE
+ON BuyerSeller
+FOR EACH ROW
+	BEGIN
+		IF ((SELECT COUNT(*) FROM PaymentMethod WHERE PaymentMethod.userId=OLD.userId)=0
+			AND NEW.membershipPlanName<>"normal") THEN
+			SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "The user does not have a payment method. Can't update the membership plan";
 		END IF;
 	END$$
 DELIMITER ;
@@ -376,6 +393,8 @@ DELIMITER $$
 DROP EVENT IF EXISTS membershipBill$$
 CREATE EVENT membershipBill
 ON SCHEDULE EVERY 1 MINUTE
+# release statement
+# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
 DO
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
@@ -423,14 +442,31 @@ BEFORE INSERT
 ON Ad_Store
 FOR EACH ROW
 BEGIN
-	SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-	IF (WEEKDAY(NEW.dateOfRent)<=5) THEN
-		SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+	IF (WEEKDAY(NEW.dateOfRent)<=4) THEN
+		BEGIN
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			IF (NEW.includesDeliveryServices) THEN
+				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			END IF;
+		END;
+	ELSE
+		BEGIN
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			IF (NEW.includesDeliveryServices) THEN
+				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			END IF;
+		END;
 	END IF;
-	SET @finalPrice = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
+
+	SET @costPercent = (SELECT costPercent
+						FROM StrategicLocation
+						JOIN Store ON name=locationName
+						WHERE Store.storeId=NEW.storeId);
+
+	SET @price = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
+	SET @finalPrice = @price + (@price*@costPercent/100);
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
-	VALUES(CURRENT_TIMESTAMP,@finalPrice,
-		"AdStore",
+	VALUES(CURRENT_TIMESTAMP,@finalPrice,"AdStore",
 		(SELECT paymentMethodId
 		 FROM Ad 
 		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
@@ -449,14 +485,65 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createTransaction$$
+CREATE PROCEDURE createTransaction(IN adId int, IN paymentMethodId int)
+BEGIN
+	SET @amount = (SELECT price FROM Ad WHERE Ad.adId=adId);
+	IF (EXISTS(SELECT * FROM DebitCard WHERE DebitCard.paymentMethodId=paymentMethodId)) THEN
+		SET @amount:=@amount * (1 + (SELECT extraPercent FROM PaymentExtra WHERE cardType="debit")/100);
+	ELSEIF(EXISTS(SELECT * FROM CreditCard WHERE CreditCard.paymentMethodId=paymentMethodId)=0) THEN
+		SET @amount:=@amount * (1 + (SELECT extraPercent FROM PaymentExtra WHERE cardType="credit")/100);
+	END IF;
+	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId) VALUES
+	(CURRENT_TIMESTAMP, @amount, "transaction",paymentMethodId);
+	INSERT INTO Transaction(billId,adId) VALUES
+	(LAST_INSERT_ID(),adId);
+END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS getAdEndDate$$
+CREATE TRIGGER getAdEndDate
+BEFORE INSERT
+ON Ad
+FOR EACH ROW
+BEGIN
+	SET @days = (SELECT visibleDuration
+	 			 FROM MembershipPlan
+	 			 JOIN BuyerSeller ON BuyerSeller.membershipPlanName=MembershipPlan.name
+	 			 WHERE BuyerSeller.userId=NEW.sellerId);
+	SET NEW.endDate = DATE(DATE_ADD(CURRENT_TIMESTAMP,INTERVAL @days DAY));
+END$$
+DELIMITER ;
 
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$
 CREATE EVENT monthlyBackup
 ON SCHEDULE EVERY 1 MINUTE
+# release statement
+# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 23:00:00'
 DO
 	CALL generateBackup(); $$
 DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS verifyRating$$
+CREATE TRIGGER verifyRating
+BEFORE UPDATE
+ON Rating
+FOR EACH ROW
+BEGIN
+	IF NEW.rating<1 OR NEW.rating>5 THEN
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "incorrect rating. Must be between 1 and 5";
+	END IF;
+END$$
+DELIMITER ;
+
+
+
+
 
 
 

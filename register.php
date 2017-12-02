@@ -102,8 +102,8 @@ function form_group($errors, $label) {
                         <?php form_group($errors, "postal_code");  ?>
                             <input id="postal_code" placeholder="Postal code" type="text" class="form-control"  name="postal_code">
                         </div>
-                        <div class="form-group">
-                            <select class="form-control">
+                        <?php form_group($errors, "city");  ?>
+                            <select class="form-control" name="city">
                                 <?php foreach ($cities as $city) { ?>
                                 <option value="<?= $city["city"] ?>"><?= $city["city"] ?></option>
                                 <?php } ?>

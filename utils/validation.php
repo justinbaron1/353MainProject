@@ -5,6 +5,19 @@
  * capabilities)
  */
 
+function validate_ad($title, $price, $description,
+                     $category, $sub_category, $type) {
+  $errors = [];
+  // Very basic validation
+  if (empty($title))           { $errors["title"] = "Invalid title"; }
+  if (!is_valid_price($price)) { $errors["price"] = "Invalid price"; }
+  if (empty($description))     { $errors["description"] = "Invalid description"; }
+  if (!is_valid_ad_type($type)) { $errors["type"] = "Invalid type"; }
+  if (!is_valid_category_and_subcategory($category, $sub_category)) { $errors["category"] = "Invalid category/subcategory"; }
+
+  return $errors;
+}
+
 function is_valid_email($email) {
   return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
@@ -12,6 +25,10 @@ function is_valid_email($email) {
 // At least 8 characters.. Whatever
 function is_valid_password($password) {
   return strlen($password) >= 8;
+}
+
+function is_valid_price($price) {
+  return (float)$price >= 0;
 }
 
 function is_valid_number($number) {
@@ -32,6 +49,16 @@ function is_valid_city($mysqli, $city) {
 
 function is_valid_rating($rating) {
   return $rating >= 0 && $rating <= 5;
+}
+
+// Not sure what are the valid values
+function is_valid_ad_type($type) {
+  return $type === 'buy' || $type === 'sell';
+}
+
+// TODO(tomleb): Look into the db if this is valid
+function is_valid_category_and_subcategory($category, $sub_category) {
+  return true;
 }
 
 ?>
