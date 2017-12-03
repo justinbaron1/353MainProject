@@ -508,12 +508,14 @@ FROM Ad
 INNER JOIN Users ON Ad.sellerId = Users.userId
 INNER JOIN Address ON Users.addressId = Address.addressId
 INNER JOIN City ON City.city = Address.city
+INNER JOIN AdPosition ON Ad.adId=AdPosition.adId
 WHERE province    = COALESCE($province_param, province)
 AND   City.city   = COALESCE($city_param, City.city)
 AND   category    = COALESCE($category_param, category)
 AND   subCategory = COALESCE($sub_category_param, subCategory)
 AND   type        = COALESCE($type_param, type)
 AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
+ORDER BY position
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
   log_mysqli_error($mysqli);

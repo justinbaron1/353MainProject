@@ -546,9 +546,8 @@ AFTER INSERT
 ON Ad
 FOR EACH ROW
 BEGIN
-	UPDATE AdPosition
-	SET position=((SELECT COUNT(*) FROM Ad)+1)
-	WHERE NEW.adId=AdPosition.adId;
+	INSERT INTO AdPosition(adId) VALUES
+	(NEW.adId);
 END$$
 DELIMITER ;
 
@@ -564,6 +563,7 @@ DO
 		(SELECT 0,adId FROM Ad ORDER BY priority);
 	END;$$
 DELIMITER ;
+
 
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$
