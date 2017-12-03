@@ -100,4 +100,15 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   return $errors;
 }
 
+function handle_delete_ad($user_id, $ad_id) {
+  global $mysqli;
+  $mysqli = get_database();
+  if (is_admin($mysqli, $user_id)) {
+    delete_ad($mysqli, $ad_id);
+    // Should probably delete images, etc
+  } else {
+    log_info("Non-admin user '$user_id' tried to delete ad '$ad_id'. Aborting.");
+  }
+}
+
 ?>
