@@ -245,6 +245,7 @@ LEFT JOIN Ad_AdImage ON Ad.adId = Ad_AdImage.adId
 LEFT JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
 LEFT JOIN AdPromotion ON AdPromotion.adId = Ad.adId
 WHERE Ad.adId = ?
+AND   NOT isDeleted
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   return @$result[0];
@@ -254,13 +255,11 @@ function get_ads_by_user_id($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-JOIN Users
-ON Ad.sellerId = Users.userId
-JOIN Address
- ON Users.addressId = Address.addressId
-JOIN City 
-ON City.city = Address.city
+JOIN Users ON Ad.sellerId = Users.userId
+JOIN Address ON Users.addressId = Address.addressId
+JOIN City ON City.city = Address.city
 WHERE sellerId = ?
+AND   NOT isDeleted
 ORDER BY startDate DESC
 SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
@@ -273,7 +272,9 @@ function get_ad_image_by_id($mysqli, $ad_id) {
 SELECT *
 FROM Ad_AdImage
 INNER JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
-WHERE adId = ?
+INNER JOIN Ad ON Ad.adId = Ad_AdImage.adId
+WHERE Ad.adId = ?
+AND   NOT isDeleted
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   log_mysqli_error($mysqli);
@@ -284,11 +285,10 @@ function get_full_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-JOIN BuyerSeller
-ON BuyerSeller.userId = Ad.sellerId
-JOIN Users
-ON Users.userId = Ad.sellerId
+JOIN BuyerSeller ON BuyerSeller.userId = Ad.sellerId
+JOIN Users ON Users.userId = Ad.sellerId
 WHERE adId = ?
+AND   NOT isDeleted
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   return @$result[0];
@@ -296,9 +296,11 @@ SQL;
 
 function get_ad_images_by_ad_id($mysqli, $ad_id) {
   $query = <<<SQL
-  SELECT adImageUrl
-  FROM Ad_AdImage
-  WHERE adId = ?
+SELECT adImageUrl
+FROM Ad_AdImage
+INNER JOIN Ad ON Ad.adId = Ad_AdImage.adId
+WHERE Ad.adId = ?
+AND   NOT isDeleted
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
   log_mysqli_error($mysqli);
@@ -444,7 +446,8 @@ SQL;
 
 function delete_ad($mysqli, $ad_id) {
   $query = <<<SQL
-DELETE FROM Ad
+UPDATE Ad
+SET isDeleted = TRUE
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
@@ -515,6 +518,8 @@ AND   category    = COALESCE($category_param, category)
 AND   subCategory = COALESCE($sub_category_param, subCategory)
 AND   type        = COALESCE($type_param, type)
 AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
+AND   NOT isDeleted
+AND   endDate >= CURRENT_DATE
 ORDER BY position
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
