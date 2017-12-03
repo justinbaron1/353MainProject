@@ -278,9 +278,7 @@ CREATE TABLE Ad_Store (
 	FOREIGN KEY (storeId) REFERENCES Store(storeId),
 	FOREIGN KEY (billId) REFERENCES Bill(billId),
 	UNIQUE(billId)
-	# TODO TRIGGER
-	# ON DELETE: Delete the Bill related
-	# dateOfRent must be in the future
+	
 );
 
 
@@ -297,7 +295,10 @@ CREATE TABLE StorePrices(
 	PRIMARY KEY (momentOfWeek)
 );
 
+-- -----------------------------------------
+-- TRIGGERS
 
+-- when creating a payment method, check if it is expired
 DELIMITER $$
 DROP TRIGGER IF EXISTS ExpiryMonthChecker$$
 CREATE TRIGGER ExpiryMonthChecker
@@ -317,45 +318,7 @@ BEGIN
 END;$$
 DELIMITER ;
 
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS setActivePaymentMethod$$
-CREATE PROCEDURE setActivePaymentMethod(IN userId int, IN paymentMethodId int)
-BEGIN
-	UPDATE PaymentMethod
-	SET active=0
-	WHERE PaymentMethod.userId=userId;
-
-	UPDATE PaymentMethod
-	SET active=1
-	WHERE PaymentMethod.paymentMethodId=paymentMethodId;
-END;$$
-DELIMITER ;
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS createNewDebitCard$$
-CREATE PROCEDURE createNewDebitCard(IN cardNumber int, IN expiryMonth int,IN expiryYear int, IN userId int)
-BEGIN
-	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
-	(expiryMonth,expiryYear,userId);
-	INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
-	(LAST_INSERT_ID(),cardNumber);
-	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
-END;$$
-DELIMITER ;
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS createNewCreditCard$$
-CREATE PROCEDURE createNewCreditCard(IN cardNumber int, securityCode int, IN expiryMonth int,IN expiryYear int, IN userId int)
-BEGIN
-	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
-	(expiryMonth,expiryYear,userId);
-	INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
-	(LAST_INSERT_ID(),cardNumber,securityCode);
-	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
-END;$$
-DELIMITER ;
-
+-- Before creating a Bill, check if the payment method is expired
 DELIMITER $$
 DROP TRIGGER IF EXISTS paymentMethodExpiredChecker$$
 CREATE TRIGGER paymentMethodExpiredChecker
@@ -377,6 +340,8 @@ BEGIN
 END;$$
 DELIMITER ;
 
+
+-- after creating a transaction, create a default NULL rating for the Ad
 DELIMITER $$
 DROP TRIGGER IF EXISTS DefaultRatingOnTransaction$$
 CREATE TRIGGER DefaultRatingOnTransaction
@@ -389,6 +354,8 @@ FOR EACH ROW
 	END; $$
 DELIMITER ;
 
+
+-- after updating a membership. create a bill if the new membership is not 'normal'
 DELIMITER $$
 DROP TRIGGER IF EXISTS generateBill$$
 CREATE TRIGGER generateBill
@@ -410,6 +377,8 @@ FOR EACH ROW
 	END$$
 DELIMITER ;
 
+
+-- before updating the membership plan of a user. check if they have a payment method. unless they change for 'normal'
 DELIMITER $$
 DROP TRIGGER IF EXISTS userHasPaymentMethodForMembershipChange$$
 CREATE TRIGGER userHasPaymentMethodForMembershipChange
@@ -427,6 +396,7 @@ FOR EACH ROW
 DELIMITER ;
 
 
+-- when adding a transaction, check if the ad is in store
 DELIMITER $$
 DROP TRIGGER IF EXISTS adInStoreCheck$$
 CREATE TRIGGER adInStoreCheck
@@ -441,19 +411,8 @@ BEGIN
 END$$
 DELIMITER ;
 
-			
-DELIMITER $$
-DROP EVENT IF EXISTS membershipBill$$
-CREATE EVENT membershipBill
-ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
-DO
-	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
-	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
-	FROM BuyerSeller
-	JOIN MembershipPlan ON BuyerSeller.membershipPlanName=MembershipPlan.name AND MembershipPlan.name<>"normal"
-	JOIN PaymentMethod ON PaymentMethod.userId=BuyerSeller.userId);$$
-DELIMITER ;
 
+-- When adding an AdPromotion, set the priority of the ad to 1
 DELIMITER $$
 DROP TRIGGER IF EXISTS packagePriority$$
 CREATE TRIGGER packagePriority
@@ -468,6 +427,7 @@ END$$
 DELIMITER ;
 
 
+-- prevent update on a promotion package
 DELIMITER $$
 DROP TRIGGER IF EXISTS preventAdPromotionUpdate$$
 CREATE TRIGGER preventAdPromotionUpdate
@@ -480,6 +440,8 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+-- generate a bill for a promotion. check if user has a payment method
 DELIMITER $$
 DROP TRIGGER IF EXISTS generateBillForPromotion$$
 CREATE TRIGGER generateBillForPromotion
@@ -507,6 +469,8 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+-- generate a bill for AdStore
 DELIMITER $$
 DROP TRIGGER IF EXISTS generateBillForAdStore$$
 CREATE TRIGGER generateBillForAdStore
@@ -548,15 +512,57 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+-- when adding an Ad, set its endDate based on the user's membership plan
 DELIMITER $$
-DROP PROCEDURE IF EXISTS generateBackup$$
-CREATE PROCEDURE generateBackup()
+DROP TRIGGER IF EXISTS getAdEndDate$$
+CREATE TRIGGER getAdEndDate
+BEFORE INSERT
+ON Ad
+FOR EACH ROW
 BEGIN
-	DROP TABLE paymentProcessingDepartment;
-	CREATE TABLE paymentProcessingDepartment AS (SELECT * FROM Bill);
+	SET @days = (SELECT visibleDuration
+	 			 FROM MembershipPlan
+	 			 JOIN BuyerSeller ON BuyerSeller.membershipPlanName=MembershipPlan.name
+	 			 WHERE BuyerSeller.userId=NEW.sellerId);
+	SET NEW.endDate = DATE(DATE_ADD(CURRENT_TIMESTAMP,INTERVAL @days DAY));
 END$$
 DELIMITER ;
 
+
+-- when adding an Ad. set its position to the last one
+DELIMITER $$
+DROP TRIGGER IF EXISTS addAdPosition$$
+CREATE TRIGGER addAdPosition
+AFTER INSERT
+ON Ad
+FOR EACH ROW
+BEGIN
+	INSERT INTO AdPosition(adId) VALUES
+	(NEW.adId);
+END$$
+DELIMITER ;
+
+
+-- verify if rating is between 1 and 5
+DELIMITER $$
+DROP TRIGGER IF EXISTS verifyRating$$
+CREATE TRIGGER verifyRating
+BEFORE UPDATE
+ON Rating
+FOR EACH ROW
+BEGIN
+	IF NEW.rating<1 OR NEW.rating>5 THEN
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "incorrect rating. Must be between 1 and 5";
+	END IF;
+END$$
+DELIMITER ;
+
+-- ----------------------------------------
+-- PROCEDURES
+
+-- create a transaction for an add using a payment method
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createTransaction$$
 CREATE PROCEDURE createTransaction(IN adId int, IN paymentMethodId int)
@@ -574,47 +580,65 @@ BEGIN
 END$$
 DELIMITER ;
 
-DELIMITER $$
-DROP TRIGGER IF EXISTS getAdEndDate$$
-CREATE TRIGGER getAdEndDate
-BEFORE INSERT
-ON Ad
-FOR EACH ROW
-BEGIN
-	SET @days = (SELECT visibleDuration
-	 			 FROM MembershipPlan
-	 			 JOIN BuyerSeller ON BuyerSeller.membershipPlanName=MembershipPlan.name
-	 			 WHERE BuyerSeller.userId=NEW.sellerId);
-	SET NEW.endDate = DATE(DATE_ADD(CURRENT_TIMESTAMP,INTERVAL @days DAY));
-END$$
-DELIMITER ;
 
+-- make a payment method active and make old payment method inactive
 DELIMITER $$
-DROP TRIGGER IF EXISTS addAdPosition$$
-CREATE TRIGGER addAdPosition
-AFTER INSERT
-ON Ad
-FOR EACH ROW
+DROP PROCEDURE IF EXISTS setActivePaymentMethod$$
+CREATE PROCEDURE setActivePaymentMethod(IN userId int, IN paymentMethodId int)
 BEGIN
-	INSERT INTO AdPosition(adId) VALUES
-	(NEW.adId);
-END$$
+	UPDATE PaymentMethod
+	SET active=0
+	WHERE PaymentMethod.userId=userId;
+
+	UPDATE PaymentMethod
+	SET active=1
+	WHERE PaymentMethod.paymentMethodId=paymentMethodId;
+END;$$
 DELIMITER ;
 
 
+-- generate a backup for bills
 DELIMITER $$
-DROP EVENT IF EXISTS resetAdPositionEvent$$
-CREATE EVENT resetAdPositionEvent
-ON SCHEDULE EVERY 1 MINUTE
-DO
+DROP PROCEDURE IF EXISTS generateBackup$$
+CREATE PROCEDURE generateBackup()
 BEGIN
-	TRUNCATE TABLE AdPosition;
-	INSERT INTO AdPosition
-	(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+	DROP TABLE paymentProcessingDepartment;
+	CREATE TABLE paymentProcessingDepartment AS (SELECT * FROM Bill);
 END$$
 DELIMITER ;
 
 
+-- create a debit card payment method and set it as active
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createNewDebitCard$$
+CREATE PROCEDURE createNewDebitCard(IN cardNumber int, IN expiryMonth int,IN expiryYear int, IN userId int)
+BEGIN
+	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
+	(expiryMonth,expiryYear,userId);
+	INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
+	(LAST_INSERT_ID(),cardNumber);
+	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
+END;$$
+DELIMITER ;
+
+
+-- create a credit card payment method and set it as active
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createNewCreditCard$$
+CREATE PROCEDURE createNewCreditCard(IN cardNumber int, securityCode int, IN expiryMonth int,IN expiryYear int, IN userId int)
+BEGIN
+	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
+	(expiryMonth,expiryYear,userId);
+	INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
+	(LAST_INSERT_ID(),cardNumber,securityCode);
+	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
+END;$$
+DELIMITER ;
+
+-- ----------------------------------------
+-- EVENTS
+
+-- generate a backup of bills every month
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$
 CREATE EVENT monthlyBackup
@@ -623,6 +647,8 @@ DO
 	CALL generateBackup(); $$
 DELIMITER ;
 
+
+-- sets the priority of ads who no longer have a promotion back to (2)
 DELIMITER $$
 DROP EVENT IF EXISTS checkPromotionExpired$$
 CREATE EVENT checkPromotionExpired
@@ -637,24 +663,33 @@ DO
 	END$$
 DELIMITER ;
 
+
+-- Resets the position of the ads bases on the priority every minute
 DELIMITER $$
-DROP TRIGGER IF EXISTS verifyRating$$
-CREATE TRIGGER verifyRating
-BEFORE UPDATE
-ON Rating
-FOR EACH ROW
+DROP EVENT IF EXISTS resetAdPositionEvent$$
+CREATE EVENT resetAdPositionEvent
+ON SCHEDULE EVERY 1 MINUTE
+DO
 BEGIN
-	IF NEW.rating<1 OR NEW.rating>5 THEN
-		SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "incorrect rating. Must be between 1 and 5";
-	END IF;
+	TRUNCATE TABLE AdPosition;
+	INSERT INTO AdPosition
+	(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
 END$$
 DELIMITER ;
 
 
-
-
-
+-- CREATE a bill for the membership plan every month
+DELIMITER $$
+DROP EVENT IF EXISTS membershipBill$$
+CREATE EVENT membershipBill
+ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
+DO
+	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
+	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
+	FROM BuyerSeller
+	JOIN MembershipPlan ON BuyerSeller.membershipPlanName=MembershipPlan.name AND MembershipPlan.name<>"normal"
+	JOIN PaymentMethod ON PaymentMethod.userId=BuyerSeller.userId);$$
+DELIMITER ;
 
 
 
