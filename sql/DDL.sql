@@ -333,11 +333,25 @@ END;$$
 DELIMITER ;
 
 DELIMITER $$
-DROP PROCEDURE IF EXISTS setNewPaymentMethod$$
-CREATE PROCEDURE setNewPaymentMethod(IN expiryMonth int,IN expiryYear int, IN userId int)
+DROP PROCEDURE IF EXISTS createNewDebitCard$$
+CREATE PROCEDURE createNewDebitCard(IN cardNumber int, IN expiryMonth int,IN expiryYear int, IN userId int)
 BEGIN
 	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 	(expiryMonth,expiryYear,userId);
+	INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
+	(LAST_INSERT_ID(),cardNumber);
+	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
+END;$$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createNewCreditCard$$
+CREATE PROCEDURE createNewCreditCard(IN cardNumber int, securityCode int, IN expiryMonth int,IN expiryYear int, IN userId int)
+BEGIN
+	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
+	(expiryMonth,expiryYear,userId);
+	INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
+	(LAST_INSERT_ID(),cardNumber,securityCode);
 	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
 END;$$
 DELIMITER ;
@@ -593,11 +607,11 @@ DROP EVENT IF EXISTS resetAdPositionEvent$$
 CREATE EVENT resetAdPositionEvent
 ON SCHEDULE EVERY 1 MINUTE
 DO
-	BEGIN
-		TRUNCATE TABLE AdPosition;
-		INSERT INTO AdPosition
-		(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
-	END;$$
+BEGIN
+	TRUNCATE TABLE AdPosition;
+	INSERT INTO AdPosition
+	(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+END$$
 DELIMITER ;
 
 
