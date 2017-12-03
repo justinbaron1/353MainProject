@@ -78,7 +78,9 @@ if ($_POST) {
     }
   }
 
-} else if ($_GET) {
+}
+
+if ($_GET) {
   $ad_id = @$_GET["ad_id"];
   if (can_edit_ad($mysqli, $ad_id, $user_id)) {
     $ad = get_ad_by_id($mysqli, $ad_id);
@@ -213,7 +215,7 @@ function form_group($errors, $name, $label = null) {
                 <textarea class="form-control" name="description" rows="5" cols="40"><?= $description ?></textarea>
               </div>
 
-              <?php if($image_url === ''){ ?>
+              <?php if ($image_url === ''){ ?>
                 <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
               <?php } else { ?>
                 <img src="<?= image_to_link($image_url) ?>"/>
