@@ -122,6 +122,7 @@ CREATE TABLE PaymentMethod (
 	expiryMonth int NOT NULL,
 	expiryYear int NOT NULL,
 	userId int,
+	active boolean NOT NULL DEFAULT 1,
 	PRIMARY KEY (paymentMethodId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId)
 );
@@ -175,6 +176,7 @@ CREATE TABLE Ad (
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date,
 	priority int NOT NULL DEFAULT 2,
+	isDeleted boolean NOT NULL DEFAULT 0,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -315,6 +317,45 @@ BEGIN
 END;$$
 DELIMITER ;
 
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS setActivePaymentMethod$$
+CREATE PROCEDURE setActivePaymentMethod(IN userId int, IN paymentMethodId int)
+BEGIN
+	UPDATE PaymentMethod
+	SET active=0
+	WHERE PaymentMethod.userId=userId;
+
+	UPDATE PaymentMethod
+	SET active=1
+	WHERE PaymentMethod.paymentMethodId=paymentMethodId;
+END;$$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createNewDebitCard$$
+CREATE PROCEDURE createNewDebitCard(IN cardNumber int, IN expiryMonth int,IN expiryYear int, IN userId int)
+BEGIN
+	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
+	(expiryMonth,expiryYear,userId);
+	INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
+	(LAST_INSERT_ID(),cardNumber);
+	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
+END;$$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createNewCreditCard$$
+CREATE PROCEDURE createNewCreditCard(IN cardNumber int, securityCode int, IN expiryMonth int,IN expiryYear int, IN userId int)
+BEGIN
+	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
+	(expiryMonth,expiryYear,userId);
+	INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
+	(LAST_INSERT_ID(),cardNumber,securityCode);
+	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
+END;$$
+DELIMITER ;
+
 DELIMITER $$
 DROP TRIGGER IF EXISTS paymentMethodExpiredChecker$$
 CREATE TRIGGER paymentMethodExpiredChecker
@@ -370,19 +411,21 @@ FOR EACH ROW
 DELIMITER ;
 
 DELIMITER $$
-DROP TRIGGER IF EXISTS userHasPaymentMethodCheck$$
-CREATE TRIGGER userHasPaymentMethodCheck
+DROP TRIGGER IF EXISTS userHasPaymentMethodForMembershipChange$$
+CREATE TRIGGER userHasPaymentMethodForMembershipChange
 BEFORE UPDATE
 ON BuyerSeller
 FOR EACH ROW
 	BEGIN
 		IF ((SELECT COUNT(*) FROM PaymentMethod WHERE PaymentMethod.userId=OLD.userId)=0
-			AND NEW.membershipPlanName<>"normal") THEN
+			AND NEW.membershipPlanName <> "normal")
+			AND NEW.membershipPlanName <> OLD.membershipPlanName THEN
 			SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "The user does not have a payment method. Can't update the membership plan";
 		END IF;
 	END$$
 DELIMITER ;
+
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS adInStoreCheck$$
@@ -444,6 +487,13 @@ BEFORE INSERT
 ON AdPromotion
 FOR EACH ROW
 BEGIN
+	IF ((SELECT COUNT(*) FROM PaymentMethod
+		 JOIN Ad ON PaymentMethod.userId=Ad.sellerId
+		 WHERE Ad.adId=NEW.adId)=0) THEN
+			SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "The user does not have a payment method. Can't add a promotion";
+	END IF;
+
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,
 		(SELECT price FROM Promotion WHERE Promotion.duration=NEW.duration),
@@ -555,13 +605,13 @@ DELIMITER ;
 DELIMITER $$
 DROP EVENT IF EXISTS resetAdPositionEvent$$
 CREATE EVENT resetAdPositionEvent
-ON SCHEDULE EVERY 1 HOUR
+ON SCHEDULE EVERY 1 MINUTE
 DO
-	BEGIN
-		TRUNCATE TABLE AdPosition;
-		INSERT INTO AdPosition
-		(SELECT 0,adId FROM Ad ORDER BY priority);
-	END;$$
+BEGIN
+	TRUNCATE TABLE AdPosition;
+	INSERT INTO AdPosition
+	(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+END$$
 DELIMITER ;
 
 

@@ -2,12 +2,16 @@
 
 include_once("common/user.php");
 
-$category = strip_tags(trim(@$_GET["category"]));
-$subcategory = strip_tags(trim(@$_GET["subcategory"]));
-$province = strip_tags(trim(@$_GET["province"]));
-$city = strip_tags(trim(@$_GET["city"]));
-$type = strip_tags(trim(@$_GET["type"]));
-$seller = strip_tags(trim(@$_GET["seller"]));
+include_once("utils/validation.php");
+
+$delete_success = @$_GET["delete_success"];
+
+$category = sanitize(@$_GET["category"]);
+$subcategory = sanitize(@$_GET["subcategory"]);
+$province = sanitize(@$_GET["province"]);
+$city = sanitize(@$_GET["city"]);
+$type = sanitize(@$_GET["type"]);
+$seller = sanitize(@$_GET["seller"]);
 
 $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $seller);
 ?>
@@ -24,8 +28,17 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
 
     <body>
         <?php include("common/navbar.php") ?>
+
+
         <div class="container">
+            <?php if ($delete_success) { ?>
+              <div class="alert alert-success" role="alert">
+                  <b>Success!</b> Your ad has been deleted.
+              </div>
+            <?php } ?>
+
             <?php include("parts/searchbar.php") ?>
+
             <table class="table table-hover table-striped">
                 <thead>
                     <tr class="ad">

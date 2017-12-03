@@ -37,39 +37,50 @@ $user_id = $user["userId"];
 // the request becomes a GET.
 
 if ($_POST) {
-  $cats = test_input(@$_POST["subCategory"]);
+  $cats = sanitize(@$_POST["subCategory"]);
 
-  $promotion_package = test_input(@$_POST["promotion_package"]);
+  $promotion_package = sanitize(@$_POST["promotion_package"]);
 
   // Either 'create','update'
   include_once("post/ad.php");
 
   $action = $_POST["action"];
-  $title = test_input(@$_POST["title"]);
-  $price = @$_POST["price"];
-  $description = test_input(@$_POST["description"]);
-  $type = test_input(@$_POST["type"]);
-  // Pray that no categories contain ';'
-  list($category, $sub_category) = explode(';', $cats);
-  $file = $_FILES["imageToUpload"];
   $ad_id = @$_POST["ad_id"];
 
-  if ($action === "create") {
-    $errors = handle_create_ad($ad_id, $user_id, $title, $price, $description, $category,
-                               $sub_category, $type, $file, $promotion_package);
-    if (empty($errors)) {
-      header("Location: ad.php?ad_id=$ad_id");
-      return;
+  if ($action === "create" || $action === "update") {
+    $title = sanitize(@$_POST["title"]);
+    $price = @$_POST["price"];
+    $description = sanitize(@$_POST["description"]);
+    $type = sanitize(@$_POST["type"]);
+    // Pray that no categories contain ';'
+    list($category, $sub_category) = explode(';', $cats);
+    $file = $_FILES["imageToUpload"];
+
+    if ($action === "create") {
+      $errors = handle_create_ad($ad_id, $user_id, $title, $price, $description, $category,
+        $sub_category, $type, $file, $promotion_package);
+      if (empty($errors)) {
+        header("Location: ad.php?ad_id=$ad_id");
+        return;
+      }
+    } else if ($action === "update") {
+      $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
+        $category, $sub_category, $type, $file, $promotion_package);
+      if (!$errors) {
+        $update_success = true;
+      }
     }
-  } else if ($action === "update") {
-    $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
-                               $category, $sub_category, $type, $file, $promotion_package);
-    if (!$errors) {
-      $update_success = true;
+  } else if ($action === "delete") {
+    $errors = handle_delete_ad($user_id, $ad_id);
+    if (empty($errors)) {
+      header("Location: ads.php?delete_success=true");
+      return;
     }
   }
 
-} else if ($_GET) {
+}
+
+if ($_GET) {
   $ad_id = @$_GET["ad_id"];
   if (can_edit_ad($mysqli, $ad_id, $user_id)) {
     $ad = get_ad_by_id($mysqli, $ad_id);
@@ -89,13 +100,6 @@ if ($_POST) {
     header("Location: postAd.php");
     return;
   }
-}
-
-function test_input($data) {
-  $data = trim($data);
-  $data = stripslashes($data);
-  $data = htmlspecialchars($data);
-  return $data;
 }
 
 function select_if_equal($a, $b) {
@@ -140,15 +144,30 @@ function form_group($errors, $name, $label = null) {
               <h1 class="text-center white-text">Update my Ad!</h1>
             <?php } ?>
 
+            <?php if ($ad_id && is_admin($mysqli, $user_id)) { ?>
+              <form class ="row" method="post">
+                <div class="col-md-offset-11">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
+                  <input class="btn btn-danger" type="submit" name="submit" value="Delete">
+                </div>
+              </form>
+            <?php } ?>
+
             <?php if ($update_success) { ?>
               <div class="alert alert-success" role="alert">
                   <b>Success!</b> Your ad has been updated.
               </div>
             <?php } ?>
 
-            <?php if (!empty($errors) && isset($errors['general'])) { ?>
-              <div class="alert alert-error" role="alert">
-              <b>Error!</b> <?= $errors['general'] ?>
+            <?php if (!empty($errors)) { ?>
+              <div class="alert alert-danger" role="alert">
+              <?php if (isset($errors['general'])) { ?>
+                <b>Error!</b> <?= $errors['general'] ?>
+              <?php } ?>
+              <?php if (isset($errors['delete'])) { ?>
+                <b>Error!</b> <?= $errors['delete'] ?>
+              <?php } ?>
               </div>
             <?php } ?>
 
@@ -203,8 +222,6 @@ function form_group($errors, $name, $label = null) {
               <?php form_group($errors, "description", "Description"); ?>
                 <textarea class="form-control" name="description" rows="5" cols="40"><?= $description ?></textarea>
               </div>
-
-
               
               <div class="row">
                 <div class="col-md-6">
@@ -236,6 +253,7 @@ function form_group($errors, $name, $label = null) {
               <input class="btn btn-default" type="submit" name="submit" value="Update">
             <?php } ?>
             </form>
+
         </div>
     </div>
 </div>

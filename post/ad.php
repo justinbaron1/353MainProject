@@ -100,4 +100,21 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   return $errors;
 }
 
+function handle_delete_ad($user_id, $ad_id) {
+  global $mysqli;
+  $mysqli = get_database();
+  $errors = [];
+
+  if (is_admin($mysqli, $user_id)) {
+    if (!delete_ad($mysqli, $ad_id)) {
+      $errors['delete'] = "Problem deleting ad '$ad_id'";
+      log_info("Problem deleting ad '$ad_id'");
+    }
+  } else {
+    log_info("Non-admin user '$user_id' tried to delete ad '$ad_id'. Aborting.");
+    $errors['delete'] = "Non-admin user '$user_id' tried to delete ad '$ad_id'. Aborting.";
+  }
+  return $errors;
+}
+
 ?>
