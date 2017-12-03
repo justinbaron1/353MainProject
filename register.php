@@ -14,17 +14,28 @@ $errors = [];
 
 $mysqli = get_database();
 
+$first_name = "";
+$last_name = "";
+$phone = "";
+$email = "";
+$password = "";
+$password_confirmation = "";
+$civic_number = "";
+$street = "";
+$postal_code = "";
+$city = "";
+
 if ($_POST) {
-  $first_name =            strip_tags(trim(@$_POST["first_name"]));
-  $last_name =             strip_tags(trim(@$_POST["last_name"]));
-  $phone =                 strip_tags(trim(@$_POST["phone"]));
-  $email =                 strip_tags(trim(@$_POST["email"]));
-  $password =              strip_tags(trim(@$_POST["password"]));
-  $password_confirmation = strip_tags(trim(@$_POST["password_confirmation"]));
-  $civic_number =          strip_tags(trim(@$_POST["civic_number"]));
-  $street =                strip_tags(trim(@$_POST["street"]));
-  $postal_code =           strip_tags(trim(@$_POST["postal_code"]));
-  $city =                  strip_tags(trim(@$_POST["city"]));
+  $first_name =            sanitize(@$_POST["first_name"]);
+  $last_name =             sanitize(@$_POST["last_name"]);
+  $phone =                 sanitize(@$_POST["phone"]);
+  $email =                 sanitize(@$_POST["email"]);
+  $password =              sanitize(@$_POST["password"]);
+  $password_confirmation = sanitize(@$_POST["password_confirmation"]);
+  $civic_number =          sanitize(@$_POST["civic_number"]);
+  $street =                sanitize(@$_POST["street"]);
+  $postal_code =           sanitize(@$_POST["postal_code"]);
+  $city =                  sanitize(@$_POST["city"]);
 
   $errors = validate_registration($first_name, $last_name, $phone, $email, $password, 
                                   $password_confirmation, $civic_number, $street, $postal_code, $city);

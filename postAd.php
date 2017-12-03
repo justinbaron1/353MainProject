@@ -37,18 +37,18 @@ $user_id = $user["userId"];
 // the request becomes a GET.
 
 if ($_POST) {
-  $cats = test_input(@$_POST["subCategory"]);
+  $cats = sanitize(@$_POST["subCategory"]);
 
-  $promotion_package = test_input(@$_POST["promotion_package"]);
+  $promotion_package = sanitize(@$_POST["promotion_package"]);
 
   // Either 'create','update'
   include_once("post/ad.php");
 
   $action = $_POST["action"];
-  $title = test_input(@$_POST["title"]);
+  $title = sanitize(@$_POST["title"]);
   $price = @$_POST["price"];
-  $description = test_input(@$_POST["description"]);
-  $type = test_input(@$_POST["type"]);
+  $description = sanitize(@$_POST["description"]);
+  $type = sanitize(@$_POST["type"]);
   // Pray that no categories contain ';'
   list($category, $sub_category) = explode(';', $cats);
   $file = $_FILES["imageToUpload"];
@@ -89,13 +89,6 @@ if ($_POST) {
     header("Location: postAd.php");
     return;
   }
-}
-
-function test_input($data) {
-  $data = trim($data);
-  $data = stripslashes($data);
-  $data = htmlspecialchars($data);
-  return $data;
 }
 
 function select_if_equal($a, $b) {

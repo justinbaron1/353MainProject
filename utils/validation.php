@@ -7,6 +7,13 @@
 
 include_once("utils/database.php");
 
+function sanitize($data) {
+  $data = trim($data);
+  $data = stripslashes($data);
+  $data = htmlspecialchars($data);
+  return $data;
+}
+
 function validate_ad($title, $price, $description,
                      $category, $sub_category, $type) {
   $errors = [];
