@@ -7,7 +7,6 @@
         return;
     }
     $ads = get_ads_by_user_id($mysqli, $user["userId"]);
-    var_dump($ads);
 ?>
     
 <html>
