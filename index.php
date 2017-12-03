@@ -2,8 +2,8 @@
 
 session_start();
 
-include_once("utils/user.php");
 include_once("utils/database.php");
+include_once("utils/user.php");
 
 $error = false;
 

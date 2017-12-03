@@ -5,6 +5,8 @@
  * capabilities)
  */
 
+include_once("utils/database.php");
+
 function validate_ad($title, $price, $description,
                      $category, $sub_category, $type) {
   $errors = [];
@@ -58,7 +60,10 @@ function is_valid_ad_type($type) {
 
 // TODO(tomleb): Look into the db if this is valid
 function is_valid_category_and_subcategory($category, $sub_category) {
-  return true;
+  global $mysqli;
+  $mysqli = get_database();
+  $cats = get_categories_and_subcategories($mysqli);
+  return isset($cats[$category]) && in_array($sub_category, $cats[$category]);
 }
 
 ?>
