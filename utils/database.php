@@ -519,6 +519,7 @@ AND   subCategory = COALESCE($sub_category_param, subCategory)
 AND   type        = COALESCE($type_param, type)
 AND   CONCAT(firstName, ' ', lastName) LIKE COALESCE($seller_name_param , CONCAT(firstName, ' ', lastName))
 AND   NOT isDeleted
+AND   endDate >= CURRENT_DATE
 ORDER BY position
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, $bind_type, $args);
