@@ -229,6 +229,12 @@ function get_ads_by_user_id($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
+JOIN Users
+ON Ad.sellerId = Users.userId
+JOIN Address
+ ON Users.addressId = Address.addressId
+JOIN City 
+ON City.city = Address.city
 WHERE sellerId = ?
 ORDER BY startDate DESC
 SQL;
@@ -254,6 +260,8 @@ SELECT *
 FROM Ad
 JOIN buyerseller
 ON buyerseller.userId = ad.sellerId
+JOIN users
+ON users.userId = Ad.sellerId
 WHERE adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);

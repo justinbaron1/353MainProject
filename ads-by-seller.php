@@ -2,14 +2,11 @@
 
 include_once("common/user.php");
 
-$category = strip_tags(trim(@$_GET["category"]));
-$subcategory = strip_tags(trim(@$_GET["subcategory"]));
-$province = strip_tags(trim(@$_GET["province"]));
-$city = strip_tags(trim(@$_GET["city"]));
-$type = strip_tags(trim(@$_GET["type"]));
-$seller = strip_tags(trim(@$_GET["seller"]));
+$sellerId = strip_tags(trim(@$_GET["sellerId"]));
 
-$ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $seller);
+$seller = get_user_by_id($mysqli, $sellerId);
+$ads = get_ads_by_user_id($mysqli, $sellerId);
+
 ?>
 
 <html>
@@ -25,12 +22,11 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
     <body>
         <?php include("common/navbar.php") ?>
         <div class="container">
-            <?php include("parts/searchbar.php") ?>
+            <h1>Ads by <?= $seller["firstName"]." ".$seller["lastName"] ?></h1>
             <table class="table table-hover table-striped">
                 <thead>
                     <tr class="ad">
                         <th>Title</th>
-                        <th>Seller</th>
                         <th>Price</th>
                         <th>Subcategory</th>
                         <th>Category</th>
@@ -44,7 +40,6 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
                     <?php foreach($ads as $ad) { ?>
                         <tr class="ad" onclick="document.location.href = '/ad.php?ad_id=<?= $ad["adId"] ?>';">
                             <td><?= $ad["title"] ?></td>
-                            <td><a href="/ads-by-seller?sellerId=<?= $ad["sellerId"]?>"><?= $ad["firstName"]." ".$ad["lastName"] ?></a></td>
                             <td><?= $ad["price"] ?></td>
                             <td><?= $ad["subCategory"] ?></td>
                             <td><?= $ad["category"] ?></td>
