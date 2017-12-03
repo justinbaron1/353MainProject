@@ -30,7 +30,7 @@ function handle_create_ad($user_id, $title, $price, $description,
     return;
   }
 
-  if ($promotion_package) {
+  if ($promotion_package > 0) {
     $error = create_and_link_promotion_package($mysqli, $promotion_package, $ad_id);
     if ($error) {
       log_info("Failed creating ad promotion package for ad '$ad_id' and duration '$promotion_package'");
@@ -72,11 +72,12 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     $old_image = $old_images["url"];
   }
 
-  if ($promotion_package && !promotion_exists($mysqli, $ad_id)) {
-    if (create_and_link_promotion_package($mysqli, $promotion_package, $ad_id)) {
-      log_info("Created ad promotion package for ad '$ad_id' and duration '$promotion_package'");
-    } else {
+  if ($promotion_package > 0 && !promotion_exists($mysqli, $ad_id)) {
+    $error = create_and_link_promotion_package($mysqli, $promotion_package, $ad_id);
+    if ($error) {
       log_info("Failed creating ad promotion package for ad '$ad_id' and duration '$promotion_package'");
+    } else {
+      log_info("Created ad promotion package for ad '$ad_id' and duration '$promotion_package'");
     }
   }
 
