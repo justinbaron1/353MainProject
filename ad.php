@@ -58,7 +58,7 @@
                         <h1><?= $ad["title"] ?></h1>
                     </div>
                     <div class="row">
-                        Published by <a href="/ads-by-seller?sellerId=<?= $ad["sellerId"]?>"><?= $ad["firstName"]." ".$ad["lastName"] ?></a>
+                        Published by <a href="/ads-by-seller.php?sellerId=<?= $ad["sellerId"]?>"><?= $ad["firstName"]." ".$ad["lastName"] ?></a>
                     </div>
                     </br>
                     <div class="row">
