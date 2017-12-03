@@ -5,7 +5,7 @@ include_once("utils/upload.php");
 include_once("utils/validation.php");
 
 function handle_create_ad($user_id, $title, $price, $description, 
-                          $category, $sub_category, $type, $file) {
+                          $category, $sub_category, $type, $file, $promotion_package) {
   $mysqli = get_database();
   if (empty(get_buyerseller_info($mysqli, $user_id))) {
     log_info("User '$user_id' is not a BuyerSeller. Cannot create ad.");
@@ -30,6 +30,15 @@ function handle_create_ad($user_id, $title, $price, $description,
     return;
   }
 
+  if ($promotion_package > 0) {
+    $error = create_and_link_promotion_package($mysqli, $promotion_package, $ad_id);
+    if ($error) {
+      log_info("Failed creating ad promotion package for ad '$ad_id' and duration '$promotion_package'");
+    } else {
+      log_info("Created ad promotion package for ad '$ad_id' and duration '$promotion_package'");
+    }
+  }
+
   if (is_file_to_upload($file)) {
     if (!handle_ad_image_upload($mysqli, $file)) {
       $errors["imageToUpload"] = "Problem uploading image";
@@ -37,11 +46,12 @@ function handle_create_ad($user_id, $title, $price, $description,
   } else {
     log_info("No image uploaded. Nothing to do.");
   }
+
   return $errors;
 }
 
 function handle_update_ad($ad_id, $user_id, $title, $price, $description, 
-                          $category, $sub_category, $type, $image_file) {
+                          $category, $sub_category, $type, $image_file, $promotion_package) {
   $mysqli = get_database();
 
   if (!can_edit_ad($mysqli, $ad_id, $user_id)) {
@@ -62,6 +72,15 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     $old_image = $old_images["url"];
   }
 
+  if ($promotion_package > 0 && !promotion_exists($mysqli, $ad_id)) {
+    $error = create_and_link_promotion_package($mysqli, $promotion_package, $ad_id);
+    if ($error) {
+      log_info("Failed creating ad promotion package for ad '$ad_id' and duration '$promotion_package'");
+    } else {
+      log_info("Created ad promotion package for ad '$ad_id' and duration '$promotion_package'");
+    }
+  }
+
   if (is_file_to_upload($image_file)) {
     if (!handle_ad_image_upload($mysqli, $image_file, $old_image)) {
         $errors["imageToUpload"] = "Problem uploading image";
@@ -78,10 +97,6 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   }
 
   return $errors;
-}
-
-function handle_delete_ad($ad_id) {
-  // TODO(tomleb): Actually delete the ad
 }
 
 ?>

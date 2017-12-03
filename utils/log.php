@@ -17,6 +17,7 @@ function log_info($message) {
   // Skip first element (will always be log_info)
   array_shift($bt);
 
+  if(!isset($bt[0])) return;
   $file = $bt[0]["file"];
 
   $bt = array_reverse($bt);
