@@ -4,7 +4,7 @@ include_once("utils/database.php");
 include_once("utils/upload.php");
 include_once("utils/validation.php");
 
-function handle_create_ad($user_id, $title, $price, $description, 
+function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
                           $category, $sub_category, $type, $file, $promotion_package) {
   $mysqli = get_database();
   if (empty(get_buyerseller_info($mysqli, $user_id))) {
@@ -15,7 +15,7 @@ function handle_create_ad($user_id, $title, $price, $description,
     );
   }
 
-  $errors = validate_ad($title, $price, $description, 
+  $errors = validate_ad($title, $price, $description,
                         $category, $sub_category, $type, $file);
 
   if (!empty($errors)) {
@@ -27,7 +27,8 @@ function handle_create_ad($user_id, $title, $price, $description,
     log_info("Created new ad '$ad_id' by user '$user_id'");
   } else {
     log_info("Failed creating new ad by user '$user_id'");
-    return;
+    $errors['general'] = "Failed creating new ad by user '$user_id': " . $mysqli->error;
+    return $errors;
   }
 
   if ($promotion_package > 0) {
@@ -50,7 +51,7 @@ function handle_create_ad($user_id, $title, $price, $description,
   return $errors;
 }
 
-function handle_update_ad($ad_id, $user_id, $title, $price, $description, 
+function handle_update_ad($ad_id, $user_id, $title, $price, $description,
                           $category, $sub_category, $type, $image_file, $promotion_package) {
   $mysqli = get_database();
 
@@ -59,7 +60,7 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     return $errors;
   }
 
-  $errors = validate_ad($title, $price, $description, 
+  $errors = validate_ad($title, $price, $description,
                         $category, $sub_category, $type, $image_file);
 
   if (!empty($errors)) {
@@ -87,7 +88,7 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     }
   }
 
-  $error = update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description, 
+  $error = update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
                                 $type, $category, $sub_category, @$image_file['name'], $old_image);
   if ($error) {
     log_info("Problem updating ad '$ad_id' by user '$user_id'");
