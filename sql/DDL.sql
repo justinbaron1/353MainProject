@@ -122,6 +122,7 @@ CREATE TABLE PaymentMethod (
 	expiryMonth int NOT NULL,
 	expiryYear int NOT NULL,
 	userId int,
+	active boolean NOT NULL DEFAULT 1,
 	PRIMARY KEY (paymentMethodId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId)
 );
@@ -316,6 +317,31 @@ BEGIN
 END;$$
 DELIMITER ;
 
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS setActivePaymentMethod$$
+CREATE PROCEDURE setActivePaymentMethod(IN userId int, IN paymentMethodId int)
+BEGIN
+	UPDATE PaymentMethod
+	SET active=0
+	WHERE PaymentMethod.userId=userId;
+
+	UPDATE PaymentMethod
+	SET active=1
+	WHERE PaymentMethod.paymentMethodId=paymentMethodId;
+END;$$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS setNewPaymentMethod$$
+CREATE PROCEDURE setNewPaymentMethod(IN expiryMonth int,IN expiryYear int, IN userId int)
+BEGIN
+	INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
+	(expiryMonth,expiryYear,userId);
+	CALL setActivePaymentMethod(userId,LAST_INSERT_ID());
+END;$$
+DELIMITER ;
+
 DELIMITER $$
 DROP TRIGGER IF EXISTS paymentMethodExpiredChecker$$
 CREATE TRIGGER paymentMethodExpiredChecker
@@ -371,19 +397,21 @@ FOR EACH ROW
 DELIMITER ;
 
 DELIMITER $$
-DROP TRIGGER IF EXISTS userHasPaymentMethodCheck$$
-CREATE TRIGGER userHasPaymentMethodCheck
+DROP TRIGGER IF EXISTS userHasPaymentMethodForMembershipChange$$
+CREATE TRIGGER userHasPaymentMethodForMembershipChange
 BEFORE UPDATE
 ON BuyerSeller
 FOR EACH ROW
 	BEGIN
 		IF ((SELECT COUNT(*) FROM PaymentMethod WHERE PaymentMethod.userId=OLD.userId)=0
-			AND NEW.membershipPlanName<>"normal") THEN
+			AND NEW.membershipPlanName <> "normal")
+			AND NEW.membershipPlanName <> OLD.membershipPlanName THEN
 			SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "The user does not have a payment method. Can't update the membership plan";
 		END IF;
 	END$$
 DELIMITER ;
+
 
 DELIMITER $$
 DROP TRIGGER IF EXISTS adInStoreCheck$$
@@ -445,6 +473,13 @@ BEFORE INSERT
 ON AdPromotion
 FOR EACH ROW
 BEGIN
+	IF ((SELECT COUNT(*) FROM PaymentMethod
+		 JOIN Ad ON PaymentMethod.userId=Ad.sellerId
+		 WHERE Ad.adId=NEW.adId)=0) THEN
+			SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "The user does not have a payment method. Can't add a promotion";
+	END IF;
+
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,
 		(SELECT price FROM Promotion WHERE Promotion.duration=NEW.duration),
