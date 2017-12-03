@@ -5,6 +5,11 @@ session_start();
 include_once("utils/user.php");
 include_once("utils/validation.php");
 
+if (isset($_SESSION["user"])) {
+  redirect_index();
+  return;
+}
+
 $errors = [];
 
 $mysqli = get_database();
@@ -49,9 +54,14 @@ function form_group($errors, $label) {
   }
 }
 
+function select_if_equal($a, $b) {
+  if ($a === $b) {
+    echo 'selected';
+  }
+}
+
 ?>
 
-<!-- Make this form sticky ? -->
 <html>
     <head>
         <?php include_once("common/head.php") ?>
@@ -64,10 +74,10 @@ function form_group($errors, $label) {
                     <h1 class="text-center white-text">Register</h1>
                     <form method="post">
                         <?php form_group($errors, "first_name");  ?>
-                            <input id="first_name" placeholder="First name" type="text" class="form-control"  name="first_name">
+                          <input id="first_name" placeholder="First name" type="text" class="form-control"  name="first_name" value="<?= $first_name ?>">
                         </div>
                         <?php form_group($errors, "last_name");  ?>
-                            <input id="last_name" placeholder="Last name" type="text" class="form-control"  name="last_name">
+                            <input id="last_name" placeholder="Last name" type="text" class="form-control"  name="last_name" value="<?= $last_name ?>">
                         </div>
                         <?php form_group($errors, "password");  ?>
                             <input id="password" placeholder="Password" type="text" class="form-control"  name="password">
@@ -76,24 +86,24 @@ function form_group($errors, $label) {
                             <input id="password_confirmation" placeholder="Confirm" type="text" class="form-control"  name="password_confirmation">
                         </div>
                         <?php form_group($errors, "phone");  ?>
-                            <input id="phone" placeholder="Phone" type="text" class="form-control" name="phone">
+                            <input id="phone" placeholder="Phone" type="text" class="form-control" name="phone" value="<?= $phone ?>">
                         </div>
                         <?php form_group($errors, "email");  ?>
-                            <input id="email" placeholder="Email" type="text" class="form-control"  name="email">
+                            <input id="email" placeholder="Email" type="text" class="form-control"  name="email" value="<?= $email ?>">
                         </div>
                         <?php form_group($errors, "civic_number");  ?>
-                            <input id="civic_number" placeholder="Civic number" type="text" class="form-control"  name="civic_number">
+                            <input id="civic_number" placeholder="Civic number" type="text" class="form-control"  name="civic_number" value="<?= $civic_number ?>">
                         </div>
                         <?php form_group($errors, "street");  ?>
-                            <input id="street" placeholder="Street" type="text" class="form-control"  name="street">
+                            <input id="street" placeholder="Street" type="text" class="form-control"  name="street" value="<?= $street ?>">
                         </div>
                         <?php form_group($errors, "postal_code");  ?>
-                            <input id="postal_code" placeholder="Postal code" type="text" class="form-control"  name="postal_code">
+                            <input id="postal_code" placeholder="Postal code" type="text" class="form-control"  name="postal_code" value="<?= $postal_code ?>">
                         </div>
-                        <?php form_group($errors, "city");  ?>
+                        <?php form_group($errors, "city"); ?>
                             <select class="form-control" name="city">
-                                <?php foreach ($cities as $city) { ?>
-                                <option value="<?= $city["city"] ?>"><?= $city["city"] ?></option>
+                                <?php foreach ($cities as $c) { ?>
+                                  <option value="<?= $c["city"] ?>" <?= select_if_equal($city, $c["city"]) ?>><?= $c["city"] ?></option>
                                 <?php } ?>
                             </select>
                         </div>
