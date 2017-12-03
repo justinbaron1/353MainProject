@@ -7,7 +7,7 @@ if ($_POST) {
     if($affecte_rows > 0){
         $successMessage = "Membership successfully changed!";
     } else {
-        $errorMessage = "An error occured during the membership update."
+        $errorMessage = "An error occured during the membership update. Make sure you have a valid payment method."
     }
 }
 

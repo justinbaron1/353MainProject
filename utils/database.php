@@ -164,6 +164,17 @@ SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
 }
 
+function change_credit_card($mysqli, $user_id, $expiryYear, $expiryMonth, $cardNumber, $securityCode){
+  $query = "CALL createNewCreditCard()";
+  $stmt = $mysqli->prepare($query);
+  $stmt->execute();
+
+  if (log_mysqli_error($mysqli->error)) {
+    return false;
+  }
+  return true;
+}
+
 function get_user_transactions($mysqli, $user_id) {
   $query = <<<SQL
 SELECT *
