@@ -308,6 +308,8 @@ FROM Ad
 JOIN Users ON Ad.sellerId = Users.userId
 JOIN Address ON Users.addressId = Address.addressId
 JOIN City ON City.city = Address.city
+LEFT JOIN AdPosition
+ON AdPosition.adId = Ad.adId
 WHERE sellerId = ?
 AND   NOT isDeleted
 ORDER BY startDate DESC
