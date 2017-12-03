@@ -175,6 +175,7 @@ CREATE TABLE Ad (
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date,
 	priority int NOT NULL DEFAULT 2,
+	isDeleted boolean NOT NULL DEFAULT 0,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -560,7 +561,7 @@ DO
 	BEGIN
 		TRUNCATE TABLE AdPosition;
 		INSERT INTO AdPosition
-		(SELECT 0,adId FROM Ad ORDER BY priority);
+		(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
 	END;$$
 DELIMITER ;
 
