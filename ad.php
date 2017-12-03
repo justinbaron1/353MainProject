@@ -1,6 +1,8 @@
 <?php 
     include_once("common/user.php");
 
+    include_once("utils/upload.php");
+
     $ad_id = strip_tags(trim(@$_GET["ad_id"]));
     $ad = get_full_ad_by_id($mysqli, $ad_id);
     
@@ -42,7 +44,7 @@
                             if(!empty($images_urls)){
                                 foreach($images_urls as $url){ ?>
                                     <div class="col-md-12">
-                                        <img src="<?= $url["adImageUrl"] ?>"/>
+                                        <img src="<?= image_to_link($url["adImageUrl"]) ?>"/>
                                     </div>
                                 <?php }
                             } else { ?>
