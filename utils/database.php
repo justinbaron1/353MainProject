@@ -164,12 +164,51 @@ SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
 }
 
+function get_active_credit_card($mysqli, $user_id){
+  $query = <<<SQL
+  SELECT *
+  FROM  PaymentMethod
+  JOIN CreditCard
+  ON PaymentMethod.paymentMethodId = CreditCard.paymentMethodId
+  WHERE userId = ?
+  AND active
+SQL;
+    $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+    return @$result[0];
+}
+
+function get_active_debit_card($mysqli, $user_id){
+  $query = <<<SQL
+  SELECT *
+  FROM  PaymentMethod
+  JOIN DebitCard
+  ON PaymentMethod.paymentMethodId = DebitCard.paymentMethodId
+  WHERE userId = ?
+  AND active
+SQL;
+    $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
+    return @$result[0];
+}
+
 function change_credit_card($mysqli, $user_id, $expiryYear, $expiryMonth, $cardNumber, $securityCode){
-  $query = "CALL createNewCreditCard()";
+  $query = "CALL createNewCreditCard(?, ?, ?, ?, ?)";
   $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("iiiii", $cardNumber, $securityCode, $expiryMonth, $expiryYear, $user_id);
   $stmt->execute();
 
-  if (log_mysqli_error($mysqli->error)) {
+  if (log_mysqli_error($mysqli)) {
+    return false;
+  }
+  return true;
+}
+
+function change_debit_card($mysqli, $user_id, $expiryYear, $expiryMonth, $cardNumber){
+  $query = "CALL createNewDebitCard(?, ?, ?, ?)";
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("iiii", $cardNumber, $expiryMonth, $expiryYear, $user_id);
+  $stmt->execute();
+
+  if (log_mysqli_error($mysqli)) {
     return false;
   }
   return true;

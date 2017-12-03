@@ -18,11 +18,20 @@ if ($_POST) {
     $securityCode =        strip_tags(trim(@$_POST["securityCode"]));
 
     if($cardType == "credit"){
-        $rows_changed = change_credit_card($mysqli, $user["userId"], $expiryYear, $expiryMonth, $cardNumber, $securityCode);
+        $affecte_rows = change_credit_card($mysqli, $user["userId"], $expiryYear, $expiryMonth, $cardNumber, $securityCode);
     } else if($cardType == "debit") {
-        $rows_changed = change_debit_card($mysqli, $user["userId"], $expiryYear, $expiryMonth, $cardNumber);        
+        $affecte_rows = change_debit_card($mysqli, $user["userId"], $expiryYear, $expiryMonth, $cardNumber);        
+    }
+
+   if($affecte_rows > 0){
+        $successMessage = "Card successfully changed!";
+    } else {
+        $errorMessage = "An error occured during the card update.";
     }
 }
+
+$credit = get_active_credit_card($mysqli, $user["userId"]);
+$debit = get_active_debit_card($mysqli, $user["userId"]);
 
 function form_group($errors, $name, $label = null) {
     if (isset($errors[$name])) {
@@ -43,6 +52,16 @@ function form_group($errors, $name, $label = null) {
     <body>
         <?php include("common/navbar.php") ?>
         <div class="container">
+            <?php if(isset($successMessage)) { ?>
+                <div class="alert alert-success">
+                    <?= $successMessage ?>
+                </div>
+            <?php } ?>
+            <?php if(isset($errorMessage)) { ?>
+                <div class="alert alert-danger">
+                    <?= $errorMessage ?>
+                </div>
+            <?php } ?>
             <h1 class="text-center white-text">Payment Methods</h1>
             <div class="row">
                 <div class="col-md-12">
@@ -65,7 +84,7 @@ function form_group($errors, $name, $label = null) {
                     </div>
                 <?php } else if(!empty($debit)){ ?>
                     <div class="col-md-3">
-                        <span>Debit card</span>
+                        <span>Type: Debit card</span>
                     </div>
                     <div class="col-md-3">
                         <span>Expires: <?= $debit["expiryYear"]?>-<?= $debit["expiryMonth"]?></span>
@@ -97,7 +116,7 @@ function form_group($errors, $name, $label = null) {
                             <input id="expiryYear" placeholder="2017" type="number" step="1" class="form-control"  name="expiryYear" value="<?= $expiryYear ?>">
                         </div>
                         <?php form_group($errors, "expiryMonth", "Expiry Month");  ?>
-                            <input id="expiryMonth" placeholder="03" type="number" step="1" class="form-control"  name="expiryMonth" value="<?= $expiryMonth ?>">
+                            <input id="expiryMonth" placeholder="03" type="number" step="1" min="1" max="12" class="form-control"  name="expiryMonth" value="<?= $expiryMonth ?>">
                         </div>
                         <?php form_group($errors, "cardNumber", "Card Number");  ?>
                             <input id="cardNumber" placeholder="XXXXXXXXXXXXX" type="number" step="1" class="form-control"  name="cardNumber" value="<?= $cardNumber ?>">
@@ -115,7 +134,7 @@ function form_group($errors, $name, $label = null) {
                             <input id="expiryYear" placeholder="2017" type="number" step="1" class="form-control"  name="expiryYear" value="<?= $expiryYear ?>">
                         </div>
                         <?php form_group($errors, "expiryMonth", "Expiry Month");  ?>
-                            <input id="expiryMonth" placeholder="03" type="number" step="1" class="form-control"  name="expiryMonth" value="<?= $expiryMonth ?>">
+                            <input id="expiryMonth" placeholder="03" type="number" step="1" min="1" max="12" class="form-control"  name="expiryMonth" value="<?= $expiryMonth ?>">
                         </div>
                         <?php form_group($errors, "cardNumber", "Card Number");  ?>
                             <input id="cardNumber" placeholder="XXXXXXXXXXXXX" type="number" step="1" class="form-control"  name="cardNumber" value="<?= $cardNumber ?>">
