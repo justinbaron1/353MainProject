@@ -175,7 +175,6 @@ CREATE TABLE Ad (
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date,
 	priority int NOT NULL DEFAULT 2,
-	position int,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -540,30 +539,31 @@ BEGIN
 END$$
 DELIMITER ;
 
-
 DELIMITER $$
-DROP TRIGGER IF EXISTS resetAdPostionOnAdInsert$$
-CREATE TRIGGER resetAdPostionOnAdInsert
+DROP TRIGGER IF EXISTS addAdPosition$$
+CREATE TRIGGER addAdPosition
 AFTER INSERT
 ON Ad
 FOR EACH ROW
 BEGIN
-	DROP TABLE AdPosition;
-	CREATE TABLE AdPosition AS (SELECT adId FROM Ad ORDER BY priority);
+	UPDATE AdPosition
+	SET position=((SELECT COUNT(*) FROM Ad)+1)
+	WHERE NEW.adId=AdPosition.adId;
 END$$
 DELIMITER ;
 
-# DELIMITER $$
-# DROP EVENT IF EXISTS resetAdPositionEvent$$
-# CREATE EVENT resetAdPositionEvent
-# ON SCHEDULE EVERY 1 MINUTE
-# DO
-# 	BEGIN
-# 		TRUNCATE AdPosition;
-# 		INSERT INTO AdPosition(adId) VALUES
-# 		((SELECT adId FROM Ad ORDER BY priority));
-# 	END;$$
-# DELIMITER ;
+
+DELIMITER $$
+DROP EVENT IF EXISTS resetAdPositionEvent$$
+CREATE EVENT resetAdPositionEvent
+ON SCHEDULE EVERY 1 HOUR
+DO
+	BEGIN
+		TRUNCATE TABLE AdPosition;
+		INSERT INTO AdPosition
+		(SELECT 0,adId FROM Ad ORDER BY priority);
+	END;$$
+DELIMITER ;
 
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$

@@ -168,7 +168,7 @@ INSERT INTO AdPromotion(adId,duration) VALUES
 (3,30);
 
 CALL createTransaction(1,1);
-CALL createTransaction(4,1);
+-- CALL createTransaction(4,1);
 CALL createTransaction(9,9);
 CALL createTransaction(10,10);
 
