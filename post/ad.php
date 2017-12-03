@@ -41,6 +41,7 @@ function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
   }
 
   if (is_file_to_upload($file)) {
+    $file["name"] = name_with_GUID($file);
     if (!handle_ad_image_upload($mysqli, $file)) {
       $errors["imageToUpload"] = "Problem uploading image";
     }
@@ -83,6 +84,7 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   }
 
   if (is_file_to_upload($image_file)) {
+    $image_file["name"] = name_with_GUID($image_file);
     if (!handle_ad_image_upload($mysqli, $image_file, $old_image)) {
         $errors["imageToUpload"] = "Problem uploading image";
     }
@@ -100,19 +102,24 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   return $errors;
 }
 
+function name_with_GUID($image_file){
+  $path_parts = pathinfo($image_file["name"] );
+  return trim(com_create_guid(), '{}').".".$path_parts["extension"];
+}
+
 function handle_delete_ad($user_id, $ad_id) {
   global $mysqli;
   $mysqli = get_database();
   $errors = [];
 
-  if (is_admin($mysqli, $user_id)) {
+  if (can_edit_ad($mysqli, $ad_id, $user_id)) {
     if (!delete_ad($mysqli, $ad_id)) {
       $errors['delete'] = "Problem deleting ad '$ad_id'";
       log_info("Problem deleting ad '$ad_id'");
     }
   } else {
-    log_info("Non-admin user '$user_id' tried to delete ad '$ad_id'. Aborting.");
-    $errors['delete'] = "Non-admin user '$user_id' tried to delete ad '$ad_id'. Aborting.";
+    log_info("Non-authorized user '$user_id' tried to delete ad '$ad_id'. Aborting.");
+    $errors['delete'] = "Non-authorized user '$user_id' tried to delete ad '$ad_id'. Aborting.";
   }
   return $errors;
 }

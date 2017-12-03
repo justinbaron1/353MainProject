@@ -21,15 +21,12 @@ SQL;
 }
 
 function create_and_link_promotion_package($mysqli, $promotion_package, $ad_id) {
-  $query = <<<SQL
-INSERT INTO AdPromotion (adId, duration) VALUES (?, ?)
-SQL;
+  $query = "CALL createPromotion(?, ?)"
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("ii", $ad_id, $promotion_package);
   $stmt->execute();
 
-  log_mysqli_error($mysqli);
-
+  log_mysqli_error($mysqli)
   return $mysqli->error;
 }
 
@@ -308,6 +305,8 @@ FROM Ad
 JOIN Users ON Ad.sellerId = Users.userId
 JOIN Address ON Users.addressId = Address.addressId
 JOIN City ON City.city = Address.city
+LEFT JOIN AdPosition
+ON AdPosition.adId = Ad.adId
 WHERE sellerId = ?
 AND   NOT isDeleted
 ORDER BY startDate DESC
@@ -459,8 +458,7 @@ function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $descri
                               $type, $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
-SET sellerId = ?,
-    title = ?,
+SET title = ?,
     price = ?,
     description = ?,
     type = ?,
@@ -469,7 +467,7 @@ SET sellerId = ?,
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("sissssi", $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
 
   if ($new_image === '') {

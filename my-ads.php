@@ -35,6 +35,8 @@
                             <th>Price</th>
                             <th>Subcategory</th>
                             <th>Category</th>   
+                            <th>Global Position</th>
+                            <th>Position in Subcategory</th>
                             <th>Since</th>
                             <th>Ends</th>
                             <th></th>
@@ -50,7 +52,9 @@
                                 <td><?= $ad["title"] ?></td>
                                 <td><?= $ad["price"] ?></td>
                                 <td><?= $ad["subCategory"] ?></td>
-                                <td><?= $ad["category"] ?></td>                         
+                                <td><?= $ad["category"] ?></td>
+                                <td><?= $ad["position"] ?></td>            
+                                <td><?= $ad["subCategoryPosition"] ?></td>      
                                 <td><?= $ad["startDate"] ?></td>
                                 <td><?= $ad["endDate"] ?></td>
                                 <td>
