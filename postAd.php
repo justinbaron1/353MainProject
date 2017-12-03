@@ -73,7 +73,7 @@ if ($_POST) {
   } else if ($action === "delete") {
     $errors = handle_delete_ad($user_id, $ad_id);
     if (empty($errors)) {
-      header("Location: my-ads.php?delete_success=true");
+      header("Location: ads.php?delete_success=true");
       return;
     }
   }
