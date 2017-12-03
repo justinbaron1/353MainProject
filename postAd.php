@@ -144,7 +144,7 @@ function form_group($errors, $name, $label = null) {
               <h1 class="text-center white-text">Update my Ad!</h1>
             <?php } ?>
 
-            <?php if ($ad_id && is_admin($mysqli, $user_id)) { ?>
+            <?php if ($ad_id && can_edit_ad($mysqli, $ad_id, $user_id)) { ?>
               <form class ="row" method="post">
                 <div class="col-md-offset-11">
                   <input type="hidden" name="action" value="delete">
