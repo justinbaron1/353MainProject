@@ -11,7 +11,7 @@ include_once("utils/validation.php");
 $success = false;
 $ad_id = false;
 $action = "create";
-$title = $subCategory = $imageToUpload = $description = $promotionPackage = "";
+$title = $subCategory = $imageToUpload = $description = $promotion_package = "";
 
 $mysqli = get_database();
 $promotions = array_map(
@@ -28,6 +28,7 @@ $description  = "";
 $category     = "";
 $sub_category = "";
 $type = "";
+$promotion_package = 0;
 
 $user = $_SESSION["user"];
 $user_id = $user["userId"];
@@ -35,44 +36,40 @@ $user_id = $user["userId"];
 if ($_POST) {
   $cats = test_input(@$_POST["subCategory"]);
 
-  $promotionPackage = test_input(@$_POST["promotionPackage"]);
+  $promotion_package = test_input(@$_POST["promotion_package"]);
 
   // Either 'create','update' or 'delete'
   include_once("post/ad.php");
 
   $action = $_POST["action"];
-  if ($action === "create" ||
-      $action === "update") {
+  $title = test_input(@$_POST["title"]);
+  $price = @$_POST["price"];
+  $description = test_input(@$_POST["description"]);
+  $type = test_input(@$_POST["type"]);
+  // Pray that no categories contain ';'
+  list($category, $sub_category) = explode(';', $cats);
+  $file = $_FILES["imageToUpload"];
+  $ad_id = @$_POST["ad_id"];
 
-    $title = test_input(@$_POST["title"]);
-    $price = @$_POST["price"];
-    $description = test_input(@$_POST["description"]);
-    $type = test_input(@$_POST["type"]);
-    // Pray that no categories contain ';'
-    list($category, $sub_category) = explode(';', $cats);
-    $file = $_FILES["imageToUpload"];
-    $ad_id = @$_POST["ad_id"];
-
-    if ($action === "create") {
-      $errors = handle_create_ad($user_id, $title, $price, $description,
-                                 $category, $sub_category, $type, $file);
-      if (empty($errors)) {
-        $success = true;
-      } else {
-        // TODO(tomleb): Redirect to detail view of the ad ?
+  if ($action === "create") {
+    $errors = handle_create_ad($user_id, $title, $price, $description, $category,
+                               $sub_category, $type, $file, $promotion_package);
+    if (empty($errors)) {
+      $success = true;
+    } else {
+      // TODO(tomleb): Redirect to detail view of the ad ?
         /*
         header("Location: index.php");
         return;
          */
-      }
-    } else {
-      // TODO(tomleb): Allow only updating of ad if the user is admin OR the ad
-      // belongs to the current user
-      $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
-                                 $category, $sub_category, $type, $file);
-      if (!empty($errors)) {
-        var_dump($errors);
-      }
+    }
+  } else if ($action === "update") {
+    // TODO(tomleb): Allow only updating of ad if the user is admin OR the ad
+    // belongs to the current user
+    $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
+                               $category, $sub_category, $type, $file, $promotion_package);
+    if (!empty($errors)) {
+      var_dump($errors);
     }
   }
 
@@ -88,8 +85,11 @@ if ($_POST) {
       $description  = $ad["description"];
       $category     = $ad["category"];
       $sub_category = $ad["subCategory"];
+      $promotion_package = $ad["duration"];
       $type = $ad["type"];
     }
+  } else {
+    header("Location: postAd.php");
   }
 }
 
@@ -156,12 +156,17 @@ function select_if_equal($a, $b) {
 
               <br><br>
               PromotionPackage:
-              <select name="promotionPackage">
-              <!-- TODO Only allow updating of promotion when not already chosen -->
-              <?php foreach ($promotions as $duration) { ?>
-                <option value="<?= $duration ?>"><?= $duration ?> Days Promotion</option>
+              <?php if (promotion_exists($mysqli, $ad_id)) { ?>
+                <?= $promotion_package ?>
+              <?php } else { ?>
+                <select name="promotion_package">
+                <!-- TODO Only allow updating of promotion when not already chosen -->
+                <option value="0" <?= select_if_equal($promotion_package, 0) ?>>No promotion</option>
+                <?php foreach ($promotions as $duration) { ?>
+                  <option value="<?= $duration ?>" <?= select_if_equal($promotion_package, $duration) ?>><?= $duration ?> Days Promotion</option>
+                <?php } ?>
+                </select>
               <?php } ?>
-              </select>
               <br><br>
 
               Description: <textarea name="description" rows="5" cols="40"><?= $description ?></textarea>
@@ -181,7 +186,7 @@ echo $title;
 echo "<br>";
 echo $subCategory;
 echo "<br>";
-echo $promotionPackage;
+echo $promotion_package;
 echo "<br>";
 echo $description;
 echo "<br>";

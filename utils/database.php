@@ -9,6 +9,30 @@
 
 include_once("utils/log.php");
 
+function promotion_exists($mysqli, $ad_id) {
+    $query = <<<SQL
+SELECT *
+FROM AdPromotion
+WHERE AdId = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  log_mysqli_error($mysqli);
+  return !empty($results);
+}
+
+function create_and_link_promotion_package($mysqli, $promotion_package, $ad_id) {
+  $query = <<<SQL
+INSERT INTO AdPromotion (adId, duration) VALUES (?, ?)
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("ii", $ad_id, $promotion_package);
+  $stmt->execute();
+
+  log_mysqli_error($mysqli);
+
+  return $mysqli->error;
+}
+
 function change_membership($mysqli, $user_id, $name){
   $query = <<<SQL
   UPDATE BuyerSeller
@@ -219,6 +243,7 @@ SELECT *
 FROM Ad
 LEFT JOIN Ad_AdImage ON Ad.adId = Ad_AdImage.adId
 LEFT JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
+LEFT JOIN AdPromotion ON AdPromotion.adId = Ad.adId
 WHERE Ad.adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
