@@ -37,6 +37,7 @@ function validate_registration($first_name, $last_name, $phone, $email, $passwor
   if (empty($last_name))  { $errors["last_name"] = "Invalid last name."; }
   if (empty($phone)) { $errors["phone"] = "Invalid phone."; }
   if (!is_valid_email($email)) { $errors["email"] = "Invalid email."; }
+  if (!is_available_email($mysqli, $email)) { $errors["email"] = "Email already exists."; }
   if (!is_valid_password($password)) {
     $errors["password"] = "Invalid password. Must be 8 characters or more.";
   } else if ($password !== $password_confirmation) { 
@@ -44,10 +45,14 @@ function validate_registration($first_name, $last_name, $phone, $email, $passwor
   }
   if (!is_valid_number($civic_number)) { $errors["civic_number"] = "Invalid civic number."; }
   if (empty($street))                  { $errors["street"] = "Invalid street."; }
-  if (!is_valid_number($postal_code))   { $errors["postal_code"] = "Invalid postal code."; }
+  if (!is_valid_postal_code($postal_code))   { $errors["postal_code"] = "Invalid postal code."; }
   if (!is_valid_city($mysqli, $city))  { $errors["city"] = "Invalid city."; }
 
   return $errors;
+}
+
+function is_available_email($mysqli, $email) {
+  return !get_user_by_email($mysqli, $email);
 }
 
 function is_valid_email($email) {
