@@ -21,7 +21,8 @@ if ($_POST) {
   $postal_code =           strip_tags(trim(@$_POST["postal_code"]));
   $city =                  strip_tags(trim(@$_POST["city"]));
 
-  $errors = validate_registration($first_name, $last_name, $phone, $email, $password, $civic_number, $street, $postal_code, $city);
+  $errors = validate_registration($first_name, $last_name, $phone, $email, $password, 
+                                  $password_confirmation, $civic_number, $street, $postal_code, $city);
 
   if (empty($errors)) {
     // TODO(tomleb): Make transaction..
