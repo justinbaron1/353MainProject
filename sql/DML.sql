@@ -64,25 +64,22 @@ INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 (12,2018,7),
 (02,2019,8),
 (01,2021,9),
-(07,2020,10),
-(04,2020,NULL),
-(03,2019,NULL),
-(06,2021,NULL);
+(07,2020,10);
+
 
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
 (2,222333444,123),
 (4,888444666,987),
 (5,451355111,434),
-(6,982578126,666),
-(9,736193728,456),
-(10,38719582,767);
+(6,982578126,666);
+
 
 INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
 (1,777222444),
 (3,888123123),
 (7,564728878),
-(8,987678987),
-(11,219843127);
+(8,987678987);
+
 
 INSERT INTO Category(category) VALUES
 ("buy and sell"),
@@ -108,21 +105,34 @@ INSERT INTO SubCategory(category,subCategory) VALUES
 ("used","clothing"),
 ("used","jewelry");
 
-INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES
-(2,"selling ps3",150.00,"ps3 good condition with 3 games","sell","buy and sell","electronics"),
-(3,"selling audi a4",7999.99,"5 year old","sell","rent","car"),
-(5,"photo shoot",99.99,"family photo shoot","sell","services","photographers"),
-(2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books"),
-(6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry"),
-(7,"SUPERBE Condo 6 1/2 - 3 Chambres - ELECTROS - À VOIR!!", 2500.00, "Spacieux condo haut de gamme dans une nouvelle construction disponible à partir du 1er Janvier 2018. Le triplex est situé au pied du Mont-Royal près de la rue Des Pins, à proximité de l’Université McGill.","sell","rent","apartments"),
-(8,"I need help for mathematics", 20.00, "I would like to have tutoring for math twice a week 20$/hour","buy","services","tutors"),
-(9,"canada goose medium for men",600.00,"1 year old plz buy it","sell","used","clothing"),
-(10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments"),
-(10,"wireless Controller for PS4",89.99,"Precision controller enhanced to offer players absolute control for all games on PlayStation 4. ","sell","buy and sell","electronics"),
-(10,"bose speaker",115.00,"Innovative Bose technology packs bold sound into a small, water-resistant speaker","sell","buy and sell","electronics"),
-(3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment"),
-(9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
+# INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES
+# (2,"selling ps3",150.00,"ps3 good condition with 3 games","sell","buy and sell","electronics"),
+# (3,"selling audi a4",7999.99,"5 year old","sell","rent","car"),
+# (5,"photo shoot",99.99,"family photo shoot","sell","services","photographers"),
+# (2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books"),
+# (6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry"),
+# (7,"SUPERBE Condo 6 1/2 - 3 Chambres - ELECTROS - À VOIR!!", 2500.00, "Spacieux condo haut de gamme dans une nouvelle construction disponible à partir du 1er Janvier 2018. Le triplex est situé au pied du Mont-Royal près de la rue Des Pins, à proximité de l’Université McGill.","sell","rent","apartments"),
+# (8,"I need help for mathematics", 20.00, "I would like to have tutoring for math twice a week 20$/hour","buy","services","tutors"),
+# (9,"canada goose medium for men",600.00,"1 year old plz buy it","sell","used","clothing"),
+# (10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments"),
+# (10,"wireless Controller for PS4",89.99,"Precision controller enhanced to offer players absolute control for all games on PlayStation 4. ","sell","buy and sell","electronics"),
+# (10,"bose speaker",115.00,"Innovative Bose technology packs bold sound into a small, water-resistant speaker","sell","buy and sell","electronics"),
+# (3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment"),
+# (9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
 
+CALL createAd(2,"selling ps3",150.00,"ps3 good condition with 3 games","sell","buy and sell","electronics");
+CALL createAd(3,"selling audi a4",7999.99,"5 year old","sell","rent","car");
+CALL createAd(5,"photo shoot",99.99,"family photo shoot","sell","services","photographers");
+CALL createAd(2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books");
+CALL createAd(6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry");
+CALL createAd(7,"SUPERBE Condo 6 1/2 - 3 Chambres - ELECTROS - À VOIR!!", 2500.00, "Spacieux condo haut de gamme dans une nouvelle construction disponible à partir du 1er Janvier 2018. Le triplex est situé au pied du Mont-Royal près de la rue Des Pins, à proximité de l’Université McGill.","sell","rent","apartments");
+CALL createAd(8,"I need help for mathematics", 20.00, "I would like to have tutoring for math twice a week 20$/hour","buy","services","tutors");
+CALL createAd(9,"canada goose medium for men",600.00,"1 year old plz buy it","sell","used","clothing");
+CALL createAd(10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments");
+CALL createAd(10,"wireless Controller for PS4",89.99,"Precision controller enhanced to offer players absolute control for all games on PlayStation 4. ","sell","buy and sell","electronics");
+CALL createAd(10,"bose speaker",115.00,"Innovative Bose technology packs bold sound into a small, water-resistant speaker","sell","buy and sell","electronics");
+CALL createAd(3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment");
+CALL createAd(9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
 
 INSERT INTO StrategicLocation(name,clientsPerHour,costPercent) VALUES
 ("sl1",400,20),
@@ -163,14 +173,14 @@ INSERT INTO Promotion(duration,price) VALUES
 (14,50.00),
 (30,90.00);
 
-INSERT INTO AdPromotion(adId,duration) VALUES
-(1,7),
-(3,30);
+
+CALL createPromotion(1,7);
+CALL createPromotion(3,30);
 
 CALL createTransaction(1,1);
 -- CALL createTransaction(4,1);
-CALL createTransaction(9,9);
-CALL createTransaction(10,10);
+CALL createTransaction(9,8);
+-- CALL createTransaction(10,10);
 
 INSERT INTO AdImage(url) VALUES
 ("https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sony-PlayStation-PS3-Slim-Console-FL.jpg/220px-Sony-PlayStation-PS3-Slim-Console-FL.jpg"),

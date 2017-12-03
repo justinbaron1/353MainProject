@@ -121,7 +121,7 @@ CREATE TABLE PaymentMethod (
 	paymentMethodId int AUTO_INCREMENT,
 	expiryMonth int NOT NULL,
 	expiryYear int NOT NULL,
-	userId int,
+	userId int NOT NULL,
 	active boolean NOT NULL DEFAULT 1,
 	PRIMARY KEY (paymentMethodId),
 	FOREIGN KEY (userId) REFERENCES BuyerSeller(userId)
@@ -188,6 +188,7 @@ CREATE TABLE Ad (
 
 CREATE TABLE AdPosition(
 	position int AUTO_INCREMENT,
+	subCategoryPosition int NOT NULL DEFAULT 1,
 	adId int NOT NULL,
 	PRIMARY KEY(position),
 	FOREIGN KEY (adId) REFERENCES Ad(adId)
@@ -580,6 +581,32 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createAd$$
+CREATE PROCEDURE createAd(IN sellerId int, IN title varchar(255),IN price decimal(15,2), IN description varchar(255),
+IN type varchar(255),IN category varchar(255),IN subCategory varchar(255))
+BEGIN
+	INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES
+	(sellerId,title,price,description,type,category,subCategory);
+	TRUNCATE TABLE AdPosition;
+	INSERT INTO AdPosition
+	(SELECT 0,1,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+	CALL resetAdCategoryPosition();
+END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createPromotion$$
+CREATE PROCEDURE createPromotion(IN adId int, IN duration int)
+BEGIN
+	INSERT INTO AdPromotion(adId,duration) VALUES
+	(adId,duration);
+	TRUNCATE TABLE AdPosition;
+	INSERT INTO AdPosition
+	(SELECT 0,1,Ad.adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+	CALL resetAdCategoryPosition();
+END$$
+DELIMITER ;
 
 -- make a payment method active and make old payment method inactive
 DELIMITER $$
@@ -635,6 +662,18 @@ BEGIN
 END;$$
 DELIMITER ;
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS setSubCategoryPosition$$
+CREATE PROCEDURE setSubCategoryPosition(IN subCategory varchar(255))
+BEGIN
+	SET @count = 0;
+	UPDATE AdPosition
+	SET subCategoryPosition=@count:=@count+1
+	WHERE((SELECT Ad.subCategory FROM Ad
+		   WHERE Ad.adId=AdPosition.adId)=subCategory);
+END;$$
+DELIMITER ;
+
 -- ----------------------------------------
 -- EVENTS
 
@@ -664,16 +703,23 @@ DO
 DELIMITER ;
 
 
--- Resets the position of the ads bases on the priority every minute
 DELIMITER $$
-DROP EVENT IF EXISTS resetAdPositionEvent$$
-CREATE EVENT resetAdPositionEvent
-ON SCHEDULE EVERY 1 MINUTE
-DO
+DROP PROCEDURE IF EXISTS resetAdCategoryPosition$$
+CREATE PROCEDURE resetAdCategoryPosition()
 BEGIN
-	TRUNCATE TABLE AdPosition;
-	INSERT INTO AdPosition
-	(SELECT 0,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+	CALL setSubCategoryPosition("clothing");
+	CALL setSubCategoryPosition("books");
+	CALL setSubCategoryPosition("electronics");
+	CALL setSubCategoryPosition("car");
+	CALL setSubCategoryPosition("sport equipment");
+	CALL setSubCategoryPosition("jewlry");
+	CALL setSubCategoryPosition("wedding - dresses");
+	CALL setSubCategoryPosition("apartments");
+	CALL setSubCategoryPosition("tutors");
+	CALL setSubCategoryPosition("musical instruments");
+	CALL setSubCategoryPosition("photographers");
+	CALL setSubCategoryPosition("event planners");
+	CALL setSubCategoryPosition("personal trainers");
 END$$
 DELIMITER ;
 
