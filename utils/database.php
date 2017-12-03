@@ -21,12 +21,12 @@ SQL;
 }
 
 function create_and_link_promotion_package($mysqli, $promotion_package, $ad_id) {
-  $query = "CALL createPromotion(?, ?)"
+  $query = "CALL createPromotion(?, ?)";
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("ii", $ad_id, $promotion_package);
   $stmt->execute();
 
-  log_mysqli_error($mysqli)
+  log_mysqli_error($mysqli);
   return $mysqli->error;
 }
 
