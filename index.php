@@ -47,6 +47,7 @@ if(isset($_SESSION["user"])){
                             <input id="password" placeholder="Password" type="password" class="form-control"  name="password">
                         </div>
                         <button type="submit" class="btn btn-default">Login</button>
+                        <a class="btn btn-default" href="register.php">Register</a>
                     </form>
                 </div>
             </div>

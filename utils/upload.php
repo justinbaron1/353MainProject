@@ -29,6 +29,11 @@ function handle_ad_image_upload($mysqli, $file, $old_file = '') {
     $ini = parse_ini_file("sikrits.env");
     $upload_dir = $ini["UPLOAD"];
 
+    if (!file_exists($upload_dir) && !mkdir($upload_dir, 0770)) {
+      log_info("Unable to create upload directory '$upload_dir'");
+      return false;
+    }
+
     if ($old_file && $old_file !== '') {
       if (is_http_link($old_file)) {
         log_info("Old file '$old_file' is a link. Not removing anything from server.");
