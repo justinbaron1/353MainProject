@@ -20,6 +20,29 @@ function validate_ad($title, $price, $description,
   return $errors;
 }
 
+function validate_registration($first_name, $last_name, $phone, $email, $password, 
+                               $civic_number, $street, $postal_code, $city) {
+  global $mysqli;
+  $mysqli = get_database();
+  $errors = [];
+
+  if (empty($first_name)) { $errors["first_name"] = "Invalid first name."; }
+  if (empty($last_name))  { $errors["last_name"] = "Invalid last name."; }
+  if (empty($phone)) { $errors["phone"] = "Invalid phone."; }
+  if (!is_valid_email($email)) { $errors["email"] = "Invalid email."; }
+  if (!is_valid_password($password)) {
+    $errors["password"] = "Invalid password. Must be 8 characters or more.";
+  } else if ($password !== $password_confirmation) { 
+    $errors["password"] = "The two passwords are different.";
+  }
+  if (!is_valid_number($civic_number)) { $errors["civic_number"] = "Invalid civic number."; }
+  if (empty($street))                  { $errors["street"] = "Invalid street."; }
+  if (!is_valid_number($postal_code))   { $errors["postal_code"] = "Invalid postal code."; }
+  if (!is_valid_city($mysqli, $city))  { $errors["city"] = "Invalid city."; }
+
+  return $errors;
+}
+
 function is_valid_email($email) {
   return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
@@ -58,7 +81,6 @@ function is_valid_ad_type($type) {
   return $type === 'buy' || $type === 'sell';
 }
 
-// TODO(tomleb): Look into the db if this is valid
 function is_valid_category_and_subcategory($category, $sub_category) {
   global $mysqli;
   $mysqli = get_database();

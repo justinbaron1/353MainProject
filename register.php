@@ -21,20 +21,7 @@ if ($_POST) {
   $postal_code =           strip_tags(trim(@$_POST["postal_code"]));
   $city =                  strip_tags(trim(@$_POST["city"]));
 
-  // TODO(tomleb): Actually validate
-  if (empty($first_name)) { $errors["first_name"] = "Invalid first name."; }
-  if (empty($last_name))  { $errors["last_name"] = "Invalid last name."; }
-  if (empty($phone)) { $errors["phone"] = "Invalid phone."; }
-  if (!is_valid_email($email)) { $errors["email"] = "Invalid email."; }
-  if (!is_valid_password($password)) {
-    $errors["password"] = "Invalid password. Must be 8 characters or more.";
-  } else if ($password !== $password_confirmation) { 
-    $errors["password"] = "The two passwords are different.";
-  }
-  if (!is_valid_number($civic_number)) { $errors["civic_number"] = "Invalid civic number."; }
-  if (empty($street))                  { $errors["street"] = "Invalid street."; }
-  if (!is_valid_number($postal_code))   { $errors["postal_code"] = "Invalid postal code."; }
-  if (!is_valid_city($mysqli, $city))  { $errors["city"] = "Invalid city."; }
+  $errors = validate_registration($first_name, $last_name, $phone, $email, $password, $civic_number, $street, $postal_code, $city);
 
   if (empty($errors)) {
     // TODO(tomleb): Make transaction..

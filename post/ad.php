@@ -99,8 +99,4 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   return $errors;
 }
 
-function handle_delete_ad($ad_id) {
-  // TODO(tomleb): Actually delete the ad
-}
-
 ?>

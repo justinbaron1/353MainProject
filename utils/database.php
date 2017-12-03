@@ -76,7 +76,6 @@ SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
  }
 
-// TODO(tomleb): Better error handling
 // INFO: We allow rating only if the current rating is NULL..
 // This check could be done in the database as well
 function rate_ad($mysqli, $user_id, $ad_id, $rating) {
@@ -90,6 +89,7 @@ SQL;
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("iii", $rating, $user_id, $ad_id);
   $stmt->execute();
+  log_mysqli_error($mysqli);
   return $mysqli->affected_rows;
 }
 
@@ -266,7 +266,7 @@ SQL;
   return fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
 }
 
-// TODO(tomleb): We support multiple images by ads but we will
+// INFO: We support multiple images by ads but we will
 // just return this one for now..
 function get_ad_image_by_id($mysqli, $ad_id) {
   $query = <<<SQL
@@ -276,6 +276,7 @@ INNER JOIN AdImage ON Ad_AdImage.adImageUrl = AdImage.url
 WHERE adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
+  log_mysqli_error($mysqli);
   return @$result[0];
 }
 
@@ -334,7 +335,6 @@ function do_bills_backup($mysqli){
 }
 
 // TODO(tomleb): Make a transaction
-// TODO(tomleb): Better error handling
 function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
                               $type, $category, $sub_category, $image_filename) {
   $query = <<<SQL
@@ -402,9 +402,6 @@ function can_edit_ad($mysqli, $ad_id, $user_id) {
   return is_seller($mysqli, $ad_id, $user_id) || is_admin($mysqli, $user_id);
 }
 
-// TODO(tomleb): Allow update a subset of attributes ? Don't think we need this
-// feature for the project..
-// TODO(tomleb): Make sure the user is either admin, or owner of the ad.
 // TODO(tomleb): Something something transaction
 function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
                               $type, $category, $sub_category, $new_image, $old_image) {
@@ -457,7 +454,6 @@ SQL;
   return $mysqli->affected_rows;
 }
 
-// TODO(tomleb): Better error handling
 function create_user($mysqli, $first_name, $last_name, $phone, $email, $password, $address_id) {
   $query = <<<SQL
 INSERT INTO Users(firstName, lastName, phoneNumber, email, password, addressId) VALUES (?, ?, ?, ?, ?, ?)
@@ -469,7 +465,6 @@ SQL;
   return $mysqli->insert_id;
 }
 
-// TODO(tomleb): Better error handling
 function create_address($mysqli, $civic_number, $street, $postal_code, $city) {
   $query = <<<SQL
 INSERT INTO Address (civicNumber, street, postalCode, city) VALUES (?, ?, ?, ?)

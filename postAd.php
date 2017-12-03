@@ -64,8 +64,6 @@ if ($_POST) {
          */
     }
   } else if ($action === "update") {
-    // TODO(tomleb): Allow only updating of ad if the user is admin OR the ad
-    // belongs to the current user
     $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
                                $category, $sub_category, $type, $file, $promotion_package);
     if (!empty($errors)) {
@@ -160,7 +158,6 @@ function select_if_equal($a, $b) {
                 <?= $promotion_package ?>
               <?php } else { ?>
                 <select name="promotion_package">
-                <!-- TODO Only allow updating of promotion when not already chosen -->
                 <option value="0" <?= select_if_equal($promotion_package, 0) ?>>No promotion</option>
                 <?php foreach ($promotions as $duration) { ?>
                   <option value="<?= $duration ?>" <?= select_if_equal($promotion_package, $duration) ?>><?= $duration ?> Days Promotion</option>
