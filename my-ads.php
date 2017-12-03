@@ -1,6 +1,8 @@
 <?php 
     include_once("common/user.php");
 
+    $delete_success = @$_GET["delete_success"];
+
     $buyerseller_infos = get_buyerseller_info($mysqli, $user["userId"]);
     if(empty($buyerseller_infos)) {
         redirect_index();
@@ -23,6 +25,13 @@
         <?php include("common/navbar.php") ?>
         <div class="container">
             <h1>My Ads</h1>
+
+            <?php if ($delete_success) { ?>
+              <div class="alert alert-success" role="alert">
+                  <b>Success!</b> Your ad has been deleted.
+              </div>
+            <?php } ?>
+
             <?php if(empty($ads)) { ?>
                 <div class="row text-center">
                     You haven't published any ad yet.
