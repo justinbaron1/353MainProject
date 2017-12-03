@@ -83,7 +83,7 @@ if ($_POST) {
       $sub_category = $ad["subCategory"];
       $promotion_package = $ad["duration"];
       $type = $ad["type"];
-
+      $image_url = $ad["url"];
     }
   } else {
     header("Location: postAd.php");
@@ -195,6 +195,12 @@ function form_group($errors, $name, $label = null) {
               <?php form_group($errors, "description", "Description"); ?>
                 <textarea class="form-control" name="description" rows="5" cols="40"><?= $description ?></textarea>
               </div>
+
+              <?php if($image_url === ''){ ?>
+                <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
+              <?php } else { ?>
+                <img src="<?= image_to_link($image_url) ?>"/>
+              <?php } ?>
 
               <?php form_group($errors, "imageToUpload", "Image"); ?>
                 <input type="file" name="imageToUpload" id="imageToUpload" value="asd">
