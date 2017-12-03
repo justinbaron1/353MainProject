@@ -33,6 +33,9 @@ $promotion_package = 0;
 $user = $_SESSION["user"];
 $user_id = $user["userId"];
 
+// TODO(tomleb): For some reason, if the file uploaded is too large,
+// the request becomes a GET.
+
 if ($_POST) {
   $cats = test_input(@$_POST["subCategory"]);
 
@@ -56,18 +59,12 @@ if ($_POST) {
                                $sub_category, $type, $file, $promotion_package);
     if (empty($errors)) {
       $success = true;
-    } else {
-      // TODO(tomleb): Redirect to detail view of the ad ?
-        /*
-        header("Location: index.php");
-        return;
-         */
     }
   } else if ($action === "update") {
     $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
                                $category, $sub_category, $type, $file, $promotion_package);
-    if (!empty($errors)) {
-      var_dump($errors);
+    if (empty($errors)) {
+      $success = true;
     }
   }
 
@@ -85,10 +82,13 @@ if ($_POST) {
       $sub_category = $ad["subCategory"];
       $promotion_package = $ad["duration"];
       $type = $ad["type"];
+
     }
   } else {
     header("Location: postAd.php");
   }
+} else {
+  log_info("WEIRD");
 }
 
 function test_input($data) {
@@ -104,6 +104,16 @@ function select_if_equal($a, $b) {
   }
 }
 
+function form_group($errors, $name, $label = null) {
+  if (isset($errors[$name])) {
+    echo "<div class=\"form-group has-error\"><label class=\"control-label\" for=\"${name}\"> ${errors[$name]} </label>";
+  } else if ($label) {
+    echo "<div class=\"form-group\"><label class=\"control-label\" for=\"${name}\"> $label </label>";
+  } else {
+    echo '<div class="form-group">';
+  }
+}
+
 ?>
 
 <!DOCTYPE HTML>
@@ -115,80 +125,88 @@ function select_if_equal($a, $b) {
 ?>
 </head>
 <body>
-<?php if ($success) { ?>
-<h1>Successfully created new ad!</h1>
-<?php } ?>
 
 <div class="container background">
     <div class="row">
-        <div class="col-md-offset-4 col-md-4">
-            <h1 class="text-center white-text">Submit ad</h1>
+        <div class="col-md-offset-2 col-md-8">
+            <?php if ($action === "create") { ?>
+              <h1 class="text-center white-text">Post a new Ad!</h1>
+            <?php } else { ?>
+              <h1 class="text-center white-text">Update my Ad!</h1>
+            <?php } ?>
+
+            <?php if ($success) { ?>
+              <div class="alert alert-success" role="alert">
+                <?php if ($action === "created") { ?>
+                  <b>Success!</b> Your ad has been created.
+                <?php } else { ?>
+                  <b>Success!</b> Your ad has been updated.
+                <?php } ?>
+              </div>
+            <?php } ?>
             <!-- TODO Add labels to input with error class (See register.php) -->
             <form method="post" enctype="multipart/form-data">
               <?php if ($ad_id) { ?>
                 <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
               <?php } ?>
               <input type="hidden" name="action" value="<?= $action ?>">
-              Title: <input type="text" name="title" value="<?= $title ?>">
-              <br><br>
-              Price: <input type="number" name="price" value="<?= $price ?>">
-              <br><br>
-              Type:
-              <br><br>
-              <select name="type">
-              <option value="buy"  <?= select_if_equal($type, 'buy') ?>>Buy</option>
-              <option value="sell" <?= select_if_equal($type, 'sell') ?>>Sell</option>
-              </select>
-              Category:
-              <select name="subCategory">
-                <?php foreach ($categories as $category => $subcategories) { ?>
-                  <optgroup label="<?= $category ?>">
-                  <? foreach ($subcategories as $subcategory) { ?>
-                  <option value="<?= $category ?>;<?= $subcategory ?>" <?= select_if_equal($sub_category, $subcategory) ?>>
-                      <?= $subcategory ?>
-                    </option>
-                  <?php } ?>
-                  </optgroup>
-                <?php } ?>
-              </select>
+              <?php form_group($errors, "title", "Title");  ?>
+                <input id="title" placeholder="Title" value="<?= $title ?>" type="text" class="form-control"  name="title">
+              </div>
+              <?php form_group($errors, "price", "Price");  ?>
+                  <input id="price" placeholder="Price" value="<?= $price ?>" type="number" class="form-control"  name="price">
+              </div>
 
-              <br><br>
-              PromotionPackage:
-              <?php if (promotion_exists($mysqli, $ad_id)) { ?>
-                <?= $promotion_package ?>
-              <?php } else { ?>
-                <select name="promotion_package">
-                <option value="0" <?= select_if_equal($promotion_package, 0) ?>>No promotion</option>
-                <?php foreach ($promotions as $duration) { ?>
-                  <option value="<?= $duration ?>" <?= select_if_equal($promotion_package, $duration) ?>><?= $duration ?> Days Promotion</option>
-                <?php } ?>
+              <?php form_group($errors, "type", "Type"); ?>
+                <select class="form-control" name="type">
+                  <option value="buy"  <?= select_if_equal($type, 'buy') ?>>Buy</option>
+                  <option value="sell" <?= select_if_equal($type, 'sell') ?>>Sell</option>
                 </select>
-              <?php } ?>
-              <br><br>
+              </div>
 
-              Description: <textarea name="description" rows="5" cols="40"><?= $description ?></textarea>
-              <br><br>
-                  Select image to upload:
-              <input type="file" name="imageToUpload" id="imageToUpload">
+              <?php form_group($errors, "subCategory", "Category"); ?>
+                <select class="form-control" name="subCategory">
+                  <?php foreach ($categories as $category => $subcategories) { ?>
+                    <optgroup label="<?= ucwords($category) ?>">
+                    <? foreach ($subcategories as $subcategory) { ?>
+                    <option value="<?= $category ?>;<?= $subcategory ?>" <?= select_if_equal($sub_category, $subcategory) ?>>
+                        <?= ucwords($subcategory) ?>
+                      </option>
+                    <?php } ?>
+                    </optgroup>
+                  <?php } ?>
+                </select>
+              </div>
 
-              <br><br>
-              <input type="submit" name="submit" value="Submit">
+              <?php form_group($errors, "promotion_package", "Promotion package"); ?>
+                <?php if (promotion_exists($mysqli, $ad_id)) { ?>
+                  <select disabled class="form-control" name="promotion_package_readonly">
+                    <option><?= $promotion_package ?> Days Promotion</option>
+                  </select>
+                <?php } else { ?>
+                  <select class="form-control" name="promotion_package">
+                    <option value="0" <?= select_if_equal($promotion_package, 0) ?>>No promotion</option>
+                    <?php foreach ($promotions as $duration) { ?>
+                      <option value="<?= $duration ?>" <?= select_if_equal($promotion_package, $duration) ?>><?= $duration ?> Days Promotion</option>
+                    <?php } ?>
+                  </select>
+                <?php } ?>
+              </div>
+
+              <?php form_group($errors, "description", "Description"); ?>
+                <textarea class="form-control" name="description" rows="5" cols="40"><?= $description ?></textarea>
+              </div>
+
+              <?php form_group($errors, "imageToUpload", "Image"); ?>
+                <input type="file" name="imageToUpload" id="imageToUpload" value="asd">
+              </div>
+
+            <?php if ($action === "create") { ?>
+              <input class="btn btn-default" type="submit" name="submit" value="Create">
+            <?php } else { ?>
+              <input class="btn btn-default" type="submit" name="submit" value="Update">
+            <?php } ?>
             </form>
         </div>
     </div>
 </div>
-<?php
-echo "<h2>Your Input:</h2>";
-echo $title;
-echo "<br>";
-echo $subCategory;
-echo "<br>";
-echo $promotion_package;
-echo "<br>";
-echo $description;
-echo "<br>";
-echo $imageToUpload;
-?>
-
-</body>
-</html>
