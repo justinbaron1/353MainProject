@@ -20,7 +20,7 @@ function validate_ad($title, $price, $description,
   return $errors;
 }
 
-function validate_registration($first_name, $last_name, $phone, $email, $password, 
+function validate_registration($first_name, $last_name, $phone, $email, $password, $password_confirmation,
                                $civic_number, $street, $postal_code, $city) {
   global $mysqli;
   $mysqli = get_database();
