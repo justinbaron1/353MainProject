@@ -25,7 +25,7 @@ function real_upload_path($upload_dir, $file) {
 
 // INFO: We're putting the files in a flat way which can cause naming conflicts
 function handle_ad_image_upload($mysqli, $file, $old_file = '') {
-  if ($file['errors'] == UPLOAD_ERR_OK) {
+  if ($file['error'] == UPLOAD_ERR_OK) {
     $ini = parse_ini_file("sikrits.env");
     $upload_dir = $ini["UPLOAD"];
 
