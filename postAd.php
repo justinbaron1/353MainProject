@@ -8,6 +8,7 @@ include("utils/upload.php");
 // include_once("utils/user.php");
 include_once("utils/validation.php");
 
+$update_success = false;
 $ad_id = false;
 $action = "create";
 $title = $subCategory = $imageToUpload = $description = $promotion_package = "";
@@ -27,6 +28,7 @@ $category     = "";
 $sub_category = "";
 $type = "";
 $promotion_package = 0;
+$image_url = "";
 
 $user = $_SESSION["user"];
 $user_id = $user["userId"];
@@ -62,6 +64,9 @@ if ($_POST) {
   } else if ($action === "update") {
     $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
                                $category, $sub_category, $type, $file, $promotion_package);
+    if (!$errors) {
+      $update_success = true;
+    }
   }
 
 } else if ($_GET) {
@@ -125,6 +130,12 @@ function form_group($errors, $name, $label = null) {
               <h1 class="text-center white-text">Post a new Ad!</h1>
             <?php } else { ?>
               <h1 class="text-center white-text">Update my Ad!</h1>
+            <?php } ?>
+
+            <?php if ($update_success) { ?>
+              <div class="alert alert-success" role="alert">
+                  <b>Success!</b> Your ad has been updated.
+              </div>
             <?php } ?>
 
             <?php if (!empty($errors) && isset($errors['general'])) { ?>
