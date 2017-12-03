@@ -54,7 +54,7 @@
                         </table>
                     <?php } ?>
                 </div>
-                <div id="debitCard" class="tab-pane fade in active">
+                <div id="debitCard" class="tab-pane fade in">
                     <?php if(empty($debit_bills)) { ?>
                         <div class="row text-center">
                             There are no deit card bills.
