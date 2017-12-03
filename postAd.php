@@ -8,7 +8,6 @@ include("utils/upload.php");
 // include_once("utils/user.php");
 include_once("utils/validation.php");
 
-$success = false;
 $ad_id = false;
 $action = "create";
 $title = $subCategory = $imageToUpload = $description = $promotion_package = "";
@@ -40,7 +39,7 @@ if ($_POST) {
 
   $promotion_package = test_input(@$_POST["promotion_package"]);
 
-  // Either 'create','update' or 'delete'
+  // Either 'create','update'
   include_once("post/ad.php");
 
   $action = $_POST["action"];
@@ -54,17 +53,15 @@ if ($_POST) {
   $ad_id = @$_POST["ad_id"];
 
   if ($action === "create") {
-    $errors = handle_create_ad($user_id, $title, $price, $description, $category,
+    $errors = handle_create_ad($ad_id, $user_id, $title, $price, $description, $category,
                                $sub_category, $type, $file, $promotion_package);
     if (empty($errors)) {
-      $success = true;
+      header("Location: ad.php?ad_id=$ad_id");
+      return;
     }
   } else if ($action === "update") {
     $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
                                $category, $sub_category, $type, $file, $promotion_package);
-    if (empty($errors)) {
-      $success = true;
-    }
   }
 
 } else if ($_GET) {
@@ -85,9 +82,8 @@ if ($_POST) {
     }
   } else {
     header("Location: postAd.php");
+    return;
   }
-} else {
-  log_info("WEIRD");
 }
 
 function test_input($data) {
@@ -131,16 +127,12 @@ function form_group($errors, $name, $label = null) {
               <h1 class="text-center white-text">Update my Ad!</h1>
             <?php } ?>
 
-            <?php if ($success) { ?>
-              <div class="alert alert-success" role="alert">
-                <?php if ($action === "created") { ?>
-                  <b>Success!</b> Your ad has been created.
-                <?php } else { ?>
-                  <b>Success!</b> Your ad has been updated.
-                <?php } ?>
+            <?php if (!empty($errors) && isset($errors['general'])) { ?>
+              <div class="alert alert-error" role="alert">
+              <b>Error!</b> <?= $errors['general'] ?>
               </div>
             <?php } ?>
-            <!-- TODO Add labels to input with error class (See register.php) -->
+
             <form method="post" enctype="multipart/form-data">
               <?php if ($ad_id) { ?>
                 <input type="hidden" name="ad_id" value="<?= $ad_id ?>">

@@ -115,9 +115,9 @@ SQL;
 function get_ratings_by_user_id($mysqli, $user_id){
   $query = <<<SQL
   SELECT *
-  FROM rating
-  JOIN ad
-  ON rating.adId = ad.adId
+  FROM Rating
+  JOIN Ad
+  ON Rating.adId = Ad.adId
   WHERE userId = ?
 SQL;
     $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$user_id]);
@@ -141,12 +141,12 @@ SQL;
 function get_all_credit_bills($mysqli){
   $query = <<<SQL
   SELECT *
-  FROM bill
-  JOIN paymentmethod
-  ON bill.paymentMethodId =  paymentmethod.paymentMethodId
-  JOIN  creditcard
-  ON creditcard.paymentMethodId = bill.paymentMethodId
-  ORDER BY bill.dateOfPayment DESC
+  FROM Bill
+  JOIN PaymentMethod
+  ON Bill.paymentMethodId = PaymentMethod.paymentMethodId
+  JOIN  CreditCard
+  ON CreditCard.paymentMethodId = Bill.paymentMethodId
+  ORDER BY Bill.dateOfPayment DESC
 SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
 }
@@ -154,12 +154,12 @@ SQL;
 function get_all_debit_bills($mysqli){
   $query = <<<SQL
   SELECT *
-  FROM bill
-  JOIN paymentmethod
-  ON bill.paymentMethodId =  paymentmethod.paymentMethodId
-  JOIN debitcard
-  ON debitcard.paymentMethodId = bill.paymentMethodId
-  ORDER BY bill.dateOfPayment DESC
+  FROM Bill
+  JOIN PaymentMethod
+  ON Bill.paymentMethodId = PaymentMethod.paymentMethodId
+  JOIN DebitCard
+  ON DebitCard.paymentMethodId = Bill.paymentMethodId
+  ORDER BY Bill.dateOfPayment DESC
 SQL;
     return fetch_assoc_all_prepared($mysqli, $query);
 }
@@ -284,10 +284,10 @@ function get_full_ad_by_id($mysqli, $ad_id) {
   $query = <<<SQL
 SELECT *
 FROM Ad
-JOIN buyerseller
-ON buyerseller.userId = ad.sellerId
-JOIN users
-ON users.userId = Ad.sellerId
+JOIN BuyerSeller
+ON BuyerSeller.userId = Ad.sellerId
+JOIN Users
+ON Users.userId = Ad.sellerId
 WHERE adId = ?
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$ad_id]);
@@ -309,7 +309,7 @@ function get_stores_by_ad_id($mysqli, $ad_id){
   $query = <<<SQL
   SELECT *
   FROM Ad_Store
-  JOIN store
+  JOIN Store
   ON Ad_Store.storeId = Store.storeId
   JOIN Address
   ON Store.addressId = Address.addressId
