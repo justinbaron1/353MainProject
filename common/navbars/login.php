@@ -20,8 +20,8 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true"><?= $user["firstName"]." ".$user["lastName"] ?><span class="caret"></span></a>
             <ul class="dropdown-menu">
-                <li><a href="/payment-methods.php"><span class="glyphicon glyphicon-credit-card"></span> Payment Methods</a><li>
                 <?php if(!empty($buyerseller_infos)) { ?>
+                    <li><a href="/payment-methods.php"><span class="glyphicon glyphicon-credit-card"></span> Payment Methods</a><li>
                     <li><a href="/change-membership.php"><span class="glyphicon glyphicon-cog"></span> Change memberships</a><li>
                     <li><a href="/my-ads.php"><span class="glyphicon glyphicon-list-alt"></span> My Ads</a><li>
                     <li><a href="/rate-transaction.php"><span class="glyphicon glyphicon-tags"></span> Rate my transactions</a><li>

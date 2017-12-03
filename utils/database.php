@@ -461,8 +461,7 @@ function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $descri
                               $type, $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
-SET sellerId = ?,
-    title = ?,
+SET title = ?,
     price = ?,
     description = ?,
     type = ?,
@@ -471,7 +470,7 @@ SET sellerId = ?,
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("isissssi", $user_id, $title, $price, $description, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("sissssi", $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
 
   if ($new_image === '') {
