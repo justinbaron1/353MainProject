@@ -120,6 +120,14 @@ function form_group($errors, $name, $label = null) {
 <html>
 <head>
   <?php include_once("common/head.php"); ?>
+  <style>
+      .have-lb{
+          white-space: pre-wrap;
+      }
+      img {
+          width:100%;
+      }
+  </style>
 </head>
 <body>
 <?php include("common/navbar.php"); ?>
@@ -196,14 +204,30 @@ function form_group($errors, $name, $label = null) {
                 <textarea class="form-control" name="description" rows="5" cols="40"><?= $description ?></textarea>
               </div>
 
-              <?php if($image_url === ''){ ?>
-                <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
-              <?php } else { ?>
-                <img src="<?= image_to_link($image_url) ?>"/>
-              <?php } ?>
 
-              <?php form_group($errors, "imageToUpload", "Image"); ?>
-                <input type="file" name="imageToUpload" id="imageToUpload" value="asd">
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <?php form_group($errors, "imageToUpload", "Image"); ?>
+                    <input type="file" name="imageToUpload" id="imageToUpload" value="asd">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <label>Current image<label>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <?php if($image_url === ''){ ?>
+                        <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
+                      <?php } else { ?>
+                        <img src="<?= image_to_link($image_url) ?>"/>
+                      <?php } ?>
+                    </div>
+                  </div>
+                </div>
               </div>
 
             <?php if ($action === "create") { ?>
