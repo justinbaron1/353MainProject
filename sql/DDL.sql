@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS Rating;
 DROP TABLE IF EXISTS Ad_AdImage;
 DROP TABLE IF EXISTS AdImage;
 DROP TABLE IF EXISTS Transaction;
+DROP TABLE IF EXISTS AdPosition;
 DROP TABLE IF EXISTS Ad;
 DROP TABLE IF EXISTS SubCategory;
 DROP TABLE IF EXISTS Category;
@@ -174,6 +175,7 @@ CREATE TABLE Ad (
 	startDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	endDate date,
 	priority int NOT NULL DEFAULT 2,
+	position int,
 	type varchar(255) NOT NULL,
 	category varchar(255) NOT NULL,
 	subCategory varchar(255) NOT NULL,
@@ -182,6 +184,14 @@ CREATE TABLE Ad (
 	FOREIGN KEY (category,subCategory) REFERENCES SubCategory(category,subCategory)
 		ON UPDATE CASCADE
 );
+
+CREATE TABLE AdPosition(
+	position int AUTO_INCREMENT,
+	adId int NOT NULL,
+	PRIMARY KEY(position),
+	FOREIGN KEY (adId) REFERENCES Ad(adId)
+);
+
 
 CREATE TABLE Transaction (
 	billId int,
@@ -529,6 +539,31 @@ BEGIN
 	SET NEW.endDate = DATE(DATE_ADD(CURRENT_TIMESTAMP,INTERVAL @days DAY));
 END$$
 DELIMITER ;
+
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS resetAdPostionOnAdInsert$$
+CREATE TRIGGER resetAdPostionOnAdInsert
+AFTER INSERT
+ON Ad
+FOR EACH ROW
+BEGIN
+	DROP TABLE AdPosition;
+	CREATE TABLE AdPosition AS (SELECT adId FROM Ad ORDER BY priority);
+END$$
+DELIMITER ;
+
+# DELIMITER $$
+# DROP EVENT IF EXISTS resetAdPositionEvent$$
+# CREATE EVENT resetAdPositionEvent
+# ON SCHEDULE EVERY 1 MINUTE
+# DO
+# 	BEGIN
+# 		TRUNCATE AdPosition;
+# 		INSERT INTO AdPosition(adId) VALUES
+# 		((SELECT adId FROM Ad ORDER BY priority));
+# 	END;$$
+# DELIMITER ;
 
 DELIMITER $$
 DROP EVENT IF EXISTS monthlyBackup$$
