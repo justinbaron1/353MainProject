@@ -1,11 +1,11 @@
 <?php
 
-session_start();
+// session_start();
 
 include_once("common/user.php");
-include_once("utils/database.php");
-include_once("utils/upload.php");
-include_once("utils/user.php");
+// include_once("utils/database.php");
+include("utils/upload.php");
+// include_once("utils/user.php");
 include_once("utils/validation.php");
 
 $success = false;
@@ -13,7 +13,6 @@ $ad_id = false;
 $action = "create";
 $title = $subCategory = $imageToUpload = $description = $promotion_package = "";
 
-$mysqli = get_database();
 $promotions = array_map(
   function ($promotion) { return $promotion['duration']; },
   get_promotions($mysqli)
@@ -119,13 +118,10 @@ function form_group($errors, $name, $label = null) {
 <!DOCTYPE HTML>
 <html>
 <head>
-<?php
-  include_once("common/head.php");
-  include("common/navbar.php");
-?>
+  <?php include_once("common/head.php"); ?>
 </head>
 <body>
-
+<?php include("common/navbar.php"); ?>
 <div class="container background">
     <div class="row">
         <div class="col-md-offset-2 col-md-8">
@@ -154,7 +150,7 @@ function form_group($errors, $name, $label = null) {
                 <input id="title" placeholder="Title" value="<?= $title ?>" type="text" class="form-control"  name="title">
               </div>
               <?php form_group($errors, "price", "Price");  ?>
-                  <input id="price" placeholder="Price" value="<?= $price ?>" type="number" class="form-control"  name="price">
+                  <input id="price" placeholder="Price" value="<?= $price | 0 ?>" min="0" step="0.01" type="number" class="form-control"  name="price">
               </div>
 
               <?php form_group($errors, "type", "Type"); ?>
@@ -168,11 +164,11 @@ function form_group($errors, $name, $label = null) {
                 <select class="form-control" name="subCategory">
                   <?php foreach ($categories as $category => $subcategories) { ?>
                     <optgroup label="<?= ucwords($category) ?>">
-                    <? foreach ($subcategories as $subcategory) { ?>
-                    <option value="<?= $category ?>;<?= $subcategory ?>" <?= select_if_equal($sub_category, $subcategory) ?>>
-                        <?= ucwords($subcategory) ?>
-                      </option>
-                    <?php } ?>
+                      <?php foreach ($subcategories as $subcategory) { ?>
+                        <option value="<?= $category ?>;<?= $subcategory ?>" <?= select_if_equal($sub_category, $subcategory) ?>>
+                          <?= ucwords($subcategory) ?>
+                        </option>
+                      <?php } ?>
                     </optgroup>
                   <?php } ?>
                 </select>
