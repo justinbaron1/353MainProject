@@ -318,7 +318,7 @@ function form_group($errors, $name, $label = null) {
 
                 <input class="btn btn-default" type="submit" name="submit" value="Rent Store">
               </form>
-            <?php } else { ?>
+            <?php } else if ($type === "sell") { ?>
               <h2>To sell your ad in store, edit it later.</h2>
             <?php } ?>
 

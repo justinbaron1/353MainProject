@@ -17,11 +17,19 @@ function sanitize($data) {
 
 function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, 
                                 $delivery_services) {
+  global $mysqli;
+  $mysqli = get_database();
   $errors = [];
 
-  if (!is_valid_id($ad_id))    { $errors["ad_id"] = "Invalid ad"; }
+  $ad = get_ad_by_id($mysqli, $ad_id);
+  if (!$ad) {
+    $errors["ad_id"] = "Invalid ad";
+    return $errors;
+  }
+
+  if (!is_ad_type_sell($ad))    { $errors["ad_id"] = "Ad should be type sell"; }
   if (!is_valid_id($store_id)) { $errors["store_id"] = "Invalid store"; }
-  if (!is_valid_date($date))     { $errors["date"] = "Invalid date"; }
+  if (!is_valid_date($ad, $date))     { $errors["date"] = "Invalid date"; }
   if (!is_valid_time($start_time)) { $errors["start_time"] = "Invalid start time"; }
   if (!is_valid_time($end_time)) { $errors["end_time"] = "Invalid end time"; }
   if (new DateTime($start_time) > new DateTime($end_time)) {
@@ -121,14 +129,17 @@ function is_valid_category_and_subcategory($category, $sub_category) {
   return isset($cats[$category]) && in_array($sub_category, $cats[$category]);
 }
 
-function is_valid_date($date) {
-  // TODO
-  return true;
+function is_valid_date($ad, $date) {
+  return new DateTime($date) <= new DateTime($ad["startDate"]);
 }
 
 function is_valid_time($time) {
   // TODO
   return true;
+}
+
+function is_ad_type_sell($ad) {
+  return $ad["type"] === "sell";
 }
 
 ?>
