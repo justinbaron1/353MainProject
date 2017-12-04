@@ -84,8 +84,8 @@ if ($_POST) {
   } else if ($action === "rent") {
     $store_id = @$_POST["store_id"];
     $date = @$_POST["date"];
-    $start_time = @$_POST["start_time"];
-    $end_time = @$_POST["end_time"];
+    $start_time = date('H:i', mktime(@$_POST["start_time"], 0));
+    $end_time = date('H:i', mktime(@$_POST["end_time"], 0));
     $include_delivery = @$_POST["include_delivery"] === "on";
 
     $errors = handle_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, $include_delivery);
@@ -316,12 +316,26 @@ function form_group($errors, $name, $label = null) {
                 <div class="row">
                   <div class="col-md-6">
                     <?php form_group($errors, "start_time", "Start time");  ?>
-                      <input id="start_time" type="time" class="form-control"  name="start_time">
+                      <div class="row">
+                        <div class="col-md-10">
+                          <input id="start_time" type="number" value="0" step="1" min="0" max="23" class="form-control"  name="start_time">
+                        </div>
+                        <div class="col-md-2 text-left">
+                          h
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <?php form_group($errors, "end_time", "End time");  ?>
-                      <input id="end_time" type="time" class="form-control"  name="end_time">
+                      <div class="row">
+                        <div class="col-md-10">
+                          <input id="end_time" type="number" value="0" step="1" min="0" max="23" class="form-control" name="end_time">
+                        </div>
+                        <div class="col-md-2 text-left">
+                          h
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
