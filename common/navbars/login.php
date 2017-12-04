@@ -41,6 +41,8 @@
                     <li><a href="/reports-6.php"><span class="glyphicon glyphicon-th-list"></span> Report #6</a><li>
                     <li><a href="/reports-7.php"><span class="glyphicon glyphicon-th-list"></span> Report #7</a><li>
                     <li><a href="/reports-8.php"><span class="glyphicon glyphicon-th-list"></span> Report #8</a><li>
+                    <li><a href="/reports-9.php"><span class="glyphicon glyphicon-th-list"></span> Report #9</a><li>
+                    <li><a href="/reports-10.php"><span class="glyphicon glyphicon-th-list"></span> Report #10</a><li>
                 <?php } ?>
             </ul>
         </li>

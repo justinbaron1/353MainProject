@@ -137,7 +137,27 @@ SQL;
 
 function report_7($mysqli) {
   $query = <<<SQL
-SELECT "No" as Answer
+SELECT Store.locationName, 
+       (case WHEN ( WeekendPricing.PriceTotal < WeekPricing.PriceTotal ) then 'True' else 'False' END) AS WeekendCheap, 
+       (case WHEN ( WeekendPricing.PriceTotal > WeekPricing.PriceTotal ) then 'True' else 'False' END) AS WeekdayCheap
+FROM Store,
+     (SELECT StrategicLocation.name, StrategicLocation.clientsPerHour, StorePrices.momentOfWeek, StorePrices.hourlyPrice, StrategicLocation.costPercent, p.priceTotal
+      FROM Store, StrategicLocation, StorePrices, (SELECT(StorePrices.hourlyPrice * (1+StrategicLocation.costPercent/100)) AS PriceTotal
+                                                   FROM StorePrices, StrategicLocation, Store
+                                                   WHERE Store.locationName = StrategicLocation.name 
+                                                   AND   StorePrices.momentOfWeek = 'weekend') AS p
+      WHERE Store.locationName = StrategicLocation.name 
+      AND   StorePrices.momentOfWeek = 'weekend'
+      GROUP BY Store.locationName ) AS WeekendPricing,
+     (SELECT StrategicLocation.name, StrategicLocation.clientsPerHour, StorePrices.momentOfWeek, StorePrices.hourlyPrice, StrategicLocation.costPercent, p.priceTotal
+      FROM Store, StrategicLocation, StorePrices,(SELECT(StorePrices.hourlyPrice * (1+StrategicLocation.costPercent/100)) AS PriceTotal
+                                                  FROM StorePrices, StrategicLocation, Store
+                                                  WHERE Store.locationName = StrategicLocation.name 
+                                                  AND   StorePrices.momentOfWeek = 'week') AS p
+      WHERE Store.locationName = StrategicLocation.name 
+      AND   StorePrices.momentOfWeek = 'week'
+      GROUP BY Store.locationName ) AS WeekPricing
+GROUP BY Store.locationName;
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query);
   log_mysqli_error($mysqli);
@@ -158,6 +178,27 @@ JOIN Ad
 ON Ad_Store.adId = Ad.adId
 WHERE LOWER(City.province) = "quebec"
 GROUP BY Store.storeId, City.province, Ad.category, Ad.subCategory;
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_9($mysqli) {
+  $query = <<<SQL
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_10($mysqli) {
+  $query = <<<SQL
+SELECT BuyerSeller.membershipPlanName, Users.userId, Users.firstName, Users.lastName, Users.phoneNumber, Users.email
+From BuyerSeller
+JOIN Users
+ON Users.userId = BuyerSeller.userId
+WHERE LOWER(BuyerSeller.membershipPlanName) <> "normal";
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query);
   log_mysqli_error($mysqli);
@@ -573,7 +614,7 @@ function do_bills_backup($mysqli){
   $stmt = $mysqli->prepare($query);
   $stmt->execute();
 
-  if (log_mysqli_error($mysqli->error)) {
+  if (log_mysqli_error($mysqli)) {
     return false;
   }
   return true;
