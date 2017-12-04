@@ -388,9 +388,7 @@ function do_bills_backup($mysqli){
 // TODO(tomleb): Make a transaction
 function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
                               $type, $category, $sub_category, $image_filename) {
-  $query = <<<SQL
-INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?)
-SQL;
+  $query = "CALL createAd(?, ?, ?, ?, ?, ?, ?)";
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("isdssss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
