@@ -2,7 +2,7 @@
 include_once("common/user.php");
 include("utils/upload.php");
 include_once("utils/validation.php");
-include("utils/formatter.php");
+include_once("utils/formatter.php");
 
 $update_success = false;
 $ad_id = false;

@@ -186,6 +186,85 @@ SQL;
 
 function report_9($mysqli) {
   $query = <<<SQL
+SELECT past.userId, COALESCE(past.total, 0) "Paid in last 7 days", COALESCE(future.total,0) "To be paid in the next 7 days"
+FROM
+(
+  SELECT past_temp.userId, SUM(past_temp.price) as "total"
+  FROM
+  (SELECT userId, title, dateOfRent, 
+      (SELECT deliveryHourlyPrice * HOUR(TIMEDIFF(timeStart, timeEnd))
+          FROM StorePrices 
+          WHERE momentOfWeek LIKE (CASE WHEN (WEEKDAY(dateOfRent) <= 4) 
+                                  THEN "week" 
+                                  ELSE "weekend"
+                                  END)) as Price, timeStart, timeEnd
+  FROM BuyerSeller
+  INNER JOIN Ad ON BuyerSeller.userId = Ad.sellerId
+  INNER JOIN Ad_Store ON Ad.adId = Ad_Store.adId
+  WHERE includesDeliveryServices
+  AND   DATEDIFF(CURDATE(), Ad_Store.dateOfRent) <= 7
+  AND   DATEDIFF(CURDATE(), Ad_Store.dateOfRent) >= 0) as past_temp
+  GROUP BY past_temp.userId
+) as past
+LEFT OUTER JOIN
+(
+  SELECT future_temp.userId, SUM(future_temp.price) "total"
+  FROM (SELECT userId, title, dateOfRent, 
+              (SELECT deliveryHourlyPrice * HOUR(TIMEDIFF(timeStart, timeEnd))
+               FROM StorePrices 
+               WHERE momentOfWeek LIKE (CASE WHEN (WEEKDAY(dateOfRent) <= 4) 
+                                        THEN "week" 
+                                        ELSE "weekend"
+                                        END)) as Price, timeStart, timeEnd
+        FROM BuyerSeller
+        INNER JOIN Ad ON BuyerSeller.userId = Ad.sellerId
+        INNER JOIN Ad_Store ON Ad.adId = Ad_Store.adId
+        WHERE includesDeliveryServices
+        AND   DATEDIFF(dateOfRent, CURDATE()) <= 7
+        AND   DATEDIFF(dateOfRent, CURDATE()) > 0) as future_temp
+  GROUP BY future_temp.userId
+) as future
+ON past.userId = future.userId
+UNION
+SELECT past.userId, COALESCE(past.total, 0) "Paid in last 7 days", COALESCE(future.total,0) "To be paid in the next 7 days"
+FROM
+(
+  SELECT past_temp.userId, SUM(past_temp.price) as "total"
+  FROM
+  (SELECT userId, title, dateOfRent, 
+      (SELECT deliveryHourlyPrice * HOUR(TIMEDIFF(timeStart, timeEnd))
+          FROM StorePrices 
+          WHERE momentOfWeek LIKE (CASE WHEN (WEEKDAY(dateOfRent) <= 4) 
+                                  THEN "week" 
+                                  ELSE "weekend"
+                                  END)) as Price, timeStart, timeEnd
+  FROM BuyerSeller
+  INNER JOIN Ad ON BuyerSeller.userId = Ad.sellerId
+  INNER JOIN Ad_Store ON Ad.adId = Ad_Store.adId
+  WHERE includesDeliveryServices
+  AND   DATEDIFF(CURDATE(), Ad_Store.dateOfRent) <= 7
+  AND   DATEDIFF(CURDATE(), Ad_Store.dateOfRent) >= 0) as past_temp
+  GROUP BY past_temp.userId
+) as past
+RIGHT OUTER JOIN
+(
+  SELECT future_temp.userId, SUM(future_temp.price) "total"
+  FROM (SELECT userId, title, dateOfRent, 
+              (SELECT deliveryHourlyPrice * HOUR(TIMEDIFF(timeStart, timeEnd))
+               FROM StorePrices 
+               WHERE momentOfWeek LIKE (CASE WHEN (WEEKDAY(dateOfRent) <= 4) 
+                                        THEN "week" 
+                                        ELSE "weekend"
+                                        END)) as Price, timeStart, timeEnd
+        FROM BuyerSeller
+        INNER JOIN Ad ON BuyerSeller.userId = Ad.sellerId
+        INNER JOIN Ad_Store ON Ad.adId = Ad_Store.adId
+        WHERE includesDeliveryServices
+        AND   DATEDIFF(dateOfRent, CURDATE()) <= 7
+        AND   DATEDIFF(dateOfRent, CURDATE()) > 0) as future_temp
+  GROUP BY future_temp.userId
+) as future
+ON past.userId = future.userId;
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query);
   log_mysqli_error($mysqli);
