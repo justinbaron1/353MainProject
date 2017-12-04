@@ -20,6 +20,19 @@ SQL;
   return !empty($results);
 }
 
+function ad_store_exists($mysqli, $ad_id, $store_id, $date) {
+    $query = <<<SQL
+SELECT *
+FROM Ad_Store
+WHERE AdId = ?
+AND   storeId = ?
+AND   dateOfRent = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "iis", [$ad_id, $store_id, $date]);
+  log_mysqli_error($mysqli);
+  return !empty($results);
+}
+
 function create_and_link_promotion_package($mysqli, $promotion_package, $ad_id) {
   $query = "CALL createPromotion(?, ?)";
   $stmt = $mysqli->prepare($query);
@@ -480,11 +493,10 @@ function can_edit_ad($mysqli, $ad_id, $user_id) {
 
 // TODO(tomleb): Something something transaction
 function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
-                              $type, $category, $sub_category, $new_image, $old_image) {
+                              $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
-SET title = ?,
-    price = ?,
+SET price = ?,
     description = ?,
     type = ?,
     category = ?,
@@ -492,7 +504,7 @@ SET title = ?,
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("sdssssi", $title, $price, $description, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("sdsssi", $title, $price, $description, $category, $sub_category, $ad_id);
   $stmt->execute();
 
   if ($new_image === '') {
