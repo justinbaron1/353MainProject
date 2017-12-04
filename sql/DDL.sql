@@ -608,7 +608,7 @@ END$$
 DELIMITER ;
 
 
---create an Ad and reset the positions
+-- create an Ad and reset the positions
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createAd$$
 CREATE PROCEDURE createAd(OUT adId int,IN sellerId int, IN title varchar(255),IN price decimal(15,2), IN description varchar(255),
