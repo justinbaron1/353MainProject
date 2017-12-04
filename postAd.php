@@ -1,11 +1,6 @@
 <?php
-
-// session_start();
-
 include_once("common/user.php");
-// include_once("utils/database.php");
 include("utils/upload.php");
-// include_once("utils/user.php");
 include_once("utils/validation.php");
 
 $update_success = false;
