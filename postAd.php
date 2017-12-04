@@ -70,7 +70,7 @@ if ($_POST) {
       }
     } else if ($action === "update") {
       $errors = handle_update_ad($ad_id, $user_id, $title, $price, $description,
-        $category, $sub_category, $type, $file, $promotion_package);
+        $category, $sub_category, $file, $promotion_package);
       if (!$errors) {
         $update_success = true;
       }
@@ -207,12 +207,14 @@ function form_group($errors, $name, $label = null) {
                   <input id="price" placeholder="Price" value="<?= $price | 0 ?>" min="0" step="0.01" type="number" class="form-control"  name="price">
               </div>
 
-              <?php form_group($errors, "type", "Type"); ?>
-                <select class="form-control" name="type">
-                  <option value="buy"  <?= select_if_equal($type, 'buy') ?>>Buy</option>
-                  <option value="sell" <?= select_if_equal($type, 'sell') ?>>Sell</option>
-                </select>
-              </div>
+              <?php if ($action === "create") { ?>
+                <?php form_group($errors, "type", "Type"); ?>
+                  <select class="form-control" name="type">
+                    <option value="buy" <?= select_if_equal($type, 'buy') ?>>Buy</option>
+                    <option value="sell" <?= select_if_equal($type, 'sell') ?>>Sell</option>
+                  </select>
+                </div>
+              <?php } ?>
 
               <?php form_group($errors, "subCategory", "Category"); ?>
                 <select class="form-control" name="subCategory">
@@ -286,7 +288,7 @@ function form_group($errors, $name, $label = null) {
                 <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
 
                 <?php form_group($errors, "date", "Date of Rent");  ?>
-                  <input id="date" type="date" class="form-control"  name="date">
+                  <input id="date" type="date" class="form-control" min="<?php $now = new DateTime(); echo $now->format('Y-m-d'); ?>" max="<?= $ad["endDate"] ?>" name="date">
                 </div>
 
                 <div class="row">

@@ -39,14 +39,20 @@ function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time
   return $errors; 
 }
 
+function validate_ad_with_type($title, $price, $description,
+                            $category, $sub_category, $type) {
+  $errors = validate_ad($title, $price, $description, $category, $sub_category);
+  if (!is_valid_ad_type($type)) { $errors["type"] = "Invalid type"; }
+  return $errors;
+}
+
 function validate_ad($title, $price, $description,
-                     $category, $sub_category, $type) {
+                     $category, $sub_category) {
   $errors = [];
   // Very basic validation
   if (empty($title))           { $errors["title"] = "Invalid title"; }
   if (!is_valid_price($price)) { $errors["price"] = "Invalid price"; }
   if (empty($description))     { $errors["description"] = "Invalid description"; }
-  if (!is_valid_ad_type($type)) { $errors["type"] = "Invalid type"; }
   if (!is_valid_category_and_subcategory($category, $sub_category)) { $errors["category"] = "Invalid category/subcategory"; }
 
   return $errors;
@@ -130,7 +136,8 @@ function is_valid_category_and_subcategory($category, $sub_category) {
 }
 
 function is_valid_date($ad, $date) {
-  return new DateTime($date) <= new DateTime($ad["startDate"]);
+  $date = new DateTime($date);
+  return new DateTime() <= $date && $date <= new DateTime($ad["endDate"]);
 }
 
 function is_valid_time($time) {
