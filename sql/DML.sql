@@ -120,19 +120,19 @@ INSERT INTO SubCategory(category,subCategory) VALUES
 # (3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment"),
 # (9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
 
-CALL createAd(@adId=NULL,2,"selling ps3",150.00,"ps3 good condition with 3 games","sell","buy and sell","electronics");
-CALL createAd(@adId=NULL,3,"selling audi a4",7999.99,"5 year old","sell","rent","car");
-CALL createAd(@adId=NULL,5,"photo shoot",99.99,"family photo shoot","sell","services","photographers");
-CALL createAd(@adId=NULL,2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books");
-CALL createAd(@adId=NULL,6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry");
-CALL createAd(@adId=NULL,7,"SUPERBE Condo 6 1/2 - 3 Chambres - ELECTROS - À VOIR!!", 2500.00, "Spacieux condo haut de gamme dans une nouvelle construction disponible à partir du 1er Janvier 2018. Le triplex est situé au pied du Mont-Royal près de la rue Des Pins, à proximité de l’Université McGill.","sell","rent","apartments");
-CALL createAd(@adId=NULL,8,"I need help for mathematics", 20.00, "I would like to have tutoring for math twice a week 20$/hour","buy","services","tutors");
-CALL createAd(@adId=NULL,9,"canada goose medium for men",600.00,"1 year old plz buy it","sell","used","clothing");
-CALL createAd(@adId=NULL,10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments");
-CALL createAd(@adId=NULL,10,"wireless Controller for PS4",89.99,"Precision controller enhanced to offer players absolute control for all games on PlayStation 4. ","sell","buy and sell","electronics");
-CALL createAd(@adId=NULL,10,"bose speaker",115.00,"Innovative Bose technology packs bold sound into a small, water-resistant speaker","sell","buy and sell","electronics");
-CALL createAd(@adId=NULL,3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment");
-CALL createAd(@adId=NULL,9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
+CALL createAd(@adId,2,"selling ps3",150.00,"ps3 good condition with 3 games","sell","buy and sell","electronics");
+CALL createAd(@adId,3,"selling audi a4",7999.99,"5 year old","sell","rent","car");
+CALL createAd(@adId,5,"photo shoot",99.99,"family photo shoot","sell","services","photographers");
+CALL createAd(@adId,2,"c++ book",49.99,"programming book in c++. good condition","buy","buy and sell","books");
+CALL createAd(@adId,6,"rolex 2 years old", 899.99, "I bought this watch 2 years ago and it was kept in good condition","sell","used","jewelry");
+CALL createAd(@adId,7,"SUPERBE Condo 6 1/2 - 3 Chambres - ELECTROS - À VOIR!!", 2500.00, "Spacieux condo haut de gamme dans une nouvelle construction disponible à partir du 1er Janvier 2018. Le triplex est situé au pied du Mont-Royal près de la rue Des Pins, à proximité de l’Université McGill.","sell","rent","apartments");
+CALL createAd(@adId,8,"I need help for mathematics", 20.00, "I would like to have tutoring for math twice a week 20$/hour","buy","services","tutors");
+CALL createAd(@adId,9,"canada goose medium for men",600.00,"1 year old plz buy it","sell","used","clothing");
+CALL createAd(@adId,10,"acoustic guitare",120.00,"brand new acoustic guitare","sell","buy and sell","musical instruments");
+CALL createAd(@adId,10,"wireless Controller for PS4",89.99,"Precision controller enhanced to offer players absolute control for all games on PlayStation 4. ","sell","buy and sell","electronics");
+CALL createAd(@adId,10,"bose speaker",115.00,"Innovative Bose technology packs bold sound into a small, water-resistant speaker","sell","buy and sell","electronics");
+CALL createAd(@adId,3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment");
+CALL createAd(@adId,9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
 
 INSERT INTO StrategicLocation(name,clientsPerHour,costPercent) VALUES
 ("sl1",400,20),
