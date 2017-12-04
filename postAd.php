@@ -31,6 +31,7 @@ $type = "";
 $promotion_package = 0;
 $image_url = "";
 $date = "";
+$store_id = "";
 $start_date = "";
 $end_date = "";
 $include_delivery = false;
@@ -329,7 +330,7 @@ function form_group($errors, $name, $label = null) {
                 <?php form_group($errors, "store_id", "Store"); ?>
                     <select class="form-control" name="store_id">
                     <?php foreach ($stores as $store) { ?>
-                      <option value="<?= $store["storeId"] ?>" <?= select_if_equal("TODO", $store["storeId"]) ?>><?= $store["locationName"] ?></option>
+                      <option value="<?= $store["storeId"] ?>" <?= select_if_equal((int)$store_id, $store["storeId"]) ?>><?= $store["locationName"] ?></option>
                     <?php } ?>
                   </select>
                 </div>
