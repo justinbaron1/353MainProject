@@ -356,6 +356,30 @@ SQL;
   return $result;
 }
 
+function rent_store_for_ad($mysqli, $ad_id, $store_id, $date, $start_time, $end_time, $delivery_services) {
+  $query = <<<SQL
+INSERT INTO Ad_Store (adId, storeId, dateOfRent, timeStart, timeEnd, includesDeliveryServices) VALUES (?, ?, ?, ?, ?, ?);
+SQL;
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("iisssi", $ad_id, $store_id, $date, $start_time, $end_time, $delivery_services);
+  $stmt->execute();
+
+  log_mysqli_error($mysqli);
+
+  return $mysqli->error;
+}
+
+function get_stores($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM Store
+ORDER BY locationName
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query, "", []);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
 function get_stores_by_ad_id($mysqli, $ad_id){
   $query = <<<SQL
   SELECT *

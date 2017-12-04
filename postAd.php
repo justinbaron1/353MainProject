@@ -10,6 +10,7 @@ include_once("utils/validation.php");
 
 $update_success = false;
 $ad_id = false;
+$stores = [];
 $action = "create";
 $title = $subCategory = $imageToUpload = $description = $promotion_package = "";
 
@@ -29,6 +30,10 @@ $sub_category = "";
 $type = "";
 $promotion_package = 0;
 $image_url = "";
+$date = "";
+$start_date = "";
+$end_date = "";
+$include_delivery = false;
 
 $user = $_SESSION["user"];
 $user_id = $user["userId"];
@@ -76,6 +81,18 @@ if ($_POST) {
       header("Location: ads.php?delete_success=true");
       return;
     }
+  } else if ($action === "rent") {
+    $store_id = @$_POST["store_id"];
+    $date = @$_POST["date"];
+    $start_time = @$_POST["start_time"];
+    $end_time = @$_POST["end_time"];
+    $include_delivery = @$_POST["include_delivery"] === "on";
+
+    $errors = handle_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, $include_delivery);
+    if (empty($errors)) {
+      header("Location: ad.php?ad_id=$ad_id&rent_success=true");
+      return;
+    }
   }
 
 }
@@ -100,6 +117,9 @@ if ($_GET) {
     header("Location: postAd.php");
     return;
   }
+
+  $stores = get_stores($mysqli);
+
 }
 
 function select_if_equal($a, $b) {
@@ -160,10 +180,14 @@ function form_group($errors, $name, $label = null) {
               </div>
             <?php } ?>
 
-            <?php if (!empty($errors)) { ?>
+            <?php if (!empty($errors) &&
+                     (isset($errors['general']) || isset($errors['delete']) || isset($errors['rent']))) { ?>
               <div class="alert alert-danger" role="alert">
               <?php if (isset($errors['general'])) { ?>
                 <b>Error!</b> <?= $errors['general'] ?>
+              <?php } ?>
+              <?php if (isset($errors['rent'])) { ?>
+                <b>Error!</b> <?= $errors['rent'] ?>
               <?php } ?>
               <?php if (isset($errors['delete'])) { ?>
                 <b>Error!</b> <?= $errors['delete'] ?>
@@ -222,7 +246,7 @@ function form_group($errors, $name, $label = null) {
               <?php form_group($errors, "description", "Description"); ?>
                 <textarea class="form-control" name="description" rows="5" cols="40"><?= $description ?></textarea>
               </div>
-              
+
               <div class="row">
                 <div class="col-md-6">
                   <?php form_group($errors, "imageToUpload", "Image"); ?>
@@ -237,10 +261,10 @@ function form_group($errors, $name, $label = null) {
                   </div>
                   <div class="row">
                     <div class="col-md-12">
-                      <?php if($image_url === ''){ ?>
-                        <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
-                      <?php } else { ?>
+                      <?php if($image_url && $image_url !== ''){ ?>
                         <img src="<?= image_to_link($image_url) ?>"/>
+                      <?php } else { ?>
+                        <img src="http://epaper2.mid-day.com/images/no_image_thumb.gif"/>
                       <?php } ?>
                     </div>
                   </div>
@@ -253,6 +277,51 @@ function form_group($errors, $name, $label = null) {
               <input class="btn btn-default" type="submit" name="submit" value="Update">
             <?php } ?>
             </form>
+
+            <!-- Support only rent store after ad created for now -->
+            <?php if ($ad_id) { ?>
+              <h1>Rent a store</h1>
+              <form method="post">
+                <input type="hidden" name="action" value="rent">
+                <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
+
+                <?php form_group($errors, "date", "Date of Rent");  ?>
+                  <input id="date" type="date" class="form-control"  name="date">
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <?php form_group($errors, "start_time", "Start time");  ?>
+                      <input id="start_time" type="time" class="form-control"  name="start_time">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <?php form_group($errors, "end_time", "End time");  ?>
+                      <input id="end_time" type="time" class="form-control"  name="end_time">
+                    </div>
+                  </div>
+                </div>
+
+                <?php form_group($errors, "store_id", "Store"); ?>
+                    <select class="form-control" name="store_id">
+                    <?php foreach ($stores as $store) { ?>
+                      <option value="<?= $store["storeId"] ?>" <?= select_if_equal("TODO", $store["storeId"]) ?>><?= $store["locationName"] ?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <div class="checkbox">
+                    <label><input type="checkbox" name="include_delivery"> Include delivery services</label>
+                  </div>
+                </div>
+
+                <input class="btn btn-default" type="submit" name="submit" value="Rent Store">
+              </form>
+            <?php } else { ?>
+              <h2>To sell your ad in store, edit it later.</h2>
+            <?php } ?>
+
 
         </div>
     </div>

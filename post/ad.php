@@ -89,6 +89,7 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
     $image_file["name"] = name_with_GUID($image_file);
     if (!handle_ad_image_upload($mysqli, $image_file, $old_image)) {
         $errors["imageToUpload"] = "Problem uploading image";
+        return $errors;
     }
   }
 
@@ -118,6 +119,23 @@ function guidv4()
     $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
     $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+function handle_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, $delivery_services) {
+  global $mysqli;
+  $mysqli = get_database();
+  $errors = validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, $delivery_services);
+  if (!empty($errors)) {
+    return $errors;
+  }
+
+  $error = rent_store_for_ad($mysqli, $ad_id, $store_id, $date, $start_time, $end_time, $delivery_services); 
+  if ($error) {
+    return ['rent' => $error];
+  } else {
+    log_info("New store '$store_id' has been rented for ad '$ad_id'");
+    return [];
+  }
 }
 
 function handle_delete_ad($user_id, $ad_id) {
