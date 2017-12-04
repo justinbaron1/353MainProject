@@ -23,7 +23,8 @@ INSERT INTO Address(civicNumber,street,postalCode,city) VALUES
 (4545,"mont-royal","j8j9k9","Montreal"),
 (7123,"rue saint-denis","g4h7f8","Montreal"),
 (7865,"rue bernard","f4h8f9","Montreal"),
-(3451,"rue vanhorn","y7y8u8","Montreal");
+(3451,"rue vanhorn","y7y8u8","Montreal"),
+(1863,"rue kevin","j3f7g8","Montreal");
 
 INSERT INTO MembershipPlan(name,visibleDuration,monthlyPrice) VALUES
 ("normal",7,0.0),
@@ -138,7 +139,8 @@ INSERT INTO StrategicLocation(name,clientsPerHour,costPercent) VALUES
 ("sl1",400,20),
 ("sl2",300,15),
 ("sl3",200,10),
-("sl4",100,5);
+("sl4",100,5),
+("sl5",50,2);
 
 INSERT INTO StoreManager(userId) VALUES
 (1),
@@ -151,7 +153,8 @@ INSERT INTO Store(addressId,locationName,userId) VALUES
 (6,"sl2",1),
 (7,"sl1",1),
 (13,"sl3",11),
-(14,"sl4",11);
+(14,"sl4",11),
+(15,"sl5",11);
 
 INSERT INTO PaymentExtra(cardType,extraPercent) VALUES
 ("debit",1),
