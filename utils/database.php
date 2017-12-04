@@ -392,7 +392,7 @@ function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
 INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES (?, ?, ?, ?, ?, ?, ?)
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("isissss", $user_id, $title, $price, $description, $type, $category, $sub_category);
+  $stmt->bind_param("isdssss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
 
   if (log_mysqli_error($mysqli)) {
@@ -467,7 +467,7 @@ SET title = ?,
 WHERE adId = ?
 SQL;
   $stmt = $mysqli->prepare($query);
-  $stmt->bind_param("sissssi", $title, $price, $description, $type, $category, $sub_category, $ad_id);
+  $stmt->bind_param("sdssssi", $title, $price, $description, $type, $category, $sub_category, $ad_id);
   $stmt->execute();
 
   if ($new_image === '') {
