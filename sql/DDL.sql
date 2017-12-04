@@ -486,7 +486,7 @@ BEGIN
 		 FROM Ad 
 		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
 		 JOIN PaymentMethod ON BuyerSeller.userId=PaymentMethod.userId
-		 WHERE Ad.adId=NEW.adId));
+		 WHERE Ad.adId=NEW.adId AND PaymentMethod.active=1));
 	SET NEW.billId = LAST_INSERT_ID();
 END$$
 DELIMITER ;
@@ -540,7 +540,6 @@ DELIMITER ;
 
 -- ----------------------------------------
 -- PROCEDURES
-
 
 -- get the price of a given Ad_Store
 DELIMITER $$
@@ -608,7 +607,7 @@ END$$
 DELIMITER ;
 
 
---create an Ad and reset the positions
+-- create an Ad and reset the positions
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createAd$$
 CREATE PROCEDURE createAd(OUT adId int,IN sellerId int, IN title varchar(255),IN price decimal(15,2), IN description varchar(255),
