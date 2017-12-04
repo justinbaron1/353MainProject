@@ -583,11 +583,12 @@ DELIMITER ;
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createAd$$
-CREATE PROCEDURE createAd(IN sellerId int, IN title varchar(255),IN price decimal(15,2), IN description varchar(255),
+CREATE PROCEDURE createAd(OUT adId int,IN sellerId int, IN title varchar(255),IN price decimal(15,2), IN description varchar(255),
 IN type varchar(255),IN category varchar(255),IN subCategory varchar(255))
 BEGIN
 	INSERT INTO Ad(sellerId,title,price,description,type,category,subCategory) VALUES
 	(sellerId,title,price,description,type,category,subCategory);
+	SET adId=LAST_INSERT_ID();
 	TRUNCATE TABLE AdPosition;
 	INSERT INTO AdPosition
 	(SELECT 0,1,adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
