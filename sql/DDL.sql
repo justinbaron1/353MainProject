@@ -541,7 +541,6 @@ DELIMITER ;
 -- ----------------------------------------
 -- PROCEDURES
 
-
 -- get the price of a given Ad_Store
 DELIMITER $$
 DROP PROCEDURE IF EXISTS getAdStorePrice$$
