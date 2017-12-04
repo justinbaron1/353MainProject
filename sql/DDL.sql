@@ -694,9 +694,9 @@ DELIMITER ;
 
 -- generate a backup of bills every month
 DELIMITER $$
-DROP EVENT IF EXISTS monthlyBackup2$$
-CREATE EVENT monthlyBackup2
-ON SCHEDULE EVERY 1 SECOND
+DROP EVENT IF EXISTS monthlyBackup$$
+CREATE EVENT monthlyBackup
+ON SCHEDULE EVERY 1 SECOND STARTS (CURRENT_DATE + INTERVAL 23 HOUR)
 DO
 	CALL generateBackup();$$
 DELIMITER ;
