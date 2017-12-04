@@ -427,7 +427,6 @@ function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
                               $type, $category, $sub_category, $image_filename) {
   $query = "CALL createAd(@ad_id, ?, ?, ?, ?, ?, ?, ?)";
   $stmt = $mysqli->prepare($query);
-  $ad_id = 0;
   $stmt->bind_param("isdssss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
 
@@ -645,6 +644,20 @@ SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query);
   log_mysqli_error($mysqli);
   return $result;
+}
+
+function compute_price($mysqli, $date, $start_time, $end_time, $storeId, $includesDelivery) {
+  $query = "CALL getAdStorePrice(@finalPrice, ?, ?, ?, ?, ?)";
+  $stmt = $mysqli->prepare($query);
+  $stmt->bind_param("sssii", $date, $start_time, $end_time, $storeId, $includesDelivery);
+  $stmt->execute();
+
+  $select = $mysqli->query('SELECT @finalPrice');
+  $result = $select->fetch_assoc();
+  $finalPrice = $result['@finalPrice'];
+
+  log_mysqli_error($mysqli);
+  return $finalPrice;
 }
 
 function to_reference_values($array) {

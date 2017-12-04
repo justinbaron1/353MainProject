@@ -172,6 +172,29 @@ function form_group($errors, $name, $label = null) {
           width:100%;
       }
   </style>
+  <script>
+    window.onload = () => {
+      computeCost();
+      $("#date").change(computeCost);
+      $("#start_time").change(computeCost);
+      $("#end_time").change(computeCost);
+      $("#store_id").change(computeCost);
+      $("#include_delivery").change(computeCost);
+    };
+
+    function computeCost(){
+      let date = $("#date").val();
+      let startTime = $("#start_time").val();
+      let endTime = $("#end_time").val();
+      let store = $("#store_id").val();
+      let includesDelivery = $("#include_delivery").is(':checked');
+      let url = "/calculator.php?date=" + date + "&startTime=" + startTime + "&endTime=" + endTime + "&storeId=" + store + "&includesDelivery=" + includesDelivery;
+
+      $.get(url, function( price ) {
+          $("#estimate_price").text(price);
+      });
+    }
+  </script>
 </head>
 <body>
 <?php include("common/navbar.php"); ?>
@@ -351,7 +374,7 @@ function form_group($errors, $name, $label = null) {
                 </div>
 
                 <?php form_group($errors, "store_id", "Store"); ?>
-                    <select class="form-control" name="store_id">
+                    <select class="form-control" id="store_id" name="store_id">
                     <?php foreach ($all_stores as $store) { ?>
                       <option value="<?= $store["storeId"] ?>" <?= select_if_equal((int)$store_id, $store["storeId"]) ?>><?= $store["locationName"] ?></option>
                     <?php } ?>
@@ -360,8 +383,12 @@ function form_group($errors, $name, $label = null) {
 
                 <div class="form-group">
                   <div class="checkbox">
-                    <label><input type="checkbox" name="include_delivery"> Include delivery services</label>
+                    <label><input type="checkbox" id="include_delivery" name="include_delivery"> Include delivery services</label>
                   </div>
+                </div>
+                
+                <div class="form-group">
+                  <span>This rent will cost you: <b><span id="estimate_price"></span>$</b><span>
                 </div>
 
                 <input class="btn btn-default" type="submit" name="submit" value="Rent Store">
