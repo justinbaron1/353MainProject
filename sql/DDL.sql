@@ -373,7 +373,7 @@ FOR EACH ROW
 			 "membership",
 			(SELECT paymentMethodId
 			 FROM PaymentMethod
-			 WHERE PaymentMethod.userId=NEW.userId));
+			 WHERE PaymentMethod.userId=NEW.userId AND PaymentMethod.active=1));
 		END IF;
 	END$$
 DELIMITER ;
@@ -761,13 +761,14 @@ DELIMITER ;
 DELIMITER $$
 DROP EVENT IF EXISTS membershipBill$$
 CREATE EVENT membershipBill
-ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
+ON SCHEDULE EVERY 1 MINUTE
+# ON SCHEDULE EVERY 1 MONTH STARTS '2018-01-01 00:00:00'
 DO
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	(SELECT CURRENT_TIMESTAMP,monthlyPrice,"membership",paymentMethodId
 	FROM BuyerSeller
 	JOIN MembershipPlan ON BuyerSeller.membershipPlanName=MembershipPlan.name AND MembershipPlan.name<>"normal"
-	JOIN PaymentMethod ON PaymentMethod.userId=BuyerSeller.userId);$$
+	JOIN PaymentMethod ON PaymentMethod.userId=BuyerSeller.userId WHERE PaymentMethod.active=1);$$
 DELIMITER ;
 
 
