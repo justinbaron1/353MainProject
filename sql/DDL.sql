@@ -486,7 +486,7 @@ BEGIN
 		 FROM Ad 
 		 JOIN BuyerSeller ON BuyerSeller.userId=Ad.sellerId
 		 JOIN PaymentMethod ON BuyerSeller.userId=PaymentMethod.userId
-		 WHERE Ad.adId=NEW.adId));
+		 WHERE Ad.adId=NEW.adId AND PaymentMethod.active=1));
 	SET NEW.billId = LAST_INSERT_ID();
 END$$
 DELIMITER ;
