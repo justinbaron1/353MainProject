@@ -279,7 +279,7 @@ function form_group($errors, $name, $label = null) {
             </form>
 
             <!-- Support only rent store after ad created for now -->
-            <?php if ($ad_id) { ?>
+            <?php if ($ad_id && $type === "sell") { ?>
               <h1>Rent a store</h1>
               <form method="post">
                 <input type="hidden" name="action" value="rent">
