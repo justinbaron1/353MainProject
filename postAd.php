@@ -118,6 +118,24 @@ if ($_GET) {
     return;
   }
 
+  $stores = get_stores_by_ad_id($mysqli, $ad_id);
+  $full_ad = get_full_ad_by_id($mysqli, $ad_id);
+  $possibleRentDates = [];
+  $date = date("Y-m-d", strtotime(str_replace('-','/', $full_ad["startDate"])));
+
+  for(;$date <= $full_ad["endDate"]; $date = date('Y-m-d', strtotime($date. ' + 1 days'))) {
+    $canAdd = true;
+    foreach($stores as $store){
+      if($store["dateOfRent"] == $date){
+        $canAdd = false;
+      }
+    }
+
+    if($canAdd){
+      array_push($possibleRentDates, $date);
+    }
+  }
+
   $stores = get_stores($mysqli);
 
 }
@@ -286,7 +304,11 @@ function form_group($errors, $name, $label = null) {
                 <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
 
                 <?php form_group($errors, "date", "Date of Rent");  ?>
-                  <input id="date" type="date" class="form-control"  name="date">
+                  <select class="form-control" id="date" name="date">
+                    <?php foreach ($possibleRentDates as $date) { ?>
+                      <option value="<?= $date ?>"><?= $date ?></option>
+                    <?php } ?>
+                  </select>
                 </div>
 
                 <div class="row">
