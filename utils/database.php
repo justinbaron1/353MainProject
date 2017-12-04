@@ -386,6 +386,8 @@ function get_stores($mysqli) {
   $query = <<<SQL
 SELECT *
 FROM Store
+JOIN Address
+ON Store.addressId = Address.addressId
 ORDER BY locationName
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query, "", []);

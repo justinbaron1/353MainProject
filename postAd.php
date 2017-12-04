@@ -376,7 +376,7 @@ function form_group($errors, $name, $label = null) {
                 <?php form_group($errors, "store_id", "Store"); ?>
                     <select class="form-control" id="store_id" name="store_id">
                     <?php foreach ($all_stores as $store) { ?>
-                      <option value="<?= $store["storeId"] ?>" <?= select_if_equal((int)$store_id, $store["storeId"]) ?>><?= $store["locationName"] ?></option>
+                      <option value="<?= $store["storeId"] ?>" <?= select_if_equal((int)$store_id, $store["storeId"]) ?>><?= $store["locationName"] ?> - <?= format_address($store["civicNumber"], $store["street"], $store["city"], $store["postalCode"]) ?></option>
                     <?php } ?>
                   </select>
                 </div>
