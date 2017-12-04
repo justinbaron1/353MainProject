@@ -20,6 +20,19 @@ SQL;
   return !empty($results);
 }
 
+function ad_store_exists($mysqli, $ad_id, $store_id, $date) {
+    $query = <<<SQL
+SELECT *
+FROM Ad_Store
+WHERE AdId = ?
+AND   storeId = ?
+AND   dateOfRent = ?
+SQL;
+  $results = fetch_assoc_all_prepared($mysqli, $query, "iis", [$ad_id, $store_id, $date]);
+  log_mysqli_error($mysqli);
+  return !empty($results);
+}
+
 function create_and_link_promotion_package($mysqli, $promotion_package, $ad_id) {
   $query = "CALL createPromotion(?, ?)";
   $stmt = $mysqli->prepare($query);

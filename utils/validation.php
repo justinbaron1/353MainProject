@@ -30,6 +30,9 @@ function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time
   if (!is_ad_type_sell($ad))    { $errors["ad_id"] = "Ad should be type sell"; }
   if (!is_valid_id($store_id)) { $errors["store_id"] = "Invalid store"; }
   if (!is_valid_date($ad, $date))     { $errors["date"] = "Invalid date"; }
+  if (ad_store_exists($mysqli, $ad_id, $store_id, $date)) {
+    $errors["rent"] = "Ad_Store already exists";
+  }
   if (!is_valid_time($start_time)) { $errors["start_time"] = "Invalid start time"; }
   if (!is_valid_time($end_time)) { $errors["end_time"] = "Invalid end time"; }
   if (new DateTime($start_time) > new DateTime($end_time)) {
