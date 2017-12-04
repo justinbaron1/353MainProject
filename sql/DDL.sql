@@ -563,17 +563,19 @@ DELIMITER ;
 -- ----------------------------------------
 -- PROCEDURES
 
-# DELIMITER $$
-# DROP PROCEDURE IF EXISTS deleteAd$$
-# CREATE PROCEDURE deleteAd(IN adId int)
-# BEGIN
-# 	DELETE FROM Ad WHERE Ad.adId=adId;
-# 	TRUNCATE TABLE AdPosition;
-# 	INSERT INTO AdPosition
-# 	(SELECT 0,1,Ad.adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
-# 	CALL resetAdCategoryPosition();
-# END$$
-# DELIMITER ;
+DELIMITER $$
+DROP PROCEDURE IF EXISTS deleteAd$$
+CREATE PROCEDURE deleteAd(IN adId int)
+BEGIN
+	UPDATE Ad
+	SET isDeleted=1
+	WHERE Ad.adId=adId;
+	TRUNCATE TABLE AdPosition;
+	INSERT INTO AdPosition
+	(SELECT 0,1,Ad.adId FROM Ad WHERE Ad.isDeleted=0 ORDER BY priority);
+	CALL resetAdCategoryPosition();
+END$$
+DELIMITER ;
 
 -- create a transaction for an add using a payment method
 DELIMITER $$
