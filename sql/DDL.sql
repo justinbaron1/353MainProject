@@ -257,6 +257,8 @@ CREATE TABLE Store (
 	addressId int NOT NULL,
 	locationName varchar(255) NOT NULL,
 	userId int NOT NULL,
+	storeRevenue int NOT NULL,
+	numberOfTransactions int NOT NULL,
 	PRIMARY KEY (storeId),
 	FOREIGN KEY (addressId) REFERENCES Address(addressId),
 	FOREIGN KEY (locationName) REFERENCES StrategicLocation(name)
