@@ -137,9 +137,10 @@ if ($_GET) {
     }
   }
 
-  $stores = get_stores($mysqli);
-
+  
 }
+
+$all_stores = get_stores($mysqli);
 
 function select_if_equal($a, $b) {
   if ($a === $b) {
@@ -301,7 +302,16 @@ function form_group($errors, $name, $label = null) {
 
             <!-- Support only rent store after ad created for now -->
             <?php if ($ad_id && $type === "sell") { ?>
-              <h1>Rent a store</h1>
+              <h1>Current Rent</h1>
+              <div class="col-md-12">
+                <?php if(!empty($stores)) {
+                    include("parts/ad/stores.php");
+                } else { ?>
+                    <h3>Not available in store</h3>
+                <?php } ?>
+              </div>
+              <br/>
+              <h1>Rent a new store</h1>
               <form method="post">
                 <input type="hidden" name="action" value="rent">
                 <input type="hidden" name="ad_id" value="<?= $ad_id ?>">
@@ -313,7 +323,6 @@ function form_group($errors, $name, $label = null) {
                     <?php } ?>
                   </select>
                 </div>
-
                 <div class="row">
                   <div class="col-md-6">
                     <?php form_group($errors, "start_time", "Start time");  ?>
@@ -343,7 +352,7 @@ function form_group($errors, $name, $label = null) {
 
                 <?php form_group($errors, "store_id", "Store"); ?>
                     <select class="form-control" name="store_id">
-                    <?php foreach ($stores as $store) { ?>
+                    <?php foreach ($all_stores as $store) { ?>
                       <option value="<?= $store["storeId"] ?>" <?= select_if_equal((int)$store_id, $store["storeId"]) ?>><?= $store["locationName"] ?></option>
                     <?php } ?>
                   </select>
