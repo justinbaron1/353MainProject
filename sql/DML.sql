@@ -68,14 +68,14 @@ INSERT INTO PaymentMethod(expiryMonth,expiryYear,userId) VALUES
 
 
 INSERT INTO CreditCard(paymentMethodId,cardNumber,securityCode) VALUES
-(2,222333444,123),
+(1,222333444,123),
 (4,888444666,987),
 (5,451355111,434),
 (6,982578126,666);
 
 
 INSERT INTO DebitCard(paymentMethodId,cardNumber) VALUES
-(1,777222444),
+(2,777222444),
 (3,888123123),
 (7,564728878),
 (8,987678987);
@@ -174,7 +174,7 @@ INSERT INTO Promotion(duration,price) VALUES
 (30,90.00);
 
 
-CALL createPromotion(1,7);
+CALL createPromotion(5,7);
 CALL createPromotion(3,30);
 
 CALL createTransaction(1,1);
