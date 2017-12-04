@@ -134,6 +134,8 @@ CALL createAd(@adId,10,"wireless Controller for PS4",89.99,"Precision controller
 CALL createAd(@adId,10,"bose speaker",115.00,"Innovative Bose technology packs bold sound into a small, water-resistant speaker","sell","buy and sell","electronics");
 CALL createAd(@adId,3,"hockey goalie mask",140.00,"CALGARY FLAMES","sell","used","sport equipment");
 CALL createAd(@adId,9,"looking for north face jacket",180.00,"The North Face B Resolve Reflective Jacket - Tnf Black","buy","used","clothing");
+CALL createAd(@adId,2,"Very big winter's men jacket",150.00,"Wow that's a nice coat","sell","buy and sell","clothing");
+CALL createAd(@adId,2,"Another very big winter's men jacket",170.00,"Wow that's a nice other coat","sell","buy and sell","clothing");
 
 INSERT INTO StrategicLocation(name,clientsPerHour,costPercent) VALUES
 ("sl1",400,20),
