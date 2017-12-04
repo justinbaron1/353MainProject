@@ -479,29 +479,7 @@ BEFORE INSERT
 ON Ad_Store
 FOR EACH ROW
 BEGIN
-	IF (WEEKDAY(NEW.dateOfRent)<=4) THEN
-		BEGIN
-			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
-			IF (NEW.includesDeliveryServices) THEN
-				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="week");
-			END IF;
-		END;
-	ELSE
-		BEGIN
-			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-			IF (NEW.includesDeliveryServices) THEN
-				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-			END IF;
-		END;
-	END IF;
-
-	SET @costPercent = (SELECT costPercent
-						FROM StrategicLocation
-						JOIN Store ON name=locationName
-						WHERE Store.storeId=NEW.storeId);
-
-	SET @price = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
-	SET @finalPrice = @price + (@price*@costPercent/100);
+	CALL getAdStorePrice(@finalPrice,NEW.dateOfRent, NEW.timeStart, NEW.timeEnd,NEW.storeId,NEW.includesDeliveryServices);
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,@finalPrice,"AdStore",
 		(SELECT paymentMethodId
@@ -563,6 +541,40 @@ DELIMITER ;
 -- ----------------------------------------
 -- PROCEDURES
 
+
+-- get the price of a given Ad_Store
+DELIMITER $$
+DROP PROCEDURE IF EXISTS getAdStorePrice$$
+CREATE PROCEDURE getAdStorePrice(OUT finalPrice decimal(15,2),IN dateOfRent date, IN timeStart time, IN timeEnd time,IN storeId int, IN includesDeliveryServices boolean)
+BEGIN
+	IF (WEEKDAY(dateOfRent)<=4) THEN
+		BEGIN
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			IF (includesDeliveryServices) THEN
+				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			END IF;
+		END;
+	ELSE
+		BEGIN
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			IF (includesDeliveryServices) THEN
+				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			END IF;
+		END;
+	END IF;
+
+	SET @costPercent = (SELECT costPercent
+						FROM StrategicLocation
+						JOIN Store ON name=locationName
+						WHERE Store.storeId=storeId);
+
+	SET @price = (HOUR(TIMEDIFF(timeStart, timeEnd))) * @hourlyPrice;
+	SET finalPrice = @price + (@price*@costPercent/100);
+	
+END$$
+DELIMITER ;
+
+-- delete an Ad by setting isDeleted=1
 DELIMITER $$
 DROP PROCEDURE IF EXISTS deleteAd$$
 CREATE PROCEDURE deleteAd(IN adId int)
@@ -595,6 +607,8 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+--create an Ad and reset the positions
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createAd$$
 CREATE PROCEDURE createAd(OUT adId int,IN sellerId int, IN title varchar(255),IN price decimal(15,2), IN description varchar(255),
@@ -610,6 +624,8 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+-- create a promotion and reset the positions
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createPromotion$$
 CREATE PROCEDURE createPromotion(IN adId int, IN duration int)
@@ -677,6 +693,8 @@ BEGIN
 END;$$
 DELIMITER ;
 
+
+-- set the correct position for a given subCategory
 DELIMITER $$
 DROP PROCEDURE IF EXISTS setSubCategoryPosition$$
 CREATE PROCEDURE setSubCategoryPosition(IN subCategory varchar(255))
@@ -687,6 +705,27 @@ BEGIN
 	WHERE((SELECT Ad.subCategory FROM Ad
 		   WHERE Ad.adId=AdPosition.adId)=subCategory);
 END;$$
+DELIMITER ;
+
+-- reset the subCategory position for each sub category
+DELIMITER $$
+DROP PROCEDURE IF EXISTS resetAdCategoryPosition$$
+CREATE PROCEDURE resetAdCategoryPosition()
+BEGIN
+	CALL setSubCategoryPosition("clothing");
+	CALL setSubCategoryPosition("books");
+	CALL setSubCategoryPosition("electronics");
+	CALL setSubCategoryPosition("car");
+	CALL setSubCategoryPosition("sport equipment");
+	CALL setSubCategoryPosition("jewlry");
+	CALL setSubCategoryPosition("wedding - dresses");
+	CALL setSubCategoryPosition("apartments");
+	CALL setSubCategoryPosition("tutors");
+	CALL setSubCategoryPosition("musical instruments");
+	CALL setSubCategoryPosition("photographers");
+	CALL setSubCategoryPosition("event planners");
+	CALL setSubCategoryPosition("personal trainers");
+END$$
 DELIMITER ;
 
 -- ----------------------------------------
@@ -715,27 +754,6 @@ DO
 														 JOIN AdPromotion ON Promotion.duration=AdPromotion.duration
 														 WHERE Ad.adId=AdPromotion.adId));
 	END$$
-DELIMITER ;
-
-
-DELIMITER $$
-DROP PROCEDURE IF EXISTS resetAdCategoryPosition$$
-CREATE PROCEDURE resetAdCategoryPosition()
-BEGIN
-	CALL setSubCategoryPosition("clothing");
-	CALL setSubCategoryPosition("books");
-	CALL setSubCategoryPosition("electronics");
-	CALL setSubCategoryPosition("car");
-	CALL setSubCategoryPosition("sport equipment");
-	CALL setSubCategoryPosition("jewlry");
-	CALL setSubCategoryPosition("wedding - dresses");
-	CALL setSubCategoryPosition("apartments");
-	CALL setSubCategoryPosition("tutors");
-	CALL setSubCategoryPosition("musical instruments");
-	CALL setSubCategoryPosition("photographers");
-	CALL setSubCategoryPosition("event planners");
-	CALL setSubCategoryPosition("personal trainers");
-END$$
 DELIMITER ;
 
 

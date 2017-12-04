@@ -29,7 +29,7 @@ function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time
 
   if (!is_ad_type_sell($ad))    { $errors["ad_id"] = "Ad should be type sell"; }
   if (!is_valid_id($store_id)) { $errors["store_id"] = "Invalid store"; }
-  if (!is_valid_date($ad, $date))     { $errors["date"] = "Invalid date"; }
+  if (!is_valid_date($ad, $date, $start_time))     { $errors["date"] = "Invalid date"; }
   if (ad_store_exists($mysqli, $ad_id, $store_id, $date)) {
     $errors["rent"] = "Ad_Store already exists";
   }
@@ -138,14 +138,24 @@ function is_valid_category_and_subcategory($category, $sub_category) {
   return isset($cats[$category]) && in_array($sub_category, $cats[$category]);
 }
 
-function is_valid_date($ad, $date) {
+function is_valid_date($ad, $date, $start_time) {
   $date = new DateTime($date);
-  return new DateTime() <= $date && $date <= new DateTime($ad["endDate"]);
+  $now = new DateTime();
+
+  if ($date->format('Y-m-d') === $now->format('Y-m-d')) {
+    $start = new DateTime($start_time);
+    if ($start < $now) {
+      return false;
+    }
+  }
+
+  $date_plus_one = $date->add(new DateInterval('P1D'));
+
+  return $now <= $date_plus_one && $date <= new DateTime($ad["endDate"]);
 }
 
 function is_valid_time($time) {
-  // TODO
-  return true;
+  return $time !== '';
 }
 
 function is_ad_type_sell($ad) {
