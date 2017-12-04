@@ -31,6 +31,17 @@
                     <li><a href="/trigger-backup.php"><span class="glyphicon glyphicon-save"></span> Backup Bills</a><li>
                 <?php } ?>
                 <li><a href="/logout.php"><span class="glyphicon glyphicon-log-out"></span> Log out</a><li>
+                <?php if($is_admin){ ?>
+                    <li role="presentation" class="divider"></li>
+                    <li><a href="/reports-1.php"><span class="glyphicon glyphicon-th-list"></span> Report #1</a><li>
+                    <li><a href="/reports-2.php"><span class="glyphicon glyphicon-th-list"></span> Report #2</a><li>
+                    <li><a href="/reports-3.php"><span class="glyphicon glyphicon-th-list"></span> Report #3</a><li>
+                    <li><a href="/reports-4.php"><span class="glyphicon glyphicon-th-list"></span> Report #4</a><li>
+                    <li><a href="/reports-5.php"><span class="glyphicon glyphicon-th-list"></span> Report #5</a><li>
+                    <li><a href="/reports-6.php"><span class="glyphicon glyphicon-th-list"></span> Report #6</a><li>
+                    <li><a href="/reports-7.php"><span class="glyphicon glyphicon-th-list"></span> Report #7</a><li>
+                    <li><a href="/reports-8.php"><span class="glyphicon glyphicon-th-list"></span> Report #8</a><li>
+                <?php } ?>
             </ul>
         </li>
     </ul>

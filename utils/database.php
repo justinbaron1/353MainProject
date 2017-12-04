@@ -9,6 +9,161 @@
 
 include_once("utils/log.php");
 
+function report_1($mysqli) {
+  $query = <<<SQL
+SELECT maxusers1.category, maxusers1.userId, maxusers1.firstName, maxusers1.lastName, maxusers1.total
+FROM
+    (SELECT category, userId, firstName, lastName, count(*) as "total"
+    FROM Users as u
+    INNER JOIN Ad as a ON u.userId = a.sellerId
+    WHERE NOT isDeleted
+    GROUP BY userId, category
+    ORDER BY count(*) desc LIMIT 1000) as maxusers1
+LEFT JOIN
+    (SELECT category, userId, firstName, lastName, count(*) as "total"
+    FROM Users as u
+    INNER JOIN Ad as a ON u.userId = a.sellerId
+    WHERE NOT isDeleted
+    GROUP BY userId, category
+    ORDER BY count(*) desc LIMIT 1000) as maxusers2
+ON maxusers1.category = maxusers2.category AND maxusers1.total < maxusers2.total
+WHERE maxusers2.total IS NULL
+ORDER BY maxusers1.category
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_2($mysqli) {
+  $query = <<<SQL
+SELECT *
+FROM Ad
+WHERE DATEDIFF(CURDATE(), Ad.startDate) <= 10
+AND   NOT isDeleted
+AND   LOWER(category) LIKE 'buy and sell';
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_3($mysqli) {
+  $query = <<<SQL
+SELECT BuyerSeller.userId, firstName, lastName, phoneNumber, email, membershipPlanName, civicNumber, street, postalCode, Address.city
+FROM Ad
+INNER JOIN BuyerSeller ON Ad.sellerId = BuyerSeller.userId
+INNER JOIN Users ON BuyerSeller.userId = Users.userId
+INNER JOIN Address ON Users.addressId = Address.addressId
+INNER JOIN City ON Address.city = City.city
+WHERE LOWER(title) LIKE '%winter%men%jacket%'
+AND   NOT isDeleted
+AND   LOWER(province) = "quebec"
+AND   LOWER(ad.type) = "sell"
+AND   LOWER(ad.category) = "buy and sell"
+AND   LOWER(ad.subCategory) = "clothing"
+GROUP BY BuyerSeller.userId;
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_4($mysqli) {
+  $query = <<<SQL
+SELECT title, description, price, category
+FROM Ad
+WHERE LOWER(Ad.category) = "rent"
+AND NOT isDeleted;
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_5($mysqli) {
+  $query = <<<SQL
+SELECT avgs1.category, avgs1.city, avgs1.avg, avgs1.sellerId
+FROM (
+    SELECT Ad.adId, Ad.category, Address.city, Ad.sellerId, AVG(Rating.rating) as "avg" 
+    FROM Rating
+    INNER JOIN Ad ON Ad.adId = Rating.adId
+    INNER JOIN Users ON Users.userId = Ad.sellerId
+    INNER JOIN Address ON Address.addressId = Users.addressId
+    WHERE Rating.rating IS NOT NULL
+    GROUP BY Ad.sellerId, Ad.category
+) as avgs1
+LEFT JOIN
+(
+    SELECT Ad.adId, Ad.category, Address.city, Ad.sellerId, AVG(Rating.rating) as "avg" 
+    FROM Rating
+    INNER JOIN Ad ON Ad.adId = Rating.adId
+    INNER JOIN Users ON Users.userId = Ad.sellerId
+    INNER JOIN Address ON Address.addressId = Users.addressId
+    WHERE Rating.rating IS NOT NULL
+    GROUP BY Ad.sellerId, Ad.category
+) as avgs2
+ON avgs1.city = avgs2.city 
+AND avgs1.category = avgs2.category
+AND avgs1.avg < avgs2.avg
+WHERE avgs2.avg IS NULL
+ORDER BY avgs1.category, avgs1.city;
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_6($mysqli) {
+  $query = <<<SQL
+SELECT Store.storeId, Bill.dateOfPayment, COUNT(Bill.billId) "Qty of transactions", SUM(Bill.amount) "Amount"
+FROM Store
+JOIN Ad_Store
+ON Store.storeId = Ad_Store.storeId
+JOIN Ad
+ON Ad_Store.adId = Ad.adId
+JOIN Transaction
+ON Transaction.adId = Ad.adId
+JOIN Bill
+ON Bill.billId = Transaction.billId
+WHERE DATEDIFF(CURDATE(), Bill.dateOfPayment) <= 15
+AND Store.userId = <MANAGER_ID>
+GROUP BY Store.userId, Bill.dateOfPayment;
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_7($mysqli) {
+  $query = <<<SQL
+SELECT "No" as Answer
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
+function report_8($mysqli) {
+  $query = <<<SQL
+SELECT Store.storeId, City.province, Ad.category, Ad.subCategory
+FROM Store
+JOIN Address
+ON Store.addressId = Address.addressId
+JOIN City
+ON City.city = Address.city
+JOIN Ad_Store
+ON Store.storeId = Ad_Store.storeId
+JOIN Ad
+ON Ad_Store.adId = Ad.adId
+WHERE LOWER(City.province) = "quebec"
+GROUP BY Store.storeId, City.province, Ad.category, Ad.subCategory;
+SQL;
+  $result = fetch_assoc_all_prepared($mysqli, $query);
+  log_mysqli_error($mysqli);
+  return $result;
+}
+
 function promotion_exists($mysqli, $ad_id) {
     $query = <<<SQL
 SELECT *
