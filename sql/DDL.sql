@@ -567,7 +567,11 @@ BEGIN
 						JOIN Store ON name=locationName
 						WHERE Store.storeId=storeId);
 
-	SET @price = (HOUR(TIMEDIFF(timeStart, timeEnd))) * @hourlyPrice;
+	IF(timeStart-timeEnd > 0) THEN
+		SET @price = 0.0;
+	ELSE
+		SET @price = (HOUR(TIMEDIFF(timeStart, timeEnd))) * @hourlyPrice;
+	END IF;
 	SET finalPrice = @price + (@price*@costPercent/100);
 	
 END$$
