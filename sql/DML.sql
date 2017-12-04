@@ -147,11 +147,11 @@ INSERT INTO StoreManager(userId) VALUES
 INSERT INTO Admin(userId) VALUES
 (4);
 
-INSERT INTO Store(addressId,locationName,userId, storeRevenue, numberOfTransactions) VALUES
-(6,"sl2",1, 25000, 60),
-(7,"sl1",1, 12500, 35),
-(13,"sl3",11, 15000, 15),
-(14,"sl4",11, 30000, 80);
+INSERT INTO Store(addressId,locationName,userId) VALUES
+(6,"sl2",1),
+(7,"sl1",1),
+(13,"sl3",11),
+(14,"sl4",11);
 
 INSERT INTO PaymentExtra(cardType,extraPercent) VALUES
 ("debit",1),
