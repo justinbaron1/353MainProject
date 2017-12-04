@@ -42,15 +42,15 @@ $ads = search_ad($mysqli, $province, $city, $category, $subcategory, $type, $sel
             <table class="table table-hover table-striped">
                 <thead>
                     <tr class="ad">
-                        <th>Title</th>
-                        <th>Seller</th>
-                        <th>Price</th>
-                        <th>Subcategory</th>
-                        <th>Category</th>
-                        <th>City</th>
-                        <th>Province</th>        
-                        <th>Since</th>
-                        <th>Ends</th>
+                        <th class="col-md-2">Title</th>
+                        <th class="col-md-1">Seller</th>
+                        <th class="col-md-1">Price</th>
+                        <th class="col-md-1">Subcategory</th>
+                        <th class="col-md-1">Category</th>
+                        <th class="col-md-1">City</th>
+                        <th class="col-md-1">Province</th>        
+                        <th class="col-md-2">Since</th>
+                        <th class="col-md-1">Ends</th>
                     </tr>
                 </thead>
                 <tbody>
