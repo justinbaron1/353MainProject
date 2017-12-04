@@ -17,11 +17,22 @@ function sanitize($data) {
 
 function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, 
                                 $delivery_services) {
+  global $mysqli;
+  $mysqli = get_database();
   $errors = [];
 
-  if (!is_valid_id($ad_id))    { $errors["ad_id"] = "Invalid ad"; }
+  $ad = get_ad_by_id($mysqli, $ad_id);
+  if (!$ad) {
+    $errors["ad_id"] = "Invalid ad";
+    return $errors;
+  }
+
+  if (!is_ad_type_sell($ad))    { $errors["ad_id"] = "Ad should be type sell"; }
   if (!is_valid_id($store_id)) { $errors["store_id"] = "Invalid store"; }
-  if (!is_valid_date($date))     { $errors["date"] = "Invalid date"; }
+  if (!is_valid_date($ad, $date))     { $errors["date"] = "Invalid date"; }
+  if (ad_store_exists($mysqli, $ad_id, $store_id, $date)) {
+    $errors["rent"] = "Ad_Store already exists";
+  }
   if (!is_valid_time($start_time)) { $errors["start_time"] = "Invalid start time"; }
   if (!is_valid_time($end_time)) { $errors["end_time"] = "Invalid end time"; }
   if (new DateTime($start_time) > new DateTime($end_time)) {
@@ -31,14 +42,20 @@ function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time
   return $errors; 
 }
 
+function validate_ad_with_type($title, $price, $description,
+                            $category, $sub_category, $type) {
+  $errors = validate_ad($title, $price, $description, $category, $sub_category);
+  if (!is_valid_ad_type($type)) { $errors["type"] = "Invalid type"; }
+  return $errors;
+}
+
 function validate_ad($title, $price, $description,
-                     $category, $sub_category, $type) {
+                     $category, $sub_category) {
   $errors = [];
   // Very basic validation
   if (empty($title))           { $errors["title"] = "Invalid title"; }
   if (!is_valid_price($price)) { $errors["price"] = "Invalid price"; }
   if (empty($description))     { $errors["description"] = "Invalid description"; }
-  if (!is_valid_ad_type($type)) { $errors["type"] = "Invalid type"; }
   if (!is_valid_category_and_subcategory($category, $sub_category)) { $errors["category"] = "Invalid category/subcategory"; }
 
   return $errors;
@@ -121,14 +138,18 @@ function is_valid_category_and_subcategory($category, $sub_category) {
   return isset($cats[$category]) && in_array($sub_category, $cats[$category]);
 }
 
-function is_valid_date($date) {
-  // TODO
-  return true;
+function is_valid_date($ad, $date) {
+  $date = new DateTime($date);
+  return new DateTime() <= $date && $date <= new DateTime($ad["endDate"]);
 }
 
 function is_valid_time($time) {
   // TODO
   return true;
+}
+
+function is_ad_type_sell($ad) {
+  return $ad["type"] === "sell";
 }
 
 ?>

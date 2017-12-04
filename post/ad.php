@@ -15,8 +15,8 @@ function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
     );
   }
 
-  $errors = validate_ad($title, $price, $description,
-                        $category, $sub_category, $type, $file);
+  $errors = validate_ad_with_type($title, $price, $description,
+                                  $category, $sub_category, $type);
 
   if (!empty($errors)) {
     return $errors;
@@ -25,7 +25,8 @@ function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
   if(!empty(@$file['name'])){
     $file["name"] = name_with_GUID($file);
   }
-  $ad_id = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, @$file['name']);
+  $ad_id = create_ad_with_image($mysqli, $user_id, $title, $price, $description, 
+                                $type, $category, $sub_category, @$file['name']);
   if ($ad_id) {
     log_info("Created new ad '$ad_id' by user '$user_id'");
   } else {
@@ -55,7 +56,7 @@ function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
 }
 
 function handle_update_ad($ad_id, $user_id, $title, $price, $description,
-                          $category, $sub_category, $type, $image_file, $promotion_package) {
+                          $category, $sub_category, $image_file, $promotion_package) {
   $mysqli = get_database();
 
   if (!can_edit_ad($mysqli, $ad_id, $user_id)) {
@@ -64,7 +65,7 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   }
 
   $errors = validate_ad($title, $price, $description,
-                        $category, $sub_category, $type, $image_file);
+                        $category, $sub_category);
 
   if (!empty($errors)) {
     return $errors;
@@ -94,7 +95,7 @@ function handle_update_ad($ad_id, $user_id, $title, $price, $description,
   }
 
   $error = update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $description,
-                                $type, $category, $sub_category, @$image_file['name'], $old_image);
+                                $category, $sub_category, @$image_file['name'], $old_image);
   if ($error) {
     log_info("Problem updating ad '$ad_id' by user '$user_id'");
     $errors["update_error"] = "Error updating ad";
