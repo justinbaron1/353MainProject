@@ -5,6 +5,8 @@
 
     $ad_id = strip_tags(trim(@$_GET["ad_id"]));
     $ad = get_full_ad_by_id($mysqli, $ad_id);
+
+    $rent_success = @$_GET["rent_success"] == true;
     
     if(empty($ad)){
         redirect_index();
@@ -37,6 +39,11 @@
                     <?php } ?>
                 </div>
             </div>
+            <?php if ($rent_success) { ?>
+              <div class="alert alert-success" role="alert">
+                  <b>Success!</b> The store space has been rented.
+              </div>
+            <?php } ?>
             <div class="row">
                 <div class="col-md-4">
                     <div class="row text-center">

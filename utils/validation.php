@@ -14,6 +14,23 @@ function sanitize($data) {
   return $data;
 }
 
+
+function validate_rent_ad_store($ad_id, $store_id, $date, $start_time, $end_time, 
+                                $delivery_services) {
+  $errors = [];
+
+  if (!is_valid_id($ad_id))    { $errors["ad_id"] = "Invalid ad"; }
+  if (!is_valid_id($store_id)) { $errors["store_id"] = "Invalid store"; }
+  if (!is_valid_date($date))     { $errors["date"] = "Invalid date"; }
+  if (!is_valid_time($start_time)) { $errors["start_time"] = "Invalid start time"; }
+  if (!is_valid_time($end_time)) { $errors["end_time"] = "Invalid end time"; }
+  if (new DateTime($start_time) > new DateTime($end_time)) {
+    $errors["start_time"] = "Start time is after end time.";
+  }
+  // TODO Check start_time < end_time
+  return $errors; 
+}
+
 function validate_ad($title, $price, $description,
                      $category, $sub_category, $type) {
   $errors = [];
@@ -68,6 +85,10 @@ function is_valid_price($price) {
   return (float)$price >= 0;
 }
 
+function is_valid_id($id) {
+  return (int)$id >= 0;
+}
+
 function is_valid_number($number) {
   return filter_var($number, FILTER_VALIDATE_INT);
 }
@@ -98,6 +119,16 @@ function is_valid_category_and_subcategory($category, $sub_category) {
   $mysqli = get_database();
   $cats = get_categories_and_subcategories($mysqli);
   return isset($cats[$category]) && in_array($sub_category, $cats[$category]);
+}
+
+function is_valid_date($date) {
+  // TODO
+  return true;
+}
+
+function is_valid_time($time) {
+  // TODO
+  return true;
 }
 
 ?>
