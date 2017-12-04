@@ -479,29 +479,7 @@ BEFORE INSERT
 ON Ad_Store
 FOR EACH ROW
 BEGIN
-	IF (WEEKDAY(NEW.dateOfRent)<=4) THEN
-		BEGIN
-			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
-			IF (NEW.includesDeliveryServices) THEN
-				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="week");
-			END IF;
-		END;
-	ELSE
-		BEGIN
-			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-			IF (NEW.includesDeliveryServices) THEN
-				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
-			END IF;
-		END;
-	END IF;
-
-	SET @costPercent = (SELECT costPercent
-						FROM StrategicLocation
-						JOIN Store ON name=locationName
-						WHERE Store.storeId=NEW.storeId);
-
-	SET @price = (HOUR(TIMEDIFF(NEW.timeStart, NEW.timeEnd))) * @hourlyPrice;
-	SET @finalPrice = @price + (@price*@costPercent/100);
+	CALL getAdStorePrice(@finalPrice,NEW.dateOfRent, NEW.timeStart, NEW.timeEnd,NEW.storeId,NEW.includesDeliveryServices);
 	INSERT INTO Bill(dateOfPayment,amount,type,paymentMethodId)
 	VALUES(CURRENT_TIMESTAMP,@finalPrice,"AdStore",
 		(SELECT paymentMethodId
@@ -562,6 +540,37 @@ DELIMITER ;
 
 -- ----------------------------------------
 -- PROCEDURES
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS getAdStorePrice$$
+CREATE PROCEDURE getAdStorePrice(OUT finalPrice decimal(15,2),IN dateOfRent date, IN timeStart time, IN timeEnd time,IN storeId int, IN includesDeliveryServices boolean)
+BEGIN
+	IF (WEEKDAY(dateOfRent)<=4) THEN
+		BEGIN
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			IF (includesDeliveryServices) THEN
+				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="week");
+			END IF;
+		END;
+	ELSE
+		BEGIN
+			SET @hourlyPrice = (SELECT hourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			IF (includesDeliveryServices) THEN
+				SET @hourlyPrice:= @hourlyPrice + (SELECT deliveryHourlyPrice FROM StorePrices WHERE momentOfWeek="weekend");
+			END IF;
+		END;
+	END IF;
+
+	SET @costPercent = (SELECT costPercent
+						FROM StrategicLocation
+						JOIN Store ON name=locationName
+						WHERE Store.storeId=storeId);
+
+	SET @price = (HOUR(TIMEDIFF(timeStart, timeEnd))) * @hourlyPrice;
+	SET finalPrice = @price + (@price*@costPercent/100);
+	
+END$$
+DELIMITER ;
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS deleteAd$$
