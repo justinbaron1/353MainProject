@@ -144,7 +144,8 @@ function handle_delete_ad($user_id, $ad_id) {
   $errors = [];
 
   if (can_edit_ad($mysqli, $ad_id, $user_id)) {
-    if (!delete_ad($mysqli, $ad_id)) {
+    $error = delete_ad($mysqli, $ad_id);
+    if (!empty($error)) {
       $errors['delete'] = "Problem deleting ad '$ad_id'";
       log_info("Problem deleting ad '$ad_id'");
     }

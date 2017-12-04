@@ -412,16 +412,19 @@ function do_bills_backup($mysqli){
 // TODO(tomleb): Make a transaction
 function create_ad_with_image($mysqli, $user_id, $title, $price, $description,
                               $type, $category, $sub_category, $image_filename) {
-  $query = "CALL createAd(?, ?, ?, ?, ?, ?, ?)";
+  $query = "CALL createAd(@ad_id, ?, ?, ?, ?, ?, ?, ?)";
   $stmt = $mysqli->prepare($query);
+  $ad_id = 0;
   $stmt->bind_param("isdssss", $user_id, $title, $price, $description, $type, $category, $sub_category);
   $stmt->execute();
+
+  $select = $mysqli->query('SELECT @ad_id');
+  $result = $select->fetch_assoc();
+  $ad_id = $result['@ad_id'];
 
   if (log_mysqli_error($mysqli)) {
     return false;
   }
-
-  $ad_id = $mysqli->insert_id;
 
   if ($image_filename !== '') {
     $result = create_and_link_ad_image($mysqli, $ad_id, $image_filename);
@@ -515,16 +518,13 @@ SQL;
 }
 
 function delete_ad($mysqli, $ad_id) {
-  $query = <<<SQL
-UPDATE Ad
-SET isDeleted = TRUE
-WHERE adId = ?
-SQL;
+  $query = "CALL deleteAd(?)";
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("i", $ad_id);
   $stmt->execute();
+
   log_mysqli_error($mysqli);
-  return $mysqli->affected_rows;
+  return $mysqli->error;
 }
 
 function create_user($mysqli, $first_name, $last_name, $phone, $email, $password, $address_id) {
