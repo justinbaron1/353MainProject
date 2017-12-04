@@ -226,7 +226,7 @@ LEFT OUTER JOIN
 ) as future
 ON past.userId = future.userId
 UNION
-SELECT past.userId, COALESCE(past.total, 0) "Paid in last 7 days", COALESCE(future.total,0) "To be paid in the next 7 days"
+SELECT future.userId, COALESCE(past.total, 0) "Paid in last 7 days", COALESCE(future.total,0) "To be paid in the next 7 days"
 FROM
 (
   SELECT past_temp.userId, SUM(past_temp.price) as "total"
