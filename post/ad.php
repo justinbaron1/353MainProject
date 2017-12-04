@@ -22,6 +22,9 @@ function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
     return $errors;
   }
 
+  if(!empty(@$file['name'])){
+    $file["name"] = name_with_GUID($file);
+  }
   $ad_id = create_ad_with_image($mysqli, $user_id, $title, $price, $description, $type, $category, $sub_category, @$file['name']);
   if ($ad_id) {
     log_info("Created new ad '$ad_id' by user '$user_id'");
@@ -41,7 +44,6 @@ function handle_create_ad(&$ad_id, $user_id, $title, $price, $description,
   }
 
   if (is_file_to_upload($file)) {
-    $file["name"] = name_with_GUID($file);
     if (!handle_ad_image_upload($mysqli, $file)) {
       $errors["imageToUpload"] = "Problem uploading image";
     }
