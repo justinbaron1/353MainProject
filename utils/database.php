@@ -773,9 +773,9 @@ function update_ad_with_image($mysqli, $ad_id, $user_id, $title, $price, $descri
                               $category, $sub_category, $new_image, $old_image) {
   $query = <<<SQL
 UPDATE Ad
-SET price = ?,
+SET title = ?
+    price = ?,
     description = ?,
-    type = ?,
     category = ?,
     subCategory = ?
 WHERE adId = ?
