@@ -19,7 +19,7 @@ $categories = get_categories_and_subcategories($mysqli);
 $errors = [];
 
 $title = "";
-$price = "";
+$price = 0;
 $description  = "";
 $category     = "";
 $sub_category = "";
@@ -243,7 +243,7 @@ function form_group($errors, $name, $label = null) {
                 <input id="title" placeholder="Title" value="<?= $title ?>" type="text" class="form-control"  name="title">
               </div>
               <?php form_group($errors, "price", "Price");  ?>
-                  <input id="price" placeholder="Price" value="<?= $price | 0 ?>" min="0" step="0.01" type="number" class="form-control"  name="price">
+                  <input id="price" placeholder="Price" value="<?= $price ?>" min="0" step="0.01" type="number" class="form-control"  name="price">
               </div>
 
               <?php if ($action === "create") { ?>
