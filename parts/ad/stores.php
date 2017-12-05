@@ -1,4 +1,4 @@
-<?php include("utils/formatter.php"); ?>
+<?php include_once("utils/formatter.php"); ?>
 <div class="row">
     <h3>Store availability</h3>
 </div>
