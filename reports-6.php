@@ -26,7 +26,7 @@ $results = report_6($mysqli);
         <h1>Report #6</h1>
         <b>For a given physical store manager, generate a report that indicates the daily revenue and
 the total number of transactions “online payments” of each physical store belonging to
-the manager for the past 15 days.</b>
+the manager for the past 15 days. (For store manager with userId 1 in this case)</b>
             <?php if(empty($results)) { ?>
                 <div class="row text-center">
                     No result.
