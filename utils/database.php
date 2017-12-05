@@ -115,6 +115,7 @@ SQL;
 }
 
 function report_6($mysqli) {
+  $manager_id = 1;
   $query = <<<SQL
 SELECT Store.storeId, Bill.dateOfPayment, COUNT(Bill.billId) "Qty of transactions", SUM(Bill.amount) "Amount"
 FROM Store
@@ -127,10 +128,10 @@ ON Transaction.adId = Ad.adId
 JOIN Bill
 ON Bill.billId = Transaction.billId
 WHERE DATEDIFF(CURDATE(), Bill.dateOfPayment) <= 15
-AND Store.userId = <MANAGER_ID>
+AND Store.userId = ?
 GROUP BY Store.userId, Bill.dateOfPayment;
 SQL;
-  $result = fetch_assoc_all_prepared($mysqli, $query);
+  $result = fetch_assoc_all_prepared($mysqli, $query, "i", [$manager_id]);
   log_mysqli_error($mysqli);
   return $result;
 }
