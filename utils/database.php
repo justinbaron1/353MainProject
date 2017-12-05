@@ -59,9 +59,9 @@ INNER JOIN City ON Address.city = City.city
 WHERE LOWER(title) LIKE '%winter%men%jacket%'
 AND   NOT isDeleted
 AND   LOWER(province) = "quebec"
-AND   LOWER(ad.type) = "sell"
-AND   LOWER(ad.category) = "buy and sell"
-AND   LOWER(ad.subCategory) = "clothing"
+AND   LOWER(Ad.type) = "sell"
+AND   LOWER(Ad.category) = "buy and sell"
+AND   LOWER(Ad.subCategory) = "clothing"
 GROUP BY BuyerSeller.userId;
 SQL;
   $result = fetch_assoc_all_prepared($mysqli, $query);
