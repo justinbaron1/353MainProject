@@ -541,6 +541,7 @@ DELIMITER ;
 -- ----------------------------------------
 -- PROCEDURES
 
+-- creates a BuyerSeller
 DELIMITER $$
 DROP PROCEDURE IF EXISTS createBuyerSeller$$
 CREATE PROCEDURE createBuyerSeller(IN firstName varchar(255),IN lastName varchar(255),IN phoneNumber varchar(255),IN email varchar(255),IN password varchar(255),IN addressId int)
