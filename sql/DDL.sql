@@ -541,6 +541,17 @@ DELIMITER ;
 -- ----------------------------------------
 -- PROCEDURES
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS createBuyerSeller$$
+CREATE PROCEDURE createBuyerSeller(IN firstName varchar(255),IN lastName varchar(255),IN phoneNumber varchar(255),IN email varchar(255),IN password varchar(255),IN addressId int)
+BEGIN
+	INSERT INTO Users(firstName,lastName,phoneNumber,email,password,addressId) VALUES
+	(firstName,lastName,phoneNumber,email,password,addressId);
+	INSERT INTO BuyerSeller(userId,MembershipPlanName,contactEmail,contactPhone) VALUES
+	(LAST_INSERT_ID(),"normal",email,phoneNumber);
+END$$
+DELIMITER ;
+
 -- get the price of a given Ad_Store
 DELIMITER $$
 DROP PROCEDURE IF EXISTS getAdStorePrice$$
