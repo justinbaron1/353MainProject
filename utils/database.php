@@ -818,7 +818,7 @@ function delete_ad($mysqli, $ad_id) {
 
 function create_user($mysqli, $first_name, $last_name, $phone, $email, $password, $address_id) {
   $query = <<<SQL
-INSERT INTO Users(firstName, lastName, phoneNumber, email, password, addressId) VALUES (?, ?, ?, ?, ?, ?)
+CALL createBuyerSeller(?, ?, ?, ?, ?, ?);
 SQL;
   $stmt = $mysqli->prepare($query);
   $stmt->bind_param("sssssi", $first_name, $last_name, $phone, $email, $password, $address_id);
